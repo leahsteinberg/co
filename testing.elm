@@ -12,7 +12,7 @@ import Text exposing (fromString)
 import Graphics.Collage exposing (..)
 
 import Constants exposing (..)
-import ConvertJson exposing (editToJson)
+import ConvertJson exposing (editToJson, hashString)
 import Model exposing (..)
 
 
@@ -30,8 +30,6 @@ socket = io "http://localhost:4004" defaultOptions
 
 port incomingPort : Task x ()
 port incomingPort = socket `andThen` SocketIO.on "hello" incoming.address
-
-
 
 port sendEditsPort : Signal (Task x ())
 port sendEditsPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ editsToSend
@@ -72,7 +70,17 @@ highlightDeleted : Content -> Content -> Update
 highlightDeleted content oldContent = (None, oldContent)
 
 pasted : Content -> Content -> Update
-pasted content oldContent = (None, oldContent)
+pasted content oldContent = 
+    let
+        end = content.selection.start 
+        oldLen = length oldContent.string
+        newLen = length content.string
+        addedLen = newLen - oldLen
+        place = end - addedLen
+
+        addedStr = slice place (place + addedLen) content.string 
+    in
+        (Paste place addedStr, content)
 
 newEdit : Content -> Update -> Update
 newEdit newContent oldUpdate =
@@ -92,9 +100,7 @@ contentSignal =  snd <~ (Debug.watch "edits" <~ edits)
 
 edits = foldp newEdit (None, noContent) clientDocMB.signal
 
-
-
-
+contentStringSig = (\cont -> cont.string) <~ (snd <~ edits)
 
 editsToSend : Signal String
 editsToSend = (editToJson <~ editsToSendClient)
@@ -105,8 +111,8 @@ editsToSendClient = (fst <~ edits)
 main = displaySigElements
 ----    show <~ Signal.map2 (,) sockConnected.signal incoming.signal
 
-displaySigElements = (\cliDoc incoming outgoing -> flow down [cliDoc, show  "from server: ", incoming, show  "to server", outgoing]) 
-                        <~ clientDoc ~ (show <~ incoming.signal) ~ (show <~ editsToSendClient)
+displaySigElements = (\cliDoc incoming outgoing hash -> flow down [cliDoc, show  "from server: ", incoming, show  "to server", outgoing, hash]) 
+                        <~ clientDoc ~ (show <~ incoming.signal) ~ (show <~ editsToSendClient) ~ (show <~ (hashString <~ contentStringSig))
 
 
 
