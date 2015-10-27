@@ -10,7 +10,7 @@ var server = app.listen(4004, function(){
 	console.log("Collab App listening at http://%s:%s ~~~", host, port);
 });
 
-
+var thing = 1;
 var io = require('socket.io')(server);
 console.log("socket.io is working working: ", io!= undefined);
 app.use("/public", express.static(path.resolve('public')));
@@ -23,9 +23,18 @@ app.get('/', function(req, res) {
 io.on('connection', function(socket){
   console.log('a user connected');
     socket.on('example', function(msg){
-    console.log('message: ' + msg);
-    socket.emit("hello", "lolololo");
+    console.log('examp: ' + msg);
+    
   });
+    socket.on("edits", function (msg){
+    	console.log("message: ", msg);
+		socket.emit("hello", msg);
+    thing = thing + 1
+
+
+    })
+
+
 });
 
 

@@ -8,7 +8,12 @@ import String exposing (length, slice)
 import Http
 import SocketIO exposing (..)
 import Task exposing (..)
-import Text
+import Text exposing (fromString)
+import Graphics.Collage exposing (..)
+
+import Constants exposing (..)
+import ConvertJson exposing (editToJson)
+import Model exposing (..)
 
 
 sockConnected : Signal.Mailbox Bool
@@ -17,37 +22,34 @@ sockConnected = Signal.mailbox False
 incoming : Signal.Mailbox String
 incoming = Signal.mailbox "null"
 
+
 socket = io "http://localhost:4004" defaultOptions
 
 
-type Edit = Insert Int String | Delete Int | None
-
-type alias Update = (Edit, Content)
 
 
-port initial : Task x ()
-port initial = socket `andThen` SocketIO.emit "example" "whaddup"
+port incomingPort : Task x ()
+port incomingPort = socket `andThen` SocketIO.on "hello" incoming.address
 
 
-port responses : Task x ()
-port responses = socket `andThen` SocketIO.on "hello" incoming.address
+
+port sendEditsPort : Signal (Task x ())
+port sendEditsPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ editsToSend
 
 
-highlightStyle : Highlight
-highlightStyle = {color = green, width = 4}
+port initializePort : Task x ()
+port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
 
 
-fieldStyle : Style
-fieldStyle = {defaultStyle | 
-                         highlight <- highlightStyle
-                            }
+isConnected = socket `andThen` SocketIO.connected sockConnected.address
+
 
 clientDocMB : Signal.Mailbox Content
 clientDocMB = Signal.mailbox noContent
 
 clientDoc : Signal Element
 clientDoc = 
-    field fieldStyle (Signal.message clientDocMB.address) "" <~ contentSignal 
+    field fieldStyle (Signal.message clientDocMB.address) "" <~ contentSignal
 
 
 inserted : Content -> Update
@@ -57,7 +59,6 @@ inserted content =
         letter = slice place (place + 1) content.string
     in
         (Insert place letter, content)
-
 
 
 deleted : Content -> Update
@@ -87,11 +88,26 @@ newEdit newContent oldUpdate =
             | newLen - oldLen > 1 -> pasted newContent oldContent
             | otherwise -> (None, newContent)
         
-contentSignal = snd <~ (Debug.watch "edits" <~ edits)
+contentSignal =  snd <~ (Debug.watch "edits" <~ edits)
 
 edits = foldp newEdit (None, noContent) clientDocMB.signal
 
 
-main = show <~ incoming.signal
+
+
+
+editsToSend : Signal String
+editsToSend = (editToJson <~ editsToSendClient)
+
+editsToSendClient : Signal Edit
+editsToSendClient = (fst <~ edits)
+
+main = displaySigElements
+----    show <~ Signal.map2 (,) sockConnected.signal incoming.signal
+
+displaySigElements = (\cliDoc incoming outgoing -> flow down [cliDoc, show  "from server: ", incoming, show  "to server", outgoing]) 
+                        <~ clientDoc ~ (show <~ incoming.signal) ~ (show <~ editsToSendClient)
+
+
 
 
