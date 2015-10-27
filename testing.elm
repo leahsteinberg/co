@@ -5,7 +5,19 @@ import Debug
 import Color exposing (..)
 import Keyboard
 import String exposing (length, slice)
+import Http
+import SocketIO exposing (..)
+import Task exposing (..)
+import Text
 
+
+sockConnected : Signal.Mailbox Bool
+sockConnected = Signal.mailbox False
+
+incoming : Signal.Mailbox String
+incoming = Signal.mailbox "null"
+
+socket = io "http://localhost:4004" defaultOptions
 
 
 type Edit = Insert Int String | Delete Int | None
@@ -13,8 +25,12 @@ type Edit = Insert Int String | Delete Int | None
 type alias Update = (Edit, Content)
 
 
-type All = E Edit | F Element | K Int | C Content
+port initial : Task x ()
+port initial = socket `andThen` SocketIO.emit "example" "whaddup"
 
+
+port responses : Task x ()
+port responses = socket `andThen` SocketIO.on "hello" incoming.address
 
 
 highlightStyle : Highlight
@@ -31,8 +47,7 @@ clientDocMB = Signal.mailbox noContent
 
 clientDoc : Signal Element
 clientDoc = 
-    field fieldStyle (Signal.message clientDocMB.address) "" <~ (snd <~ (Debug.watch "hi " <~ edits))
-
+    field fieldStyle (Signal.message clientDocMB.address) "" <~ contentSignal 
 
 
 inserted : Content -> Update
@@ -51,13 +66,12 @@ deleted content =
         place = content.selection.start
     in
         (Delete place, content)
---    let 
---        place = content.selection.start
 
+highlightDeleted : Content -> Content -> Update
+highlightDeleted content oldContent = (None, oldContent)
 
---    (Insert )
-
-
+pasted : Content -> Content -> Update
+pasted content oldContent = (None, oldContent)
 
 newEdit : Content -> Update -> Update
 newEdit newContent oldUpdate =
@@ -69,25 +83,15 @@ newEdit newContent oldUpdate =
         if 
             | oldLen - newLen == 1 -> deleted newContent
             | newLen - oldLen == 1 -> inserted newContent
-            | oldLen - newLen > 1 -> (None, newContent)
---highlightedChange newContent oldContent.string
+            | oldLen - newLen > 1 -> highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
+            | newLen - oldLen > 1 -> pasted newContent oldContent
             | otherwise -> (None, newContent)
---            | oldLen - newLen > 1 && ->
         
-        
----        if length (snd oldUpdate) > length newContent then inserted newContent else deleted newContent
-
-
-
---changedContent = sampleOn Keyboard.presses clientDocMB.signal
+contentSignal = snd <~ (Debug.watch "edits" <~ edits)
 
 edits = foldp newEdit (None, noContent) clientDocMB.signal
 
 
--- sampleOn (Debug.watch "showing" <~ (sampleOn (clientDocMB.signal) Keyboard.presses)) clientDocMB.signal
-
-
-
-main = clientDoc
+main = show <~ incoming.signal
 
 
