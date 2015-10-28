@@ -19,7 +19,7 @@ console.log("socket.io is working working: ", io!= undefined);
 app.use("/public", express.static(path.resolve('public')));
 
 app.get('/', function(req, res) {
-  res.sendFile(path.resolve('public/testing.html'));
+  res.sendFile(path.resolve('public/index.html'));
 });
 
 

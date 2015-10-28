@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+  <head> 
+  hiiii
+  </head>
+<body>
+<div id="anchor"> </div>
+  <script src="public/elm.js"></script>
+
+<script>
+var div = document.getElementById('anchor');
+
+var woot = Elm.embed(Elm.Typing, div, {caretPos: 0});
+
+
+sendCaretPosition = function(){
+	  
+	var textArea = document.getElementById('typingZone');
+	
+	if (textArea === undefined || textArea === []){
+		console.log("text area is", textArea);
+		return;
+	}
+	   var pos = 0;
+    if (document.selection) 
+    {
+    	textArea.focus ();
+    	var Sel = document.selection.createRange();
+    	var SelLength = document.selection.createRange().text.length;
+    	Sel.moveStart ('character', -textArea.value.length);
+    	pos = Sel.text.length - SelLength;
+    }
+    //Firefox support
+    else if (textArea.selectionStart || textArea.selectionStart == '0')
+    	pos = textArea.selectionStart;
+
+    //console.log("position is:", pos);
+    if (woot != undefined && woot.ports != undefined){
+    	console.log("sending", pos);
+    	woot.ports.caretPos.send(pos);
+    }
+
+    return pos;
+}
+
+window.setInterval(sendCaretPosition, 200);
+
+
+
+
+// document.onclick = function(e){
+// 	var textArea = document.getElementById('typingZone');
+// 	if (textArea === undefined || textArea === []){
+// 		console.log("text area is", textArea);
+// 		return;
+// 	}
+// 	//sendCaretPosition(textArea);
+// }
+
+// document.onkeydown = function(e){
+// 	var event = window.event ? window.event : e;
+// 	// var textArea = document.getElementById('typingZone');
+	
+// 	// if (textArea === undefined || textArea === []){
+// 	// 	console.log("text area is", textArea);
+// 	// 	return;
+// 	// }
+
+// 	if (event.keyCode >= 37 && event.keyCode <=40){
+// 		//console.log("key code", event.keyCode);
+		
+// 		//window.setTimeout(sendCaretPosition(), 1000);	
+// 	}
+
+// }
+
+
+
+</script>
+</body>
+</html>
