@@ -32,13 +32,13 @@ hugePrime : Int
 hugePrime = 1299827
 
 startChar = {id = "START"
-        , visible = -1
+        , visible = -100
         , content = '`'
         , prev = "START"
         , next = "END"}
 
 endChar = {id = "END"
-        , visible = -1
+        , visible = -100
         , content = '`'
         , prev = "START"
         , next = "END"}

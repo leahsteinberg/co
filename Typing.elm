@@ -33,24 +33,40 @@ typing = Signal.mailbox -1
 keyBind = onKeyDown typing.address (\code ->  code)
 
 
-
+--slideBackward = slide (\wc -> wc.prev) slideBackwardChar
 
 slideForward : Model -> Model
-slideForward model =
+slideForward model = slide (\wc -> wc.next) slideForwardChar model
+
+slideBackward : Model -> Model
+slideBackward model = slide (\wc -> wc.prev) slideBackwardChar model
+
+--slideBackward model = 
+--    let
+--        currIndex = fst model.cursor
+--        currWChar = snd model.cursor
+--        mPrevWChar = Dict.get currWChar.prev model.wChars
+--    in 
+--        case mPrevWChar of
+--            Just prevWChar -> slideBackwardChar prevWChar model
+--            _ -> model
+
+slide : (WChar -> String) -> (WChar -> Model-> Model) -> Model -> Model
+slide grabNeighbor slideChar model =
     let
         currIndex = fst model.cursor
         currWChar = snd model.cursor
-        mNextWChar = Dict.get currWChar.next model.wChars
+        mNeighborWChar = Dict.get (grabNeighbor currWChar) model.wChars
     in 
-        case mNextWChar of
-            Just nextWChar ->  slideForwardChar nextWChar model
+        case mNeighborWChar of
+            Just neighborWChar ->  slideChar neighborWChar model
             _ -> model
         
 slideBackwardChar : WChar -> Model -> Model
 slideBackwardChar = slideChar -1 slideBackward
 
 slideForwardChar : WChar -> Model -> Model
-slideForwardChar = slideChar  1 slideForward      
+slideForwardChar = slideChar 1 slideForward      
 
 slideChar : Int -> (Model -> Model) -> WChar -> Model -> Model
 slideChar direction slider wCh model =
@@ -58,31 +74,24 @@ slideChar direction slider wCh model =
         if wCh.visible > 0 then {model | cursor <- ((fst model.cursor) + direction, wCh)} else slider model
 
 
-
-slideBackward : Model -> Model
-slideBackward model =
-    let
-        currIndex = fst model.cursor
-        currWChar = snd model.cursor
-        mPrevWChar = Dict.get currWChar.prev model.wChars
-    in 
-        case mPrevWChar of
-            Just prevWChar -> slideBackwardChar prevWChar model
-            _ -> model
+canAnchor : WChar -> Bool
+canAnchor ch =
+    if ch.id == "START" || ch.id == "END" then True
+        else ch.visible > 0
 
 
 
-findWChar : Int -> Model -> WChar
-findWChar goalIndex model = 
+findWChar : (Model -> Model) -> Int -> Model -> WChar
+findWChar slider goalIndex model = 
     let
         currIndex = fst model.cursor
         currWChar = snd model.cursor
         currVisible = currWChar.visible <= 0
     in
         if 
-            | goalIndex == currIndex -> currWChar
-            | goalIndex > currIndex -> findWChar goalIndex (slideForward model)
-            | currIndex > goalIndex -> findWChar goalIndex (slideBackward model)
+            | goalIndex == currIndex -> Debug.watch "anchor char " (if canAnchor currWChar then currWChar else findWChar slider goalIndex (slider model))
+            | currIndex < goalIndex -> findWChar slideForward goalIndex (slider model)
+            | currIndex > goalIndex -> findWChar slideBackward goalIndex (slider model)
 
 
 
@@ -90,7 +99,7 @@ findWChar goalIndex model =
 insertChar : Char -> Int -> Content -> Model -> Model
 insertChar char predIndex content model =
     let
-        predecessor = findWChar predIndex  model
+        predecessor = findWChar slideBackward predIndex  model
         successor = case Dict.get predecessor.next model.wChars of
                         Just succ -> succ
                         _ -> endChar
@@ -130,9 +139,18 @@ inserted content model =
 deleted : Content -> Model -> Model
 deleted content model = 
     let
-        place = content.selection.start
+        place = Debug.watch "deleting at" content.selection.start
+        predecessor = Debug.watch "pred is" (findWChar slideBackward (place - 1)  model)
+        currWChar = findWChar slideForward place model
+        deletedWChar = Debug.watch "DELETED" {currWChar | visible <- -1}
+        newWChars = Dict.insert deletedWChar.id deletedWChar model.wChars
+
     in
-        model
+        {model | wChars <- newWChars
+                , cursor <- (place - 1, predecessor)
+    }
+
+        
 
 --highlightDeleted : Content -> Content -> Update
 --highlightDeleted content oldContent = (None, oldContent)
