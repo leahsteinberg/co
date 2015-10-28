@@ -3,6 +3,7 @@ import Graphics.Input.Field exposing (..)
 import Dict exposing (..)
 
 
+
 --type Edit = Insert Int String | Delete Int | None | Paste Int String
 
 
@@ -29,4 +30,6 @@ type alias Model = {counter: Int
                     , site: ID
                     , wChars: Dict.Dict String WChar
                     , cursor: (Int, WChar)
-                    , start: WChar}
+                    , start: WChar
+                    , buffer: List WChar
+                    , content: Content}
