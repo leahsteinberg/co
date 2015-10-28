@@ -89,9 +89,9 @@ findWChar slider goalIndex model =
         currVisible = currWChar.visible <= 0
     in
         if 
-            | goalIndex == currIndex -> Debug.watch "anchor char " (if canAnchor currWChar then currWChar else findWChar slider goalIndex (slider model))
-            | currIndex < goalIndex -> findWChar slideForward goalIndex (slider model)
-            | currIndex > goalIndex -> findWChar slideBackward goalIndex (slider model)
+            | goalIndex == currIndex -> Debug.watch "anchor char " (if canAnchor currWChar then currWChar else (Debug.watch "SPECIALL" findWChar slider goalIndex (slider model)))
+            | currIndex < goalIndex -> findWChar slideForward goalIndex (slideForward model)
+            | currIndex > goalIndex -> findWChar slideBackward goalIndex (slideBackward model)
 
 
 
@@ -99,7 +99,7 @@ findWChar slider goalIndex model =
 insertChar : Char -> Int -> Content -> Model -> Model
 insertChar char predIndex content model =
     let
-        predecessor = findWChar slideBackward predIndex  model
+        predecessor = findWChar slideBackward predIndex model
         successor = case Dict.get predecessor.next model.wChars of
                         Just succ -> succ
                         _ -> endChar
@@ -131,23 +131,27 @@ inserted content model =
 
     in
         case letter of 
-            Just l -> insertChar l predIndex content model
-            _ -> model
+            Just l -> insertChar (Debug.watch "ADDING" l) predIndex content model
+            _ -> Debug.watch "BAD MODELLLLLL" model
 
 
 
 deleted : Content -> Model -> Model
 deleted content model = 
     let
-        place = Debug.watch "deleting at" content.selection.start
-        predecessor = Debug.watch "pred is" (findWChar slideBackward (place - 1)  model)
+
+        place = content.selection.start
+        predecessor =(findWChar slideBackward (place - 1)  model)
         currWChar = findWChar slideForward place model
-        deletedWChar = Debug.watch "DELETED" {currWChar | visible <- -1}
+        d = currWChar.content
+        deletedWChar = {currWChar | visible <- -1}
         newWChars = Dict.insert deletedWChar.id deletedWChar model.wChars
 
     in
         {model | wChars <- newWChars
                 , cursor <- (place - 1, predecessor)
+                , content <- content
+                , buffer <- deletedWChar :: model.buffer
     }
 
         
@@ -175,17 +179,18 @@ deleted content model =
 takeEdit : Content -> Model -> Model
 takeEdit newContent model = 
     let 
-        oldLen = length model.content.string
-        newLen = length newContent.string
+        oldLen = length (Debug.watch "old " model.content.string)
+        newLen = length (Debug.watch "new" newContent.string)
+        x = Debug.watch "Diff" (newLen - oldLen)
     in
         if 
             | oldLen - newLen == 1 -> deleted newContent model
             | newLen - oldLen == 1 -> inserted newContent model
-            | oldLen - newLen > 1 -> model
+            | oldLen - newLen > 1 -> emptyModel
 --highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
-            | newLen - oldLen > 1 -> model
+            | newLen - oldLen > 1 -> emptyModel
 --pasted newContent oldContent
-            | otherwise -> model
+            | otherwise -> emptyModel
 
 edits = (\m c -> c) <~ foldModel ~ clientDocMB.signal
 

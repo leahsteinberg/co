@@ -3708,6 +3708,113 @@ Elm.Html.Attributes.make = function (_elm) {
                                  ,attribute: attribute};
    return _elm.Html.Attributes.values;
 };
+Elm.Html = Elm.Html || {};
+Elm.Html.Events = Elm.Html.Events || {};
+Elm.Html.Events.make = function (_elm) {
+   "use strict";
+   _elm.Html = _elm.Html || {};
+   _elm.Html.Events = _elm.Html.Events || {};
+   if (_elm.Html.Events.values)
+   return _elm.Html.Events.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Html.Events",
+   $Basics = Elm.Basics.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $VirtualDom = Elm.VirtualDom.make(_elm);
+   var keyCode = A2($Json$Decode._op[":="],
+   "keyCode",
+   $Json$Decode.$int);
+   var targetChecked = A2($Json$Decode.at,
+   _L.fromArray(["target"
+                ,"checked"]),
+   $Json$Decode.bool);
+   var targetValue = A2($Json$Decode.at,
+   _L.fromArray(["target"
+                ,"value"]),
+   $Json$Decode.string);
+   var defaultOptions = $VirtualDom.defaultOptions;
+   var Options = F2(function (a,
+   b) {
+      return {_: {}
+             ,preventDefault: b
+             ,stopPropagation: a};
+   });
+   var onWithOptions = $VirtualDom.onWithOptions;
+   var on = $VirtualDom.on;
+   var messageOn = F3(function (name,
+   addr,
+   msg) {
+      return A3(on,
+      name,
+      $Json$Decode.value,
+      function (_v0) {
+         return function () {
+            return A2($Signal.message,
+            addr,
+            msg);
+         }();
+      });
+   });
+   var onClick = messageOn("click");
+   var onDoubleClick = messageOn("dblclick");
+   var onMouseMove = messageOn("mousemove");
+   var onMouseDown = messageOn("mousedown");
+   var onMouseUp = messageOn("mouseup");
+   var onMouseEnter = messageOn("mouseenter");
+   var onMouseLeave = messageOn("mouseleave");
+   var onMouseOver = messageOn("mouseover");
+   var onMouseOut = messageOn("mouseout");
+   var onBlur = messageOn("blur");
+   var onFocus = messageOn("focus");
+   var onSubmit = messageOn("submit");
+   var onKey = F3(function (name,
+   addr,
+   handler) {
+      return A3(on,
+      name,
+      keyCode,
+      function (code) {
+         return A2($Signal.message,
+         addr,
+         handler(code));
+      });
+   });
+   var onKeyUp = onKey("keyup");
+   var onKeyDown = onKey("keydown");
+   var onKeyPress = onKey("keypress");
+   _elm.Html.Events.values = {_op: _op
+                             ,onBlur: onBlur
+                             ,onFocus: onFocus
+                             ,onSubmit: onSubmit
+                             ,onKeyUp: onKeyUp
+                             ,onKeyDown: onKeyDown
+                             ,onKeyPress: onKeyPress
+                             ,onClick: onClick
+                             ,onDoubleClick: onDoubleClick
+                             ,onMouseMove: onMouseMove
+                             ,onMouseDown: onMouseDown
+                             ,onMouseUp: onMouseUp
+                             ,onMouseEnter: onMouseEnter
+                             ,onMouseLeave: onMouseLeave
+                             ,onMouseOver: onMouseOver
+                             ,onMouseOut: onMouseOut
+                             ,on: on
+                             ,onWithOptions: onWithOptions
+                             ,defaultOptions: defaultOptions
+                             ,targetValue: targetValue
+                             ,targetChecked: targetChecked
+                             ,keyCode: keyCode
+                             ,Options: Options};
+   return _elm.Html.Events.values;
+};
 Elm.Json = Elm.Json || {};
 Elm.Json.Decode = Elm.Json.Decode || {};
 Elm.Json.Decode.make = function (_elm) {
@@ -13383,30 +13490,19 @@ Elm.Typing.make = function (_elm) {
    _L = _N.List.make(_elm),
    $moduleName = "Typing",
    $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
    $Constants = Elm.Constants.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
    $Dict = Elm.Dict.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $Json$Encode = Elm.Json.Encode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
-   var view = F2(function (cp,
-   str) {
-      return A2($Html.div,
-      _L.fromArray([]),
-      _L.fromArray([A2($Html.textarea,
-                   _L.fromArray([A2($Html$Attributes.property,
-                                "value",
-                                $Json$Encode.string(str))
-                                ,$Html$Attributes.id("typingZone")
-                                ,$Html$Attributes.cols(40)
-                                ,$Html$Attributes.rows(40)]),
-                   _L.fromArray([]))
-                   ,$Html.text($Basics.toString(cp))]));
-   });
    var emptyModel = {_: {}
                     ,counter: 0
                     ,cursor: {ctor: "_Tuple2"
@@ -13415,20 +13511,43 @@ Elm.Typing.make = function (_elm) {
                     ,site: 1
                     ,start: $Constants.startChar
                     ,wChars: $Dict.empty};
+   var typing = $Signal.mailbox(_U.chr("`"));
+   var keyBind = A2($Html$Events.onKeyDown,
+   typing.address,
+   function (code) {
+      return $Char.fromCode(code);
+   });
+   var view = function (str) {
+      return function () {
+         var x = A2($Debug.watch,
+         "char",
+         str);
+         return A2($Html.div,
+         _L.fromArray([]),
+         _L.fromArray([A2($Html.textarea,
+                      _L.fromArray([keyBind
+                                   ,A2($Html$Attributes.property,
+                                   "value",
+                                   $Json$Encode.string("0"))
+                                   ,$Html$Attributes.id("typingZone")
+                                   ,$Html$Attributes.cols(40)
+                                   ,$Html$Attributes.rows(40)]),
+                      _L.fromArray([]))
+                      ,$Html.text($Basics.toString(0))]));
+      }();
+   };
+   var main = A2($Signal._op["<~"],
+   view,
+   typing.signal);
    var caretPos = Elm.Native.Port.make(_elm).inboundSignal("caretPos",
    "Int",
    function (v) {
       return typeof v === "number" ? v : _U.badPort("a number",
       v);
    });
-   var main = A2($Signal._op["~"],
-   A2($Signal._op["<~"],
-   view,
-   caretPos),
-   A2($Signal._op["<~"],
-   $Basics.toString,
-   caretPos));
    _elm.Typing.values = {_op: _op
+                        ,typing: typing
+                        ,keyBind: keyBind
                         ,emptyModel: emptyModel
                         ,main: main
                         ,view: view};
