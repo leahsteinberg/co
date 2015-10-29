@@ -8,21 +8,17 @@
 
 <script>
 var div = document.getElementById('anchor');
+var woot = Elm.embed(Elm.Typing, div, {caretPos:0,  typingPort: {cp: 0, str: "", len: 0}});
+var textArea = document.getElementById('typingZone');
 
-var woot = Elm.embed(Elm.Typing, div, {caretPos: 0});
 
-
-sendCaretPosition = function(){
-	  
-	var textArea = document.getElementById('typingZone');
-	
-	if (textArea === undefined || textArea === []){
+getCaretPosition = function(){
+	if (textArea === undefined || textArea === []) {
 		console.log("text area is", textArea);
 		return;
 	}
-	   var pos = 0;
-    if (document.selection) 
-    {
+	var pos = 0;
+    if (document.selection) {
     	textArea.focus ();
     	var Sel = document.selection.createRange();
     	var SelLength = document.selection.createRange().text.length;
@@ -32,19 +28,34 @@ sendCaretPosition = function(){
     //Firefox support
     else if (textArea.selectionStart || textArea.selectionStart == '0')
     	pos = textArea.selectionStart;
-
-    //console.log("position is:", pos);
-    if (woot != undefined && woot.ports != undefined){
-    	console.log("sending", pos);
-    	woot.ports.caretPos.send(pos);
-    }
-
     return pos;
 }
 
-window.setInterval(sendCaretPosition, 200);
 
 
+var sendUpdate = function(){
+    if (woot === undefined || woot.ports === undefined || textArea === undefined || textArea.value === undefined){
+    	return
+    }
+	var currString = textArea.value;
+	var cp = getCaretPosition();
+	if (cp === undefined){
+		return;
+	}
+	var toSend = {len: currString.length
+								, cp: cp
+								, str: currString}
+	woot.ports.typingPort.send(toSend);
+}
+
+
+window.setInterval(sendUpdate, 200);
+
+
+textArea.oninput = function(e){
+	sendUpdate();
+
+}
 
 
 // document.onclick = function(e){
