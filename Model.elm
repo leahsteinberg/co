@@ -15,13 +15,17 @@ import Dict exposing (..)
 
 type alias ID = Int
 
+type alias Doc = {cp: Int, str: String, len: Int}
+
 --id invisible content prev next
 
 type alias WChar = {id: String
-        , visible: Int
-        , content: Char
-        , prev: String
-        , next: String}
+                , next: String
+                , prev: String
+                , vis: Int
+                , ch: Char}
+
+
 
 ---- TODO - need a notion of the start and end collabs
 
@@ -32,4 +36,5 @@ type alias Model = {counter: Int
                     , cursor: (Int, WChar)
                     , start: WChar
                     , buffer: List WChar
-                    , content: Content}
+                    , content: Content
+                    , doc: Doc}

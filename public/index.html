@@ -1,6 +1,6 @@
 <!DOCTYPE html>
   <head> 
-  hiiii
+  Types
   </head>
 <body>
 <div id="anchor"> </div>
@@ -34,7 +34,11 @@ getCaretPosition = function(){
 
 
 var sendUpdate = function(){
-    if (woot === undefined || woot.ports === undefined || textArea === undefined || textArea.value === undefined){
+    if (woot === undefined 
+    	|| woot.ports === undefined 
+    	|| textArea === undefined 
+    	|| textArea.value === undefined) 
+    {
     	return
     }
 	var currString = textArea.value;
@@ -49,7 +53,7 @@ var sendUpdate = function(){
 }
 
 
-window.setInterval(sendUpdate, 200);
+window.setInterval(sendUpdate, 150);
 
 
 textArea.oninput = function(e){

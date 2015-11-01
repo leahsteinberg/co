@@ -10,9 +10,10 @@ emptyModel = {site = 1
         , counter = 0
         , wChars = Dict.empty
         , start = startChar
-        , cursor = (-1, startChar)
+        , cursor = (0, endChar)
         , buffer = []
-        , content = noContent}
+        , content = noContent
+        , doc = {cp = 0, str = "", len = 0}}
 
 
 highlightStyle : Highlight
@@ -25,20 +26,18 @@ fieldStyle = {defaultStyle |
 
                             }
 
+--startChar = W "START" '`' startChar endChar -100
+--endChar = W "END" '`' startChar endChar -100
 
-
-
-hugePrime : Int
-hugePrime = 1299827
 
 startChar = {id = "START"
-        , visible = -100
-        , content = '`'
+        , vis = -100
+        , ch = '`'
         , prev = "START"
         , next = "END"}
 
 endChar = {id = "END"
-        , visible = -100
-        , content = '`'
+        , vis = -100
+        , ch = '`'
         , prev = "START"
         , next = "END"}

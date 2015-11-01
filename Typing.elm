@@ -16,13 +16,13 @@ import Char exposing (..)
 import Keyboard
 import Debug
 import Window
-import Graph exposing (inserted, deleted)
+import Graph exposing (inserted1, deleted1, graphToString)
 
 
 port caretPos : Signal Int
 
 -- str, caret position
-port typingPort: Signal {cp: Int, str: String, len: Int}
+port typingPort: Signal Doc
 
 typingMB : Signal.Mailbox Int
 typingMB = Signal.mailbox -1
@@ -57,29 +57,45 @@ keyBind = onKeyDown typingMB.address (\code ->  code)
 --        (Paste place addedStr, content)
 
 
-
-
-
-takeEdit : Content -> Model -> Model
-takeEdit newContent model = 
+takeEdit : Doc -> Model -> Model
+takeEdit newDoc model = 
     let 
-        oldLen = length (Debug.watch "old " model.content.string)
-        newLen = length (Debug.watch "new" newContent.string)
-        x = Debug.watch "Diff" (newLen - oldLen)
+        oldLen = model.doc.len
+        newLen = newDoc.len
+--        x = Debug.watch "Diff" (newLen - oldLen)
     in
         if 
-            | oldLen - newLen == 1 -> deleted newContent model
-            | newLen - oldLen == 1 -> inserted newContent model
+            | oldLen == newLen -> {model | doc <- newDoc
+                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideForward newDoc.cp model)}
+            | oldLen - newLen == 1 -> deleted1 newDoc model
+            | newLen - oldLen == 1 -> inserted1 newDoc model
             | oldLen - newLen > 1 -> emptyModel
 --highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
             | newLen - oldLen > 1 -> emptyModel
 --pasted newContent oldContent
             | otherwise -> emptyModel
 
-edits = (\m c -> c) <~ foldModel ~ clientDocMB.signal
+
+--takeEdit : Content -> Model -> Model
+--takeEdit newContent model = 
+--    let 
+--        oldLen = length (Debug.watch "old " model.content.string)
+--        newLen = length (Debug.watch "new" newContent.string)
+--        x = Debug.watch "Diff" (newLen - oldLen)
+--    in
+--        if 
+--            | oldLen - newLen == 1 -> deleted newContent model
+--            | newLen - oldLen == 1 -> inserted newContent model
+--            | oldLen - newLen > 1 -> emptyModel
+--highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
+--            | newLen - oldLen > 1 -> emptyModel
+--pasted newContent oldContent
+--            | otherwise -> emptyModel
+
+--edits = (\m c -> c) <~ foldModel ~ clientDocMB.signal
 
 
-foldModel = Debug.watch "model" <~ (Signal.foldp takeEdit emptyModel clientDocMB.signal)
+--foldModel = Debug.watch "model" <~ (Signal.foldp takeEdit emptyModel clientDocMB.signal)
 
 localEdits =  Signal.sampleOn (Signal.map2 (,) typingMB.signal caretPos) typingMB.signal
 
@@ -106,20 +122,34 @@ clientDoc content (w, h)  =
                 |> Graphics.Element.width  (w//2)
 
 
+foldDocModel = Signal.foldp takeEdit emptyModel typing
 
-main = view
+main = view <~ foldDocModel ~ typing
 --clientDoc <~  edits ~ Window.dimensions 
 --<~ typing.signal
 --- map view (sampleOn UPDATE_FROM_SERVER (foldp model))
 --caretPos ~ (toString <~ caretPos)
 
-view : Html
-view  =
+prettyDictionary : Dict.Dict String WChar -> String
+prettyDictionary d =
+    List.foldl (\tup accStr -> accStr ++ "\n\n" ++(toString tup) ++ "\n") "" (Dict.toList d)
+
+
+
+
+view : Model -> Doc -> Html
+view m t =
         div
         []
         [
-        (textarea [keyBind, property "value" (Json.string "0"), id "typingZone", cols 40, rows 40] [])
-        , text (toString 0)
+        (textarea [keyBind,  id "typingZone", cols 40, rows 20] [])
+--        property "value" (Json.string "0"),
+--        , (text ("doc----" ++ (toString t) ++ "-----"))
+        ,(text (graphToString m.wChars) )
+        , (text (toString (m.doc)))
+        , (text (toString m.cursor))
+        , (text (toString m.buffer))
+
         ]
 
 
