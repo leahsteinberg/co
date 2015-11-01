@@ -66,7 +66,7 @@ takeEdit newDoc model =
     in
         if 
             | oldLen == newLen -> {model | doc <- newDoc
-                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideForward newDoc.cp model)}
+                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideBackward newDoc.cp model)}
             | oldLen - newLen == 1 -> deleted1 newDoc model
             | newLen - oldLen == 1 -> inserted1 newDoc model
             | oldLen - newLen > 1 -> emptyModel
@@ -145,10 +145,12 @@ view m t =
         (textarea [keyBind,  id "typingZone", cols 40, rows 20] [])
 --        property "value" (Json.string "0"),
 --        , (text ("doc----" ++ (toString t) ++ "-----"))
-        ,(text (graphToString m.wChars) )
-        , (text (toString (m.doc)))
-        , (text (toString m.cursor))
-        , (text (toString m.buffer))
+        ,(text (toString m.wChars) )
+
+        , (text ("\nDOc ------" ++ toString (m.doc)))
+        , (text ("\n CURSOR ----" ++ toString m.cursor))
+        , (text (graphToString m.wChars))
+--        , (text (toString m.buffer))
 
         ]
 

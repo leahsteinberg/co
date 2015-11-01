@@ -109,7 +109,7 @@ findWChar slider goalIndex model =
 
 
 
-
+-- a -1 
 insertChar : Char -> Int -> Doc -> Model -> Model
 insertChar char predIndex doc model =
     let
@@ -129,11 +129,11 @@ insertChar char predIndex doc model =
         newDict = Dict.insert newId newWChar (Dict.insert newSucc.id newSucc (Dict.insert newPred.id newPred model.wChars))
     in 
 --        {emptyModel | doc <- {cp = predIndex
---                                , str = String.fromChar pred.ch ++ String.fromChar succ.ch
---                                , len = 5000}}
+--                                , str = String.fromChar pred.ch ++ "--" ++String.fromChar succ.ch
+--                               , len = 5000}}
         { model | counter <- model.counter + 1
                 , wChars <- newDict
-                , cursor <- (predIndex + 2, newWChar)
+                , cursor <- (predIndex + 2, newSucc)
                , buffer <- newWChar :: model.buffer
                 , doc <- doc}
 
@@ -149,7 +149,8 @@ inserted1 doc model =
 
     in
         case letter of 
-            Just l -> insertChar l predIndex doc model
+            Just l -> insertChar l predIndex doc model 
+--- for the first theres a at 0. so predIndex is -1
             _ -> emptyModel
 
 

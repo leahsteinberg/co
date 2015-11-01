@@ -798,34 +798,49 @@ Elm.Constants.make = function (_elm) {
    $moduleName = "Constants",
    $Basics = Elm.Basics.make(_elm),
    $Color = Elm.Color.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $Graphics$Input$Field = Elm.Graphics.Input.Field.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var endChar = {_: {}
-                 ,content: _U.chr("a")
+                 ,ch: _U.chr("`")
                  ,id: "END"
-                 ,next: "START"
-                 ,prev: "END"
-                 ,visible: -1};
+                 ,next: "END"
+                 ,prev: "START"
+                 ,vis: -100};
    var startChar = {_: {}
-                   ,content: _U.chr("a")
+                   ,ch: _U.chr("`")
                    ,id: "START"
                    ,next: "END"
                    ,prev: "START"
-                   ,visible: -1};
-   var hugePrime = 1299827;
+                   ,vis: -100};
    var highlightStyle = {_: {}
                         ,color: $Color.green
                         ,width: 4};
    var fieldStyle = _U.replace([["highlight"
                                 ,highlightStyle]],
    $Graphics$Input$Field.defaultStyle);
+   var emptyModel = {_: {}
+                    ,buffer: _L.fromArray([])
+                    ,content: $Graphics$Input$Field.noContent
+                    ,counter: 0
+                    ,cursor: {ctor: "_Tuple2"
+                             ,_0: 0
+                             ,_1: endChar}
+                    ,doc: {_: {}
+                          ,cp: 0
+                          ,len: 0
+                          ,str: ""}
+                    ,site: 1
+                    ,start: startChar
+                    ,wChars: $Dict.empty};
    _elm.Constants.values = {_op: _op
+                           ,emptyModel: emptyModel
                            ,highlightStyle: highlightStyle
                            ,fieldStyle: fieldStyle
-                           ,hugePrime: hugePrime
                            ,startChar: startChar
                            ,endChar: endChar};
    return _elm.Constants.values;
@@ -1844,6 +1859,265 @@ Elm.Dict.make = function (_elm) {
                       ,toList: toList
                       ,fromList: fromList};
    return _elm.Dict.values;
+};
+Elm.Graph = Elm.Graph || {};
+Elm.Graph.make = function (_elm) {
+   "use strict";
+   _elm.Graph = _elm.Graph || {};
+   if (_elm.Graph.values)
+   return _elm.Graph.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Graph",
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var slidie = F4(function (dir,
+   grabber,
+   toIncrement,
+   model) {
+      return function () {
+         var currWChar = $Basics.snd(model.cursor);
+         var newChar = A2(grabber,
+         currWChar,
+         model.wChars);
+         var currIndex = $Basics.fst(model.cursor);
+         var newIndex = toIncrement ? currIndex + dir : currIndex;
+         return _U.replace([["cursor"
+                            ,{ctor: "_Tuple2"
+                             ,_0: newIndex
+                             ,_1: newChar}]],
+         model);
+      }();
+   });
+   var grabPrev = F2(function (wCh,
+   dict) {
+      return function () {
+         var _v0 = A2($Dict.get,
+         wCh.prev,
+         dict);
+         switch (_v0.ctor)
+         {case "Just": return _v0._0;}
+         return $Constants.startChar;
+      }();
+   });
+   var slideBackward = A2(slidie,
+   -1,
+   grabPrev);
+   var grabNext = F2(function (wCh,
+   dict) {
+      return function () {
+         var _v2 = A2($Dict.get,
+         wCh.next,
+         dict);
+         switch (_v2.ctor)
+         {case "Just": return _v2._0;}
+         return $Constants.endChar;
+      }();
+   });
+   var slideForward = A2(slidie,
+   1,
+   grabNext);
+   var graphToString$ = F2(function (wCh,
+   dict) {
+      return _U.eq(wCh.id,
+      "START") ? A2($Basics._op["++"],
+      "",
+      A2(graphToString$,
+      A2(grabNext,wCh,dict),
+      dict)) : _U.eq(wCh.id,
+      "END") ? "" : _U.cmp(wCh.vis,
+      0) < 1 ? A2($Basics._op["++"],
+      "",
+      A2(graphToString$,
+      A2(grabNext,wCh,dict),
+      dict)) : A2($Basics._op["++"],
+      $String.fromChar(wCh.ch),
+      A2(graphToString$,
+      A2(grabNext,wCh,dict),
+      dict));
+   });
+   var graphToString = function (dict) {
+      return function () {
+         var _v4 = A2($Dict.get,
+         "START",
+         dict);
+         switch (_v4.ctor)
+         {case "Just":
+            return A2(graphToString$,
+              _v4._0,
+              dict);}
+         return "";
+      }();
+   };
+   var canAnchor = function (wCh) {
+      return _U.eq(wCh.id,
+      "START") || _U.eq(wCh.id,
+      "END") ? true : _U.cmp(wCh.vis,
+      0) > 0;
+   };
+   var findWChar = F3(function (slider,
+   goalIndex,
+   model) {
+      return function () {
+         var currWChar = $Basics.snd(model.cursor);
+         var toIncrement = canAnchor(currWChar);
+         var currIndex = $Basics.fst(model.cursor);
+         return _U.eq(goalIndex,
+         currIndex) ? canAnchor(currWChar) ? currWChar : A3(findWChar,
+         slider,
+         goalIndex,
+         A2(slider,
+         toIncrement,
+         model)) : _U.cmp(currIndex,
+         goalIndex) < 0 ? A3(findWChar,
+         slider,
+         goalIndex,
+         A2(slideForward,
+         toIncrement,
+         model)) : _U.cmp(currIndex,
+         goalIndex) > 0 ? A3(findWChar,
+         slider,
+         goalIndex,
+         A2(slideBackward,
+         toIncrement,
+         model)) : _U.badIf($moduleName,
+         "between lines 102 and 108");
+      }();
+   });
+   var insertChar = F4(function ($char,
+   predIndex,
+   doc,
+   model) {
+      return function () {
+         var newId = A2($Basics._op["++"],
+         $Basics.toString(model.site),
+         A2($Basics._op["++"],
+         "-",
+         $Basics.toString(model.counter)));
+         var pred = A3(findWChar,
+         slideBackward,
+         predIndex,
+         model);
+         var succ = A2(grabNext,
+         pred,
+         model.wChars);
+         var newWChar = {_: {}
+                        ,ch: $char
+                        ,id: newId
+                        ,next: succ.id
+                        ,prev: pred.id
+                        ,vis: 1};
+         var newSucc = _U.replace([["prev"
+                                   ,newWChar.id]],
+         succ);
+         var newPred = _U.replace([["next"
+                                   ,newWChar.id]],
+         pred);
+         var newDict = A3($Dict.insert,
+         newId,
+         newWChar,
+         A3($Dict.insert,
+         newSucc.id,
+         newSucc,
+         A3($Dict.insert,
+         newPred.id,
+         newPred,
+         model.wChars)));
+         return _U.replace([["counter"
+                            ,model.counter + 1]
+                           ,["wChars",newDict]
+                           ,["cursor"
+                            ,{ctor: "_Tuple2"
+                             ,_0: predIndex + 2
+                             ,_1: newSucc}]
+                           ,["buffer"
+                            ,A2($List._op["::"],
+                            newWChar,
+                            model.buffer)]
+                           ,["doc",doc]],
+         model);
+      }();
+   });
+   var inserted1 = F2(function (doc,
+   model) {
+      return function () {
+         var place = doc.cp - 1;
+         var predIndex = place - 1;
+         var letter = $List.head(A2($List.drop,
+         place,
+         $String.toList(doc.str)));
+         return function () {
+            switch (letter.ctor)
+            {case "Just":
+               return A4(insertChar,
+                 letter._0,
+                 predIndex,
+                 doc,
+                 model);}
+            return $Constants.emptyModel;
+         }();
+      }();
+   });
+   var deleted1 = F2(function (doc,
+   model) {
+      return function () {
+         var oldDoc = model.doc;
+         var place = doc.cp;
+         var predecessor = A3(findWChar,
+         slideForward,
+         place - 1,
+         model);
+         var currWChar = A3(findWChar,
+         slideForward,
+         place,
+         model);
+         var deletedWChar = _U.replace([["vis"
+                                        ,-1]],
+         currWChar);
+         var newWChars = A3($Dict.insert,
+         deletedWChar.id,
+         deletedWChar,
+         model.wChars);
+         var newDoc = _U.replace([["str"
+                                  ,$String.fromChar(deletedWChar.ch)]],
+         oldDoc);
+         return _U.replace([["wChars"
+                            ,newWChars]
+                           ,["cursor"
+                            ,{ctor: "_Tuple2"
+                             ,_0: place - 1
+                             ,_1: predecessor}]
+                           ,["buffer"
+                            ,A2($List._op["::"],
+                            deletedWChar,
+                            model.buffer)]
+                           ,["doc",doc]],
+         model);
+      }();
+   });
+   _elm.Graph.values = {_op: _op
+                       ,canAnchor: canAnchor
+                       ,grabNext: grabNext
+                       ,grabPrev: grabPrev
+                       ,slideForward: slideForward
+                       ,slideBackward: slideBackward
+                       ,slidie: slidie
+                       ,findWChar: findWChar
+                       ,insertChar: insertChar
+                       ,inserted1: inserted1
+                       ,deleted1: deleted1
+                       ,graphToString: graphToString
+                       ,graphToString$: graphToString$};
+   return _elm.Graph.values;
 };
 Elm.Graphics = Elm.Graphics || {};
 Elm.Graphics.Collage = Elm.Graphics.Collage || {};
@@ -3963,6 +4237,170 @@ Elm.Json.Encode.make = function (_elm) {
                              ,Value: Value};
    return _elm.Json.Encode.values;
 };
+Elm.Keyboard = Elm.Keyboard || {};
+Elm.Keyboard.make = function (_elm) {
+   "use strict";
+   _elm.Keyboard = _elm.Keyboard || {};
+   if (_elm.Keyboard.values)
+   return _elm.Keyboard.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Keyboard",
+   $Basics = Elm.Basics.make(_elm),
+   $Native$Keyboard = Elm.Native.Keyboard.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var presses = A2($Signal.map,
+   function (_) {
+      return _.keyCode;
+   },
+   $Native$Keyboard.presses);
+   var toXY = F2(function (_v0,
+   keyCodes) {
+      return function () {
+         return function () {
+            var is = function (keyCode) {
+               return A2($Set.member,
+               keyCode,
+               keyCodes) ? 1 : 0;
+            };
+            return {_: {}
+                   ,x: is(_v0.right) - is(_v0.left)
+                   ,y: is(_v0.up) - is(_v0.down)};
+         }();
+      }();
+   });
+   var Directions = F4(function (a,
+   b,
+   c,
+   d) {
+      return {_: {}
+             ,down: b
+             ,left: c
+             ,right: d
+             ,up: a};
+   });
+   var dropMap = F2(function (f,
+   signal) {
+      return $Signal.dropRepeats(A2($Signal.map,
+      f,
+      signal));
+   });
+   var EventInfo = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,alt: a
+             ,keyCode: c
+             ,meta: b};
+   });
+   var Blur = {ctor: "Blur"};
+   var Down = function (a) {
+      return {ctor: "Down",_0: a};
+   };
+   var Up = function (a) {
+      return {ctor: "Up",_0: a};
+   };
+   var rawEvents = $Signal.mergeMany(_L.fromArray([A2($Signal.map,
+                                                  Up,
+                                                  $Native$Keyboard.ups)
+                                                  ,A2($Signal.map,
+                                                  Down,
+                                                  $Native$Keyboard.downs)
+                                                  ,A2($Signal.map,
+                                                  $Basics.always(Blur),
+                                                  $Native$Keyboard.blurs)]));
+   var empty = {_: {}
+               ,alt: false
+               ,keyCodes: $Set.empty
+               ,meta: false};
+   var update = F2(function (event,
+   model) {
+      return function () {
+         switch (event.ctor)
+         {case "Blur": return empty;
+            case "Down": return {_: {}
+                                ,alt: event._0.alt
+                                ,keyCodes: A2($Set.insert,
+                                event._0.keyCode,
+                                model.keyCodes)
+                                ,meta: event._0.meta};
+            case "Up": return {_: {}
+                              ,alt: event._0.alt
+                              ,keyCodes: A2($Set.remove,
+                              event._0.keyCode,
+                              model.keyCodes)
+                              ,meta: event._0.meta};}
+         _U.badCase($moduleName,
+         "between lines 68 and 82");
+      }();
+   });
+   var model = A3($Signal.foldp,
+   update,
+   empty,
+   rawEvents);
+   var alt = A2(dropMap,
+   function (_) {
+      return _.alt;
+   },
+   model);
+   var meta = A2(dropMap,
+   function (_) {
+      return _.meta;
+   },
+   model);
+   var keysDown = A2(dropMap,
+   function (_) {
+      return _.keyCodes;
+   },
+   model);
+   var arrows = A2(dropMap,
+   toXY({_: {}
+        ,down: 40
+        ,left: 37
+        ,right: 39
+        ,up: 38}),
+   keysDown);
+   var wasd = A2(dropMap,
+   toXY({_: {}
+        ,down: 83
+        ,left: 65
+        ,right: 68
+        ,up: 87}),
+   keysDown);
+   var isDown = function (keyCode) {
+      return A2(dropMap,
+      $Set.member(keyCode),
+      keysDown);
+   };
+   var ctrl = isDown(17);
+   var shift = isDown(16);
+   var space = isDown(32);
+   var enter = isDown(13);
+   var Model = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,alt: a
+             ,keyCodes: c
+             ,meta: b};
+   });
+   _elm.Keyboard.values = {_op: _op
+                          ,arrows: arrows
+                          ,wasd: wasd
+                          ,enter: enter
+                          ,space: space
+                          ,ctrl: ctrl
+                          ,shift: shift
+                          ,alt: alt
+                          ,meta: meta
+                          ,isDown: isDown
+                          ,keysDown: keysDown
+                          ,presses: presses};
+   return _elm.Keyboard.values;
+};
 Elm.List = Elm.List || {};
 Elm.List.make = function (_elm) {
    "use strict";
@@ -4404,18 +4842,25 @@ Elm.Model.make = function (_elm) {
    $moduleName = "Model",
    $Basics = Elm.Basics.make(_elm),
    $Dict = Elm.Dict.make(_elm),
+   $Graphics$Input$Field = Elm.Graphics.Input.Field.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
-   var Model = F5(function (a,
+   var Model = F8(function (a,
    b,
    c,
    d,
-   e) {
+   e,
+   f,
+   g,
+   h) {
       return {_: {}
+             ,buffer: f
+             ,content: g
              ,counter: a
              ,cursor: d
+             ,doc: h
              ,site: b
              ,start: e
              ,wChars: c};
@@ -4426,13 +4871,20 @@ Elm.Model.make = function (_elm) {
    d,
    e) {
       return {_: {}
-             ,content: c
+             ,ch: e
              ,id: a
-             ,next: e
-             ,prev: d
-             ,visible: b};
+             ,next: b
+             ,prev: c
+             ,vis: d};
+   });
+   var Doc = F3(function (a,b,c) {
+      return {_: {}
+             ,cp: a
+             ,len: c
+             ,str: b};
    });
    _elm.Model.values = {_op: _op
+                       ,Doc: Doc
                        ,WChar: WChar
                        ,Model: Model};
    return _elm.Model.values;
@@ -8019,6 +8471,56 @@ Elm.Native.Json.make = function(localRuntime) {
 		encodeList: List.toArray,
 		encodeObject: encodeObject
 
+	};
+
+};
+
+Elm.Native.Keyboard = {};
+Elm.Native.Keyboard.make = function(localRuntime) {
+
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Keyboard = localRuntime.Native.Keyboard || {};
+	if (localRuntime.Native.Keyboard.values)
+	{
+		return localRuntime.Native.Keyboard.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+
+
+	function keyEvent(event)
+	{
+		return {
+			_: {},
+			alt: event.altKey,
+			meta: event.metaKey,
+			keyCode: event.keyCode
+		};
+	}
+
+
+	function keyStream(node, eventName, handler)
+	{
+		var stream = NS.input(eventName, '\0');
+
+		localRuntime.addListener([stream.id], node, eventName, function(e) {
+			localRuntime.notify(stream.id, handler(e));
+		});
+
+		return stream;
+	}
+
+	var downs = keyStream(document, 'keydown', keyEvent);
+	var ups = keyStream(document, 'keyup', keyEvent);
+	var presses = keyStream(document, 'keypress', keyEvent);
+	var blurs = keyStream(window, 'blur', function() { return null; });
+
+
+	return localRuntime.Native.Keyboard.values = {
+		downs: downs,
+		ups: ups,
+		blurs: blurs,
+		presses: presses
 	};
 
 };
@@ -12613,6 +13115,75 @@ Elm.Native.VirtualDom.make = function(elm)
 
 },{"virtual-dom/vdom/create-element":6,"virtual-dom/vdom/patch":9,"virtual-dom/vnode/is-vhook":13,"virtual-dom/vnode/vnode":18,"virtual-dom/vnode/vtext":20,"virtual-dom/vtree/diff":22}]},{},[23]);
 
+Elm.Native = Elm.Native || {};
+Elm.Native.Window = {};
+Elm.Native.Window.make = function(localRuntime) {
+
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Window = localRuntime.Native.Window || {};
+	if (localRuntime.Native.Window.values)
+	{
+		return localRuntime.Native.Window.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var Tuple2 = Elm.Native.Utils.make(localRuntime).Tuple2;
+
+
+	function getWidth()
+	{
+		return localRuntime.node.clientWidth;
+	}
+
+
+	function getHeight()
+	{
+		if (localRuntime.isFullscreen())
+		{
+			return window.innerHeight;
+		}
+		return localRuntime.node.clientHeight;
+	}
+
+
+	var dimensions = NS.input('Window.dimensions', Tuple2(getWidth(), getHeight()));
+
+
+	function resizeIfNeeded()
+	{
+		// Do not trigger event if the dimensions have not changed.
+		// This should be most of the time.
+		var w = getWidth();
+		var h = getHeight();
+		if (dimensions.value._0 === w && dimensions.value._1 === h)
+		{
+			return;
+		}
+
+		setTimeout(function () {
+			// Check again to see if the dimensions have changed.
+			// It is conceivable that the dimensions have changed
+			// again while some other event was being processed.
+			var w = getWidth();
+			var h = getHeight();
+			if (dimensions.value._0 === w && dimensions.value._1 === h)
+			{
+				return;
+			}
+			localRuntime.notify(dimensions.id, Tuple2(w,h));
+		}, 0);
+	}
+
+
+	localRuntime.addListener([dimensions.id], window, 'resize', resizeIfNeeded);
+
+
+	return localRuntime.Native.Window.values = {
+		dimensions: dimensions,
+		resizeIfNeeded: resizeIfNeeded
+	};
+};
+
 Elm.Result = Elm.Result || {};
 Elm.Result.make = function (_elm) {
    "use strict";
@@ -12856,6 +13427,111 @@ Elm.Result.make = function (_elm) {
                         ,Ok: Ok
                         ,Err: Err};
    return _elm.Result.values;
+};
+Elm.Set = Elm.Set || {};
+Elm.Set.make = function (_elm) {
+   "use strict";
+   _elm.Set = _elm.Set || {};
+   if (_elm.Set.values)
+   return _elm.Set.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Set",
+   $Dict = Elm.Dict.make(_elm),
+   $List = Elm.List.make(_elm);
+   var partition = F2(function (p,
+   set) {
+      return A2($Dict.partition,
+      F2(function (k,_v0) {
+         return function () {
+            return p(k);
+         }();
+      }),
+      set);
+   });
+   var filter = F2(function (p,
+   set) {
+      return A2($Dict.filter,
+      F2(function (k,_v2) {
+         return function () {
+            return p(k);
+         }();
+      }),
+      set);
+   });
+   var foldr = F3(function (f,
+   b,
+   s) {
+      return A3($Dict.foldr,
+      F3(function (k,_v4,b) {
+         return function () {
+            return A2(f,k,b);
+         }();
+      }),
+      b,
+      s);
+   });
+   var foldl = F3(function (f,
+   b,
+   s) {
+      return A3($Dict.foldl,
+      F3(function (k,_v6,b) {
+         return function () {
+            return A2(f,k,b);
+         }();
+      }),
+      b,
+      s);
+   });
+   var toList = $Dict.keys;
+   var diff = $Dict.diff;
+   var intersect = $Dict.intersect;
+   var union = $Dict.union;
+   var member = $Dict.member;
+   var isEmpty = $Dict.isEmpty;
+   var remove = $Dict.remove;
+   var insert = function (k) {
+      return A2($Dict.insert,
+      k,
+      {ctor: "_Tuple0"});
+   };
+   var singleton = function (k) {
+      return A2($Dict.singleton,
+      k,
+      {ctor: "_Tuple0"});
+   };
+   var empty = $Dict.empty;
+   var fromList = function (xs) {
+      return A3($List.foldl,
+      insert,
+      empty,
+      xs);
+   };
+   var map = F2(function (f,s) {
+      return fromList(A2($List.map,
+      f,
+      toList(s)));
+   });
+   _elm.Set.values = {_op: _op
+                     ,empty: empty
+                     ,singleton: singleton
+                     ,insert: insert
+                     ,remove: remove
+                     ,isEmpty: isEmpty
+                     ,member: member
+                     ,foldl: foldl
+                     ,foldr: foldr
+                     ,map: map
+                     ,filter: filter
+                     ,partition: partition
+                     ,union: union
+                     ,intersect: intersect
+                     ,diff: diff
+                     ,toList: toList
+                     ,fromList: fromList};
+   return _elm.Set.values;
 };
 Elm.Signal = Elm.Signal || {};
 Elm.Signal.make = function (_elm) {
@@ -13490,66 +14166,147 @@ Elm.Typing.make = function (_elm) {
    _L = _N.List.make(_elm),
    $moduleName = "Typing",
    $Basics = Elm.Basics.make(_elm),
-   $Char = Elm.Char.make(_elm),
    $Constants = Elm.Constants.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
    $Dict = Elm.Dict.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Graphics$Input$Field = Elm.Graphics.Input.Field.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
-   $Json$Encode = Elm.Json.Encode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
-   var emptyModel = {_: {}
-                    ,counter: 0
-                    ,cursor: {ctor: "_Tuple2"
-                             ,_0: 0
-                             ,_1: $Constants.startChar}
-                    ,site: 1
-                    ,start: $Constants.startChar
-                    ,wChars: $Dict.empty};
-   var typing = $Signal.mailbox(_U.chr("`"));
-   var keyBind = A2($Html$Events.onKeyDown,
-   typing.address,
-   function (code) {
-      return $Char.fromCode(code);
-   });
-   var view = function (str) {
-      return function () {
-         var x = A2($Debug.watch,
-         "char",
-         str);
-         return A2($Html.div,
-         _L.fromArray([]),
-         _L.fromArray([A2($Html.textarea,
-                      _L.fromArray([keyBind
-                                   ,A2($Html$Attributes.property,
-                                   "value",
-                                   $Json$Encode.string("0"))
-                                   ,$Html$Attributes.id("typingZone")
-                                   ,$Html$Attributes.cols(40)
-                                   ,$Html$Attributes.rows(40)]),
-                      _L.fromArray([]))
-                      ,$Html.text($Basics.toString(0))]));
-      }();
+   var prettyDictionary = function (d) {
+      return A3($List.foldl,
+      F2(function (tup,accStr) {
+         return A2($Basics._op["++"],
+         accStr,
+         A2($Basics._op["++"],
+         "\n\n",
+         A2($Basics._op["++"],
+         $Basics.toString(tup),
+         "\n")));
+      }),
+      "",
+      $Dict.toList(d));
    };
-   var main = A2($Signal._op["<~"],
+   var clientDocMB = $Signal.mailbox($Graphics$Input$Field.noContent);
+   var clientDoc = F2(function (content,
+   _v0) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return $Graphics$Element.width(_v0._0 / 2 | 0)($Graphics$Element.height(_v0._1 / 2 | 0)(A4($Graphics$Input$Field.field,
+              $Constants.fieldStyle,
+              $Signal.message(clientDocMB.address),
+              "",
+              content)));}
+         _U.badCase($moduleName,
+         "between lines 120 and 122");
+      }();
+   });
+   var takeEdit = F2(function (newDoc,
+   model) {
+      return function () {
+         var newLen = newDoc.len;
+         var oldLen = model.doc.len;
+         return _U.eq(oldLen,
+         newLen) ? _U.replace([["doc"
+                               ,newDoc]
+                              ,["cursor"
+                               ,{ctor: "_Tuple2"
+                                ,_0: newDoc.cp
+                                ,_1: A3($Graph.findWChar,
+                                $Graph.slideBackward,
+                                newDoc.cp,
+                                model)}]],
+         model) : _U.eq(oldLen - newLen,
+         1) ? A2($Graph.deleted1,
+         newDoc,
+         model) : _U.eq(newLen - oldLen,
+         1) ? A2($Graph.inserted1,
+         newDoc,
+         model) : _U.cmp(oldLen - newLen,
+         1) > 0 ? $Constants.emptyModel : _U.cmp(newLen - oldLen,
+         1) > 0 ? $Constants.emptyModel : $Constants.emptyModel;
+      }();
+   });
+   var typingMB = $Signal.mailbox(-1);
+   var keyBind = A2($Html$Events.onKeyDown,
+   typingMB.address,
+   function (code) {
+      return code;
+   });
+   var view = F2(function (m,t) {
+      return A2($Html.div,
+      _L.fromArray([]),
+      _L.fromArray([A2($Html.textarea,
+                   _L.fromArray([keyBind
+                                ,$Html$Attributes.id("typingZone")
+                                ,$Html$Attributes.cols(40)
+                                ,$Html$Attributes.rows(20)]),
+                   _L.fromArray([]))
+                   ,$Html.text($Basics.toString(m.wChars))
+                   ,$Html.text(A2($Basics._op["++"],
+                   "\nDOc ------",
+                   $Basics.toString(m.doc)))
+                   ,$Html.text(A2($Basics._op["++"],
+                   "\n CURSOR ----",
+                   $Basics.toString(m.cursor)))
+                   ,$Html.text($Graph.graphToString(m.wChars))]));
+   });
+   var typingPort = Elm.Native.Port.make(_elm).inboundSignal("typingPort",
+   "Model.Doc",
+   function (v) {
+      return typeof v === "object" && "cp" in v && "str" in v && "len" in v ? {_: {}
+                                                                              ,cp: typeof v.cp === "number" ? v.cp : _U.badPort("a number",
+                                                                              v.cp)
+                                                                              ,str: typeof v.str === "string" || typeof v.str === "object" && v.str instanceof String ? v.str : _U.badPort("a string",
+                                                                              v.str)
+                                                                              ,len: typeof v.len === "number" ? v.len : _U.badPort("a number",
+                                                                              v.len)} : _U.badPort("an object with fields `cp`, `str`, `len`",
+      v);
+   });
+   var typing = $Signal.dropRepeats(typingPort);
+   var foldDocModel = A3($Signal.foldp,
+   takeEdit,
+   $Constants.emptyModel,
+   typing);
+   var main = A2($Signal._op["~"],
+   A2($Signal._op["<~"],
    view,
-   typing.signal);
+   foldDocModel),
+   typing);
    var caretPos = Elm.Native.Port.make(_elm).inboundSignal("caretPos",
    "Int",
    function (v) {
       return typeof v === "number" ? v : _U.badPort("a number",
       v);
    });
+   var localEdits = A2($Signal.sampleOn,
+   A3($Signal.map2,
+   F2(function (v0,v1) {
+      return {ctor: "_Tuple2"
+             ,_0: v0
+             ,_1: v1};
+   }),
+   typingMB.signal,
+   caretPos),
+   typingMB.signal);
    _elm.Typing.values = {_op: _op
+                        ,typingMB: typingMB
                         ,typing: typing
                         ,keyBind: keyBind
-                        ,emptyModel: emptyModel
+                        ,takeEdit: takeEdit
+                        ,localEdits: localEdits
+                        ,clientDocMB: clientDocMB
+                        ,clientDoc: clientDoc
+                        ,foldDocModel: foldDocModel
                         ,main: main
+                        ,prettyDictionary: prettyDictionary
                         ,view: view};
    return _elm.Typing.values;
 };
@@ -13619,4 +14376,31 @@ Elm.VirtualDom.make = function (_elm) {
                             ,lazy3: lazy3
                             ,Options: Options};
    return _elm.VirtualDom.values;
+};
+Elm.Window = Elm.Window || {};
+Elm.Window.make = function (_elm) {
+   "use strict";
+   _elm.Window = _elm.Window || {};
+   if (_elm.Window.values)
+   return _elm.Window.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Window",
+   $Basics = Elm.Basics.make(_elm),
+   $Native$Window = Elm.Native.Window.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var dimensions = $Native$Window.dimensions;
+   var width = A2($Signal.map,
+   $Basics.fst,
+   dimensions);
+   var height = A2($Signal.map,
+   $Basics.snd,
+   dimensions);
+   _elm.Window.values = {_op: _op
+                        ,dimensions: dimensions
+                        ,width: width
+                        ,height: height};
+   return _elm.Window.values;
 };
