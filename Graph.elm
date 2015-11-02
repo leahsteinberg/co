@@ -6,8 +6,9 @@ import Debug
 import String exposing (toList)
 import List 
 import Constants exposing (endChar, startChar, emptyModel)
+import ConvertJson exposing (wUpdateToJson)
 
-
+import Woot exposing (..)
 
 import Graphics.Input.Field exposing (..)
 
@@ -110,10 +111,9 @@ findWChar slider goalIndex model =
 
 
 -- a -1 
-insertChar : Char -> Int -> Doc -> Model -> Model
-insertChar char predIndex doc model =
+generateInsChar : Char -> Int -> Doc -> Model -> (Model, WUpdate)
+generateInsChar char predIndex doc model =
     let
---        pred = startChar
         pred = findWChar slideBackward predIndex model
         succ = grabNext pred model.wChars
         newId = toString model.site ++ "-" ++ toString model.counter
@@ -122,36 +122,37 @@ insertChar char predIndex doc model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newPred = {pred | next <- newWChar.id}
-        newSucc = {succ | prev <- newWChar.id}
---        newDict = Dict.empty
---        newDict = model.wChars
-        newDict = Dict.insert newId newWChar (Dict.insert newSucc.id newSucc (Dict.insert newPred.id newPred model.wChars))
+        newWUpdate =  Insert newWChar
+--        sendWUpdate = sendOutWUpdate (wUpdateToJson newWUpdate)
     in 
---        {emptyModel | doc <- {cp = predIndex
---                                , str = String.fromChar pred.ch ++ "--" ++String.fromChar succ.ch
---                               , len = 5000}}
-        { model | counter <- model.counter + 1
-                , wChars <- newDict
-                , cursor <- (predIndex + 2, newSucc)
-               , buffer <- newWChar :: model.buffer
-                , doc <- doc}
+        (integrateInsert newWChar {model | counter <- model.counter + 1
+                                , cursor <- (predIndex + 2, succ)}, newWUpdate)
 
 
+integrateInsert : WChar -> Model -> Model
+integrateInsert wCh model = 
+    let
+        pred = grabPrev wCh model.wChars
+        succ = grabNext wCh model.wChars
+        newPred = {pred | next <- wCh.id}
+        newSucc = {succ | prev <- wCh.id}
+        newDict = Dict.insert wCh.id wCh (Dict.insert newSucc.id newSucc (Dict.insert newPred.id newPred model.wChars))
+    in 
+        {model | wChars <- newDict}
 
-inserted1 : Doc -> Model -> Model
-inserted1 doc model = 
+
+generateIns : Doc -> Model -> (Model, WUpdate)
+generateIns doc model = 
     let
         place = doc.cp - 1
         predIndex = place - 1
---        letter = slice place (place + 1) 
         letter = List.head (List.drop place (toList  doc.str))
 
     in
         case letter of 
-            Just l -> insertChar l predIndex doc model 
+            Just l -> generateInsChar l predIndex doc model 
 --- for the first theres a at 0. so predIndex is -1
-            _ -> emptyModel
+            _ -> (emptyModel, NoUpdate)
 
 
 

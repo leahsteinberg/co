@@ -25,7 +25,9 @@ type alias WChar = {id: String
                 , vis: Int
                 , ch: Char}
 
+type WUpdate = Insert WChar | Delete WChar | NoUpdate
 
+type Edit = W WUpdate | T Doc
 
 ---- TODO - need a notion of the start and end collabs
 
@@ -36,5 +38,8 @@ type alias Model = {counter: Int
                     , cursor: (Int, WChar)
                     , start: WChar
                     , buffer: List WChar
+                    , pool: List WUpdate
                     , content: Content
                     , doc: Doc}
+
+

@@ -8,7 +8,7 @@
 
 <script>
 var div = document.getElementById('anchor');
-var woot = Elm.embed(Elm.Typing, div, {caretPos:0,  typingPort: {cp: 0, str: "", len: 0}});
+var woot = Elm.embed(Elm.Typing, div, {typingPort: {cp: 0, str: "", len: 0}});
 var textArea = document.getElementById('typingZone');
 
 
@@ -60,33 +60,6 @@ textArea.oninput = function(e){
 	sendUpdate();
 
 }
-
-
-// document.onclick = function(e){
-// 	var textArea = document.getElementById('typingZone');
-// 	if (textArea === undefined || textArea === []){
-// 		console.log("text area is", textArea);
-// 		return;
-// 	}
-// 	//sendCaretPosition(textArea);
-// }
-
-// document.onkeydown = function(e){
-// 	var event = window.event ? window.event : e;
-// 	// var textArea = document.getElementById('typingZone');
-	
-// 	// if (textArea === undefined || textArea === []){
-// 	// 	console.log("text area is", textArea);
-// 	// 	return;
-// 	// }
-
-// 	if (event.keyCode >= 37 && event.keyCode <=40){
-// 		//console.log("key code", event.keyCode);
-		
-// 		//window.setTimeout(sendCaretPosition(), 1000);	
-// 	}
-
-// }
 
 
 

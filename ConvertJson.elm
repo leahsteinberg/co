@@ -1,33 +1,120 @@
 module ConvertJson where
 import Json.Encode as Enc exposing (encode, object, string)
-import Json.Decode exposing (..)
+import Json.Decode as Dec exposing (..)
 import Model exposing (..)
 import Char exposing (toCode)
 import String exposing (toList)
-
+import List exposing (head)
 import Debug
-
+import Result exposing (..)
 
 --decodeInsert : String -> Edit
 --decodeInsert str = 
 --    let
 --        decoder = object2 (,) ("parent" := string) (id)
 
-editToJson : Edit -> String
-editToJson edit = 
+--editToJson : Edit -> String
+--editToJson edit = 
+--    let
+--        editValue = getEditValue edit 
+--    in 
+--        encode 2 editValue
+
+
+decId = ("id" := Dec.string)
+
+decVis = ("vis" := Dec.int)
+
+decNext = ("next" := Dec.string)
+decPrev = ("prev" := Dec.string)
+decCh = ("ch" := Dec.string)
+
+
+toChar : String -> Char
+toChar str = 
+    case head (toList str) of
+        Just l -> l
+        _ -> '$'
+
+
+jsonToWUpdate : String -> WUpdate
+jsonToWUpdate str = 
+    case Dec.decodeString ("type" := Dec.string) str of
+        Ok x -> decodeWUpdate x str
+        Err error -> NoUpdate
+
+
+decodeWUpdate : String -> String -> WUpdate
+decodeWUpdate typeStr str =
+    if 
+        | typeStr == "Insert" -> decodeWInsert str
+        | typeStr == "Delete" -> NoUpdate
+        | otherwise -> NoUpdate
+
+
+
+decodeWInsert : String -> WUpdate
+decodeWInsert str = case Dec.decodeString wCharDecoder str of
+    Ok wCh -> Insert wCh
+    Err e -> NoUpdate
+
+
+wCharDecoder : Decoder WChar
+wCharDecoder = 
+    Dec.object5 
+            (\id next prev vis chr -> WChar id next prev vis (toChar chr))
+                decId decNext decPrev decVis decCh
+
+
+
+
+wUpdateToJson : WUpdate -> String
+wUpdateToJson wUpdate =
     let
-        editValue = getEditValue edit 
-    in 
-        encode 2 editValue
+        wUpValue = encodeWUpdate wUpdate
+    in
+        encode 2 wUpValue
+
+
+--encodeWUpdate wUp =
+--    case wUp of
+--    Insert wCh -> encodeWInsert wCh
+
+
+encodeWInsert wCh =
+    object [("id", Enc.string wCh.id)
+            , ("ch", Enc.string (String.fromChar wCh.ch))
+            , ("next", Enc.string wCh.next)
+            , ("prev", Enc.string wCh.prev)
+            , ("vis", Enc.int wCh.vis)]        
+
+
+encodeWUpdate : WUpdate -> Value
+encodeWUpdate wUp =
+    case wUp of
+        Insert wCh -> object (("type", Enc.string "Insert") :: wCharToJsonList wCh)
+        NoUpdate -> object [("type", Enc.string "NoUpdate")]
+
+
+wCharToJsonList : WChar -> List (String, Value)
+wCharToJsonList wCh = 
+                    [     ("id", Enc.string wCh.id)
+                        , ("prev", Enc.string wCh.prev)
+                        , ("next", Enc.string wCh.next)
+                        , ("vis", Enc.int wCh.vis)
+                        , ("ch", Enc.string (String.fromChar wCh.ch))
+                    ]
 
 
 
-getEditValue edit =
-    case edit of
-        Insert num str -> object [("type", Enc.string "Insert"), ("loc", Enc.string (toString num)), ("content", Enc.string str)]
-        Delete num -> object [("type", Enc.string "Delete"), ("loc", Enc.string (toString num))]
-        Paste num str -> object []
-        None -> object []
+
+
+--getEditValue edit =
+--    case edit of
+--        Insert num str -> object [("type", Enc.string "Insert"), ("loc", Enc.string (toString num)), ("content", Enc.string str)]
+--        Delete num -> object [("type", Enc.string "Delete"), ("loc", Enc.string (toString num))]
+--        Paste num str -> object []
+--        None -> object []
 
 
 mod : Int -> Int -> Int

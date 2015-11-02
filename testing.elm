@@ -32,7 +32,7 @@ port incomingPort : Task x ()
 port incomingPort = socket `andThen` SocketIO.on "hello" incoming.address
 
 port sendEditsPort : Signal (Task x ())
-port sendEditsPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ editsToSend
+port sendEditsPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ editsToSend ---(m, lu)
 
 
 port initializePort : Task x ()

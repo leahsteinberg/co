@@ -1,4 +1,5 @@
 module Typing where
+
 import Graphics.Input.Field exposing (..)
 
 import Html exposing (..)
@@ -10,131 +11,66 @@ import Signal exposing (..)
 import String exposing (..)
 import Json.Encode as Json 
 import Dict
-import Model exposing (..)
-import Constants exposing (..)
 import Char exposing (..)
 import Keyboard
 import Debug
 import Window
-import Graph exposing (inserted1, deleted1, graphToString)
+import SocketIO exposing (..)
+import Task exposing (..)
 
 
-port caretPos : Signal Int
+import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
+import Model exposing (..)
+import Constants exposing (..)
+import Graph exposing (generateIns, deleted1, graphToString)
 
--- str, caret position
+
+
+---- - - - - - - -  N E T W O R K I N G - - - - - -
+
+
+sockConnected : Signal.Mailbox Bool
+sockConnected = Signal.mailbox False
+
+incoming : Signal.Mailbox String
+incoming = Signal.mailbox "null"
+
+
+socket = io "http://localhost:4004" defaultOptions
+
+port incomingPort : Task x ()
+port incomingPort = socket `andThen` SocketIO.on "ServerWUpdates" incoming.address
+
+
+throwOutNoUpdates : WUpdate -> Bool
+throwOutNoUpdates wUp = 
+    case wUp of
+        NoUpdate -> False
+        _ -> True
+
+serverUpdates = Signal.filter throwOutNoUpdates NoUpdate ((\u -> jsonToWUpdate u) <~ incoming.signal)
+
+port sendUpdatesPort : Signal (Task x ())
+port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ localUpdatesAsJsonToSend
+
+localUpdatesAsJsonToSend : Signal String
+localUpdatesAsJsonToSend = wUpdateToJson <~ cleanedUpdatesToSend
+
+cleanedUpdatesToSend : Signal WUpdate
+cleanedUpdatesToSend = Signal.filter throwOutNoUpdates NoUpdate (snd <~ modelFold)
+
+port initializePort : Task x ()
+port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
+
 port typingPort: Signal Doc
 
-typingMB : Signal.Mailbox Int
-typingMB = Signal.mailbox -1
-
 typing = Signal.dropRepeats typingPort
---updateGraph : 
 
---    Signal.foldp
-
---keys : Signal Char
---keys = Signal.map (\code -> fromCode code) Keyboard.presses 
---   
-keyBind = onKeyDown typingMB.address (\code ->  code)
-
-
-        
-
---highlightDeleted : Content -> Content -> Update
---highlightDeleted content oldContent = (None, oldContent)
-
---pasted : Content -> Content -> Update
---pasted content oldContent = 
---    let
---        end = content.selection.start 
---        oldLen = length oldContent.string
---        newLen = length content.string
---        addedLen = newLen - oldLen
---        place = end - addedLen
-
---        addedStr = slice place (place + addedLen) content.string 
---    in
---        (Paste place addedStr, content)
-
-
-takeEdit : Doc -> Model -> Model
-takeEdit newDoc model = 
-    let 
-        oldLen = model.doc.len
-        newLen = newDoc.len
---        x = Debug.watch "Diff" (newLen - oldLen)
-    in
-        if 
-            | oldLen == newLen -> {model | doc <- newDoc
-                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideBackward newDoc.cp model)}
-            | oldLen - newLen == 1 -> deleted1 newDoc model
-            | newLen - oldLen == 1 -> inserted1 newDoc model
-            | oldLen - newLen > 1 -> emptyModel
---highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
-            | newLen - oldLen > 1 -> emptyModel
---pasted newContent oldContent
-            | otherwise -> emptyModel
-
-
---takeEdit : Content -> Model -> Model
---takeEdit newContent model = 
---    let 
---        oldLen = length (Debug.watch "old " model.content.string)
---        newLen = length (Debug.watch "new" newContent.string)
---        x = Debug.watch "Diff" (newLen - oldLen)
---    in
---        if 
---            | oldLen - newLen == 1 -> deleted newContent model
---            | newLen - oldLen == 1 -> inserted newContent model
---            | oldLen - newLen > 1 -> emptyModel
---highlightDeleted newContent oldContent -- edge case is when highlight 2 and insert on....
---            | newLen - oldLen > 1 -> emptyModel
---pasted newContent oldContent
---            | otherwise -> emptyModel
-
---edits = (\m c -> c) <~ foldModel ~ clientDocMB.signal
-
-
---foldModel = Debug.watch "model" <~ (Signal.foldp takeEdit emptyModel clientDocMB.signal)
-
-localEdits =  Signal.sampleOn (Signal.map2 (,) typingMB.signal caretPos) typingMB.signal
-
-
---updateModel : Model -> 
-
-
--- how do we know when theres been an insert?
-
--- we want to repaint the view iff there is an update that we get from the server. 
--- that's it. thats the only reason.
-
--- we need a signal of the changes we are making to the form.... how do we get that??
-
----- VIEW
-
-clientDocMB : Signal.Mailbox Content
-clientDocMB = Signal.mailbox noContent
-
-clientDoc :  Content -> (Int, Int) -> Element
-clientDoc content (w, h)  = 
-    (field fieldStyle (Signal.message clientDocMB.address) "" content)
-                |> Graphics.Element.height (h//2)
-                |> Graphics.Element.width  (w//2)
-
-
-foldDocModel = Signal.foldp takeEdit emptyModel typing
-
-main = view <~ foldDocModel ~ typing
---clientDoc <~  edits ~ Window.dimensions 
---<~ typing.signal
---- map view (sampleOn UPDATE_FROM_SERVER (foldp model))
---caretPos ~ (toString <~ caretPos)
+-- - - - - - - - - - - - - - - - - - - - -
 
 prettyDictionary : Dict.Dict String WChar -> String
 prettyDictionary d =
     List.foldl (\tup accStr -> accStr ++ "\n\n" ++(toString tup) ++ "\n") "" (Dict.toList d)
-
-
 
 
 view : Model -> Doc -> Html
@@ -142,17 +78,66 @@ view m t =
         div
         []
         [
-        (textarea [keyBind,  id "typingZone", cols 40, rows 20] [])
+        (textarea [id "typingZone", cols 40, rows 20] [])
 --        property "value" (Json.string "0"),
 --        , (text ("doc----" ++ (toString t) ++ "-----"))
         ,(text (toString m.wChars) )
-
         , (text ("\nDOc ------" ++ toString (m.doc)))
         , (text ("\n CURSOR ----" ++ toString m.cursor))
         , (text (graphToString m.wChars))
 --        , (text (toString m.buffer))
 
         ]
+
+
+handleTyping : Doc -> Edit
+handleTyping doc = T doc
+
+typingToEdit : Signal Edit
+typingToEdit = handleTyping <~ typing
+
+handleServerUpdate : WUpdate -> Edit
+handleServerUpdate wUpdate = W wUpdate
+
+serverUpdateToEdit : Signal Edit
+serverUpdateToEdit = handleServerUpdate <~ serverUpdates
+
+
+edits : Signal Edit
+edits = Signal.merge typingToEdit serverUpdateToEdit
+
+modelFold : Signal (Model, WUpdate)
+modelFold = Signal.foldp (\edit (model, update) -> processEdit edit model) (emptyModel, NoUpdate) edits
+
+processEdit : Edit -> Model -> (Model, WUpdate)
+processEdit edit model =
+    case edit of
+        T typing -> processTyping typing model
+
+
+processTyping : Doc -> Model -> (Model, WUpdate)
+processTyping newDoc model =
+        let 
+        oldLen = model.doc.len
+        newLen = newDoc.len
+    in
+        if 
+            | oldLen == newLen -> (updateCursor newDoc model, NoUpdate)
+            | oldLen - newLen == 1 -> (deleted1 newDoc model, NoUpdate)
+            | newLen - oldLen == 1 -> generateIns newDoc model
+            | oldLen - newLen > 1 -> (emptyModel, NoUpdate)
+            | newLen - oldLen > 1 -> (emptyModel, NoUpdate)
+            | otherwise -> (emptyModel, NoUpdate)
+
+
+
+updateCursor : Doc -> Model -> Model
+updateCursor  newDoc model = {model | doc <- newDoc
+                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideBackward newDoc.cp model)}
+
+
+
+
 
 
 

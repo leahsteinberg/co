@@ -13,7 +13,8 @@ emptyModel = {site = 1
         , cursor = (0, endChar)
         , buffer = []
         , content = noContent
-        , doc = {cp = 0, str = "", len = 0}}
+        , doc = {cp = 0, str = "", len = 0}
+        , pool = []}
 
 
 highlightStyle : Highlight
