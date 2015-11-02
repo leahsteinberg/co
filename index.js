@@ -1,8 +1,8 @@
 var express = require('express');
 var app = express();
 
-var ot = require('./ot.js');
-console.log("ot is", ot);
+// var ot = require('./ot.js');
+// console.log("ot is", ot);
 
 var path = require('path');
 
@@ -29,18 +29,20 @@ io.on('connection', function(socket){
     console.log('examp: ' + msg);
     
   });
-    socket.on("edits", function (msg){
-    	msg = JSON.parse(msg);
+
+    socket.on("localEdits", function (msg){
+    	parsedMsg = JSON.parse(msg);
     	if (msg === undefined || Object.keys(msg).length === 0){
     		console.log("bad message!!!");
     		return;
     	}
-    	var currDoc = ot.applyOp(msg)
-    	console.log("currDoc is: ", currDoc);
-    	if (msg.content){
-    	console.log(ot.hashString(msg.content))
-    }
-		socket.emit("hello", msg);
+        console.log("got: ", parsedMsg)
+    	// var currDoc = ot.applyOp(msg)
+    	// console.log("currDoc is: ", currDoc);
+    	// if (msg.content){
+    	// console.log(ot.hashString(msg.content))
+//    }
+//		socket.emit("hello", msg);
 
     thing = thing + 1
 

@@ -114,7 +114,7 @@ findWChar slider goalIndex model =
 generateInsChar : Char -> Int -> Doc -> Model -> (Model, WUpdate)
 generateInsChar char predIndex doc model =
     let
-        pred = findWChar slideBackward predIndex model
+        pred = findWChar slideForward predIndex model
         succ = grabNext pred model.wChars
         newId = toString model.site ++ "-" ++ toString model.counter
         newWChar = {id = newId
@@ -122,15 +122,21 @@ generateInsChar char predIndex doc model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newWUpdate =  Insert newWChar
+        newModel = {model | counter <- model.counter + 1
+                                , debug <- "cursor at:" ++ toString (fst model.cursor) ++ "predIndex: " ++ toString predIndex ++ "pred :" ++ String.fromChar pred.ch ++ "succ: " ++ String.fromChar succ.ch
+                                , doc <- doc}
+--        newModelFake = {emptyModel | doc <- {cp = predIndex
+--                                            , str = (String.fromCh pred.id) ++  (String.fromChar succ.id)
+--                                            , len = }}
+--        newWUpdate =  Insert newWChar
 --        sendWUpdate = sendOutWUpdate (wUpdateToJson newWUpdate)
     in 
-        (integrateInsert newWChar {model | counter <- model.counter + 1
-                                , cursor <- (predIndex + 2, succ)}, newWUpdate)
+--        (newModelFake, Insert newWChar)
+        (integrateInsert newWChar newModel predIndex doc, Insert newWChar)
 
 
-integrateInsert : WChar -> Model -> Model
-integrateInsert wCh model = 
+integrateInsert : WChar -> Model -> Int -> Doc -> Model
+integrateInsert wCh model predIndex doc= 
     let
         pred = grabPrev wCh model.wChars
         succ = grabNext wCh model.wChars
@@ -138,7 +144,9 @@ integrateInsert wCh model =
         newSucc = {succ | prev <- wCh.id}
         newDict = Dict.insert wCh.id wCh (Dict.insert newSucc.id newSucc (Dict.insert newPred.id newPred model.wChars))
     in 
-        {model | wChars <- newDict}
+        {model | wChars <- newDict
+            , cursor <- (predIndex + 2, newSucc)}
+--                , debug <- "prev: " ++ newPred.id++String.fromChar newPred.ch ++ "next: " ++ String.fromChar newSucc.ch}
 
 
 generateIns : Doc -> Model -> (Model, WUpdate)
@@ -152,7 +160,7 @@ generateIns doc model =
         case letter of 
             Just l -> generateInsChar l predIndex doc model 
 --- for the first theres a at 0. so predIndex is -1
-            _ -> (emptyModel, NoUpdate)
+            _ -> ({emptyModel | doc <- {cp = place, str = "whatt", len = 666}}, NoUpdate)
 
 
 

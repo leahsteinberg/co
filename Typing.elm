@@ -51,7 +51,7 @@ throwOutNoUpdates wUp =
 serverUpdates = Signal.filter throwOutNoUpdates NoUpdate ((\u -> jsonToWUpdate u) <~ incoming.signal)
 
 port sendUpdatesPort : Signal (Task x ())
-port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "edits" i) <~ localUpdatesAsJsonToSend
+port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "localEdits" i) <~ localUpdatesAsJsonToSend
 
 localUpdatesAsJsonToSend : Signal String
 localUpdatesAsJsonToSend = wUpdateToJson <~ cleanedUpdatesToSend
@@ -73,18 +73,19 @@ prettyDictionary d =
     List.foldl (\tup accStr -> accStr ++ "\n\n" ++(toString tup) ++ "\n") "" (Dict.toList d)
 
 
-view : Model -> Doc -> Html
-view m t =
+view : Model -> Html
+view m =
         div
         []
         [
         (textarea [id "typingZone", cols 40, rows 20] [])
 --        property "value" (Json.string "0"),
 --        , (text ("doc----" ++ (toString t) ++ "-----"))
-        ,(text (toString m.wChars) )
         , (text ("\nDOc ------" ++ toString (m.doc)))
         , (text ("\n CURSOR ----" ++ toString m.cursor))
-        , (text (graphToString m.wChars))
+        , (text ("~~~"++(graphToString m.wChars)++"~~~"))
+        , (text (toString m.wChars))
+        , (text ("DEBUG: ...." ++ m.debug))
 --        , (text (toString m.buffer))
 
         ]
@@ -139,5 +140,5 @@ updateCursor  newDoc model = {model | doc <- newDoc
 
 
 
-
+main = Signal.map (\(mod, upd) -> view mod) modelFold
 

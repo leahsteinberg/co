@@ -830,6 +830,7 @@ Elm.Constants.make = function (_elm) {
                     ,cursor: {ctor: "_Tuple2"
                              ,_0: 0
                              ,_1: endChar}
+                    ,debug: ""
                     ,doc: {_: {}
                           ,cp: 0
                           ,len: 0
@@ -2127,8 +2128,10 @@ Elm.Graph.make = function (_elm) {
    var slideForward = A2(slidie,
    1,
    grabNext);
-   var integrateInsert = F2(function (wCh,
-   model) {
+   var integrateInsert = F4(function (wCh,
+   model,
+   predIndex,
+   doc) {
       return function () {
          var succ = A2(grabNext,
          wCh,
@@ -2153,7 +2156,11 @@ Elm.Graph.make = function (_elm) {
          newPred,
          model.wChars)));
          return _U.replace([["wChars"
-                            ,newDict]],
+                            ,newDict]
+                           ,["cursor"
+                            ,{ctor: "_Tuple2"
+                             ,_0: predIndex + 2
+                             ,_1: newSucc}]],
          model);
       }();
    });
@@ -2235,7 +2242,7 @@ Elm.Graph.make = function (_elm) {
          "-",
          $Basics.toString(model.counter)));
          var pred = A3(findWChar,
-         slideBackward,
+         slideForward,
          predIndex,
          model);
          var succ = A2(grabNext,
@@ -2247,18 +2254,33 @@ Elm.Graph.make = function (_elm) {
                         ,next: succ.id
                         ,prev: pred.id
                         ,vis: 1};
-         var newWUpdate = $Model.Insert(newWChar);
+         var newModel = _U.replace([["counter"
+                                    ,model.counter + 1]
+                                   ,["debug"
+                                    ,A2($Basics._op["++"],
+                                    "cursor at:",
+                                    A2($Basics._op["++"],
+                                    $Basics.toString($Basics.fst(model.cursor)),
+                                    A2($Basics._op["++"],
+                                    "predIndex: ",
+                                    A2($Basics._op["++"],
+                                    $Basics.toString(predIndex),
+                                    A2($Basics._op["++"],
+                                    "pred :",
+                                    A2($Basics._op["++"],
+                                    $String.fromChar(pred.ch),
+                                    A2($Basics._op["++"],
+                                    "succ: ",
+                                    $String.fromChar(succ.ch))))))))]
+                                   ,["doc",doc]],
+         model);
          return {ctor: "_Tuple2"
-                ,_0: A2(integrateInsert,
+                ,_0: A4(integrateInsert,
                 newWChar,
-                _U.replace([["counter"
-                            ,model.counter + 1]
-                           ,["cursor"
-                            ,{ctor: "_Tuple2"
-                             ,_0: predIndex + 2
-                             ,_1: succ}]],
-                model))
-                ,_1: newWUpdate};
+                newModel,
+                predIndex,
+                doc)
+                ,_1: $Model.Insert(newWChar)};
       }();
    });
    var generateIns = F2(function (doc,
@@ -2278,7 +2300,12 @@ Elm.Graph.make = function (_elm) {
                  doc,
                  model);}
             return {ctor: "_Tuple2"
-                   ,_0: $Constants.emptyModel
+                   ,_0: _U.replace([["doc"
+                                    ,{_: {}
+                                     ,cp: place
+                                     ,len: 666
+                                     ,str: "whatt"}]],
+                   $Constants.emptyModel)
                    ,_1: $Model.NoUpdate};
          }();
       }();
@@ -5064,26 +5091,37 @@ Elm.Model.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
-   var Model = F9(function (a,
-   b,
-   c,
-   d,
-   e,
-   f,
-   g,
-   h,
-   i) {
-      return {_: {}
-             ,buffer: f
-             ,content: h
-             ,counter: a
-             ,cursor: d
-             ,doc: i
-             ,pool: g
-             ,site: b
-             ,start: e
-             ,wChars: c};
-   });
+   var Model = function (a) {
+      return function (b) {
+         return function (c) {
+            return function (d) {
+               return function (e) {
+                  return function (f) {
+                     return function (g) {
+                        return function (h) {
+                           return function (i) {
+                              return function (j) {
+                                 return {_: {}
+                                        ,buffer: f
+                                        ,content: h
+                                        ,counter: a
+                                        ,cursor: d
+                                        ,debug: j
+                                        ,doc: i
+                                        ,pool: g
+                                        ,site: b
+                                        ,start: e
+                                        ,wChars: c};
+                              };
+                           };
+                        };
+                     };
+                  };
+               };
+            };
+         };
+      };
+   };
    var T = function (a) {
       return {ctor: "T",_0: a};
    };
@@ -14796,7 +14834,7 @@ Elm.Typing.make = function (_elm) {
               edit._0,
               model);}
          _U.badCase($moduleName,
-         "between lines 114 and 115");
+         "between lines 115 and 116");
       }();
    });
    var handleServerUpdate = function (wUpdate) {
@@ -14805,7 +14843,7 @@ Elm.Typing.make = function (_elm) {
    var handleTyping = function (doc) {
       return $Model.T(doc);
    };
-   var view = F2(function (m,t) {
+   var view = function (m) {
       return A2($Html.div,
       _L.fromArray([]),
       _L.fromArray([A2($Html.textarea,
@@ -14813,15 +14851,22 @@ Elm.Typing.make = function (_elm) {
                                 ,$Html$Attributes.cols(40)
                                 ,$Html$Attributes.rows(20)]),
                    _L.fromArray([]))
-                   ,$Html.text($Basics.toString(m.wChars))
                    ,$Html.text(A2($Basics._op["++"],
                    "\nDOc ------",
                    $Basics.toString(m.doc)))
                    ,$Html.text(A2($Basics._op["++"],
                    "\n CURSOR ----",
                    $Basics.toString(m.cursor)))
-                   ,$Html.text($Graph.graphToString(m.wChars))]));
-   });
+                   ,$Html.text(A2($Basics._op["++"],
+                   "~~~",
+                   A2($Basics._op["++"],
+                   $Graph.graphToString(m.wChars),
+                   "~~~")))
+                   ,$Html.text($Basics.toString(m.wChars))
+                   ,$Html.text(A2($Basics._op["++"],
+                   "DEBUG: ....",
+                   m.debug))]));
+   };
    var prettyDictionary = function (d) {
       return A3($List.foldl,
       F2(function (tup,accStr) {
@@ -14896,7 +14941,7 @@ Elm.Typing.make = function (_elm) {
               edit,
               _v3._0);}
          _U.badCase($moduleName,
-         "on line 110, column 52 to 74");
+         "on line 111, column 52 to 74");
       }();
    }),
    {ctor: "_Tuple2"
@@ -14917,9 +14962,22 @@ Elm.Typing.make = function (_elm) {
    function (i) {
       return A2($Task.andThen,
       socket,
-      A2($SocketIO.emit,"edits",i));
+      A2($SocketIO.emit,
+      "localEdits",
+      i));
    },
    localUpdatesAsJsonToSend));
+   var main = A2($Signal.map,
+   function (_v7) {
+      return function () {
+         switch (_v7.ctor)
+         {case "_Tuple2":
+            return view(_v7._0);}
+         _U.badCase($moduleName,
+         "on line 143, column 35 to 43");
+      }();
+   },
+   modelFold);
    var sockConnected = $Signal.mailbox(false);
    _elm.Typing.values = {_op: _op
                         ,sockConnected: sockConnected
@@ -14940,7 +14998,8 @@ Elm.Typing.make = function (_elm) {
                         ,modelFold: modelFold
                         ,processEdit: processEdit
                         ,processTyping: processTyping
-                        ,updateCursor: updateCursor};
+                        ,updateCursor: updateCursor
+                        ,main: main};
    return _elm.Typing.values;
 };
 Elm.VirtualDom = Elm.VirtualDom || {};

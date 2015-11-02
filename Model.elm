@@ -40,6 +40,7 @@ type alias Model = {counter: Int
                     , buffer: List WChar
                     , pool: List WUpdate
                     , content: Content
-                    , doc: Doc}
+                    , doc: Doc
+                    , debug: String}
 
 

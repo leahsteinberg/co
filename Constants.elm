@@ -14,7 +14,8 @@ emptyModel = {site = 1
         , buffer = []
         , content = noContent
         , doc = {cp = 0, str = "", len = 0}
-        , pool = []}
+        , pool = []
+        , debug = ""}
 
 
 highlightStyle : Highlight
