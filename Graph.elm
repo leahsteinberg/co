@@ -123,30 +123,34 @@ generateInsChar char predIndex doc model =
                     , next = succ.id
                     , vis = 1}
         newModel = {model | counter <- model.counter + 1
-                                , debug <- "cursor at:" ++ toString (fst model.cursor) ++ "predIndex: " ++ toString predIndex ++ "pred :" ++ String.fromChar pred.ch ++ "succ: " ++ String.fromChar succ.ch
-                                , doc <- doc}
---        newModelFake = {emptyModel | doc <- {cp = predIndex
---                                            , str = (String.fromCh pred.id) ++  (String.fromChar succ.id)
---                                            , len = }}
---        newWUpdate =  Insert newWChar
---        sendWUpdate = sendOutWUpdate (wUpdateToJson newWUpdate)
+                                , doc <- doc
+                    , debug <- "cursor at:" ++ toString (fst model.cursor) 
+                        ++ "predIndex: " ++ toString predIndex 
+                        ++ "pred :" 
+                        ++ String.fromChar pred.ch ++ "succlol: " ++ String.fromChar succ.ch
+                        , buffer <-  Insert newWChar ::model.buffer
+                        , docBuffer <- doc:: model.docBuffer
+
+
+                            }
     in 
---        (newModelFake, Insert newWChar)
-        (integrateInsert newWChar newModel predIndex doc, Insert newWChar)
+        (integrateInsert newWChar newModel predIndex, Insert newWChar)
 
 
-integrateInsert : WChar -> Model -> Int -> Doc -> Model
-integrateInsert wCh model predIndex doc= 
+integrateInsert : WChar -> Model -> Int -> Model
+integrateInsert wCh model predIndex = 
     let
         pred = grabPrev wCh model.wChars
         succ = grabNext wCh model.wChars
         newPred = {pred | next <- wCh.id}
         newSucc = {succ | prev <- wCh.id}
-        newDict = Dict.insert wCh.id wCh (Dict.insert newSucc.id newSucc (Dict.insert newPred.id newPred model.wChars))
+        newDict = Dict.insert newPred.id newPred model.wChars
+                    |> Dict.insert newSucc.id newSucc
+                    |> Dict.insert wCh.id wCh
     in 
         {model | wChars <- newDict
-            , cursor <- (predIndex + 2, newSucc)}
---                , debug <- "prev: " ++ newPred.id++String.fromChar newPred.ch ++ "next: " ++ String.fromChar newSucc.ch}
+            , cursor <- (predIndex + 2, newSucc)
+        }
 
 
 generateIns : Doc -> Model -> (Model, WUpdate)
@@ -159,30 +163,53 @@ generateIns doc model =
     in
         case letter of 
             Just l -> generateInsChar l predIndex doc model 
---- for the first theres a at 0. so predIndex is -1
-            _ -> ({emptyModel | doc <- {cp = place, str = "whatt", len = 666}}, NoUpdate)
+            _ -> ({emptyModel | debug <- "cant find the letter in the list"}, NoUpdate)
 
 
 
-deleted1 : Doc -> Model -> Model
-deleted1 doc model = 
+generateDelete : Doc -> Model -> (Model, WUpdate)
+generateDelete doc model = 
     let
-
         place = doc.cp 
-        predecessor = (findWChar slideForward (place - 1)  model) ----== my problem
+        predecessor = (findWChar slideForward (place - 1) model) ----== my problem
+        successor = findWChar slideForward (place + 1) model
         currWChar = findWChar slideForward place model
         deletedWChar = {currWChar | vis <- -1}
-        newWChars = Dict.insert deletedWChar.id deletedWChar model.wChars
-        oldDoc = model.doc
-        newDoc = {oldDoc | str <- String.fromChar deletedWChar.ch}
+        oldCursor = model.cursor
+        oldIndex = fst model.cursor
+        oldCurr = snd model.cursor
+        newModel = {model | cursor <- (oldIndex - 1, successor)
+                , doc <- doc
+                , debug <- "DELETING: "++ String.fromChar currWChar.ch++"cursor at:" ++ toString (fst model.cursor) ++ "thisIndex: " ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch ++ "succhahah: " ++ String.fromChar successor.ch
+                , buffer <- (Delete deletedWChar):: model.buffer 
+                , docBuffer <- doc:: model.docBuffer
+
+                    }
+--        newWChars = Dict.insert deletedWChar.id deletedWChar model.wChars
+--        oldDoc = model.doc
+--        newDoc = {oldDoc | str <- String.fromChar deletedWChar.ch}
 
     in
-        {model | wChars <- newWChars
-                , cursor <- (place - 1, predecessor)
-                , buffer <- deletedWChar :: model.buffer
-                , doc <- doc
-        }
+        (integrateDel deletedWChar newModel, Delete deletedWChar)
+       
 
+
+--        {model | wChars <- newWChars
+--                , cursor <- (place - 1, predecessor)
+--                , buffer <- deletedWChar :: model.buffer
+--                , doc <- doc
+--                , debug <- "pred: " ++ String.fromChar pred.ch ++ "succ: "
+--        }
+
+
+integrateDel : WChar -> Model -> Model
+integrateDel wChar model = 
+    let
+        newWChars = Dict.insert wChar.id wChar model.wChars
+    in 
+        {model | wChars <- newWChars
+
+                }
 
 
 graphToString : Dict.Dict String WChar -> String

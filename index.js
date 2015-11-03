@@ -7,6 +7,7 @@ var app = express();
 var path = require('path');
 
 
+var siteCounter  = 1; 
 var server = app.listen(4004, function(){
 	var host = server.address().address;
 	var port = server.address().port;
@@ -23,26 +24,52 @@ app.get('/', function(req, res) {
 });
 
 
-io.on('connection', function(socket){
-  console.log('a user connected');
+
+var delaySendOfSiteId = function(socket) {
+    console.log("t-!!!", this);
+    console.log( "s-!!!",socket);
+
+setInterval(
+            function(msg){
+  
+
+        }, 200);
+
+}
+
+
+
+io.sockets.on('connection', function(socket){
+  
+
     socket.on('example', function(msg){
-    console.log('examp: ' + msg);
+
+    var idUpdate = {"siteId": siteCounter, "type": "SiteId"}
+    var toSend = JSON.stringify(idUpdate);
+
+        socket.emit("serverWUpdates", JSON.stringify(idUpdate));
+    console.log('a user connected, siteId: ', siteCounter);
+
+    siteCounter = siteCounter + 1;
+    });
+        
+
+//     console.log('examp: ' + msg);
     
-  });
+   
 
     socket.on("localEdits", function (msg){
     	parsedMsg = JSON.parse(msg);
-    	if (msg === undefined || Object.keys(msg).length === 0){
+    	if (parsedMsg === undefined || Object.keys(msg).length === 0){
     		console.log("bad message!!!");
     		return;
     	}
-        console.log("got: ", parsedMsg)
-    	// var currDoc = ot.applyOp(msg)
-    	// console.log("currDoc is: ", currDoc);
-    	// if (msg.content){
-    	// console.log(ot.hashString(msg.content))
-//    }
-//		socket.emit("hello", msg);
+        if (parsedMsg.id === undefined){
+            return;
+        }
+        //var site = parsedMsg.slice(0, parsedMsg.id.indexOf("-"));
+       // console.log("site is:", site);
+        socket.broadcast.emit("serverWUpdates", parsedMsg);
 
     thing = thing + 1
 

@@ -48,15 +48,31 @@ decodeWUpdate : String -> String -> WUpdate
 decodeWUpdate typeStr str =
     if 
         | typeStr == "Insert" -> decodeWInsert str
-        | typeStr == "Delete" -> NoUpdate
+        | typeStr == "Delete" -> decodeWDelete str
+        | typeStr == "SiteId" -> decodeWSiteId str
         | otherwise -> NoUpdate
 
 
 
+decodeWDelete : String -> WUpdate
+decodeWDelete str = 
+    case Dec.decodeString wCharDecoder str of
+        Ok wCh -> Delete wCh 
+        Err e -> NoUpdate
+
+
+decodeWSiteId : String -> WUpdate
+decodeWSiteId str = 
+    case Dec.decodeString wSiteIdDecoder str of
+        Ok siteId -> SiteId siteId
+        Err e -> NoUpdate
+
+
 decodeWInsert : String -> WUpdate
-decodeWInsert str = case Dec.decodeString wCharDecoder str of
-    Ok wCh -> Insert wCh
-    Err e -> NoUpdate
+decodeWInsert str = 
+    case Dec.decodeString wCharDecoder str of
+        Ok wCh -> Insert wCh
+        Err e -> NoUpdate
 
 
 wCharDecoder : Decoder WChar
@@ -65,7 +81,8 @@ wCharDecoder =
             (\id next prev vis chr -> WChar id next prev vis (toChar chr))
                 decId decNext decPrev decVis decCh
 
-
+wSiteIdDecoder : Decoder Int
+wSiteIdDecoder = "siteId" := int
 
 
 wUpdateToJson : WUpdate -> String
@@ -93,6 +110,7 @@ encodeWUpdate : WUpdate -> Value
 encodeWUpdate wUp =
     case wUp of
         Insert wCh -> object (("type", Enc.string "Insert") :: wCharToJsonList wCh)
+        Delete wCh -> object (("type", Enc.string "Delete") :: wCharToJsonList wCh)
         NoUpdate -> object [("type", Enc.string "NoUpdate")]
 
 

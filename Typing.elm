@@ -22,7 +22,7 @@ import Task exposing (..)
 import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
 import Model exposing (..)
 import Constants exposing (..)
-import Graph exposing (generateIns, deleted1, graphToString)
+import Graph exposing (generateIns, generateDelete, graphToString, integrateInsert, integrateDel)
 
 
 
@@ -39,7 +39,7 @@ incoming = Signal.mailbox "null"
 socket = io "http://localhost:4004" defaultOptions
 
 port incomingPort : Task x ()
-port incomingPort = socket `andThen` SocketIO.on "ServerWUpdates" incoming.address
+port incomingPort = socket `andThen` SocketIO.on "serverWUpdates" incoming.address
 
 
 throwOutNoUpdates : WUpdate -> Bool
@@ -78,15 +78,20 @@ view m =
         div
         []
         [
-        (textarea [id "typingZone", cols 40, rows 20] [])
+        (textarea [id "typingZone", cols 40, rows 20, property "value" (Json.string (graphToString m.wChars))] [])
+--        property "value" (Json.string (graphToString m.wChars))
 --        property "value" (Json.string "0"),
 --        , (text ("doc----" ++ (toString t) ++ "-----"))
-        , (text ("\nDOc ------" ++ toString (m.doc)))
+--        , (text ("\nDOc ------" ++ toString (m.doc)))
+        , (text ("SITE ID" ++ toString m.site))
+        , (text ("DEBUG COUNT" ++ toString m.debugCount))
+--        , (text ("LEN " ++ toString m.doc.len))
         , (text ("\n CURSOR ----" ++ toString m.cursor))
-        , (text ("~~~"++(graphToString m.wChars)++"~~~"))
+        , (text (graphToString m.wChars))
         , (text (toString m.wChars))
-        , (text ("DEBUG: ...." ++ m.debug))
+--        , (text ("DEBUG: ...." ++ m.debug))
 --        , (text (toString m.buffer))
+        , (text ("DOC BUFFER~~~" ++ toString m.docBuffer))
 
         ]
 
@@ -108,23 +113,34 @@ edits : Signal Edit
 edits = Signal.merge typingToEdit serverUpdateToEdit
 
 modelFold : Signal (Model, WUpdate)
-modelFold = Signal.foldp (\edit (model, update) -> processEdit edit model) (emptyModel, NoUpdate) edits
+modelFold = Signal.foldp (\edit (model, prevUpdate) -> processEdit edit ({model | debugCount <- model.debugCount + 1}, prevUpdate)) (emptyModel, NoUpdate) edits
 
-processEdit : Edit -> Model -> (Model, WUpdate)
-processEdit edit model =
-    case edit of
-        T typing -> processTyping typing model
+processEdit : Edit -> (Model, WUpdate) -> (Model, WUpdate)
+processEdit edit (model, prevUpdate) =
+        case edit of
+            T typing -> processTyping typing (model, prevUpdate)
+            W wUpdate ->  processServerUpdate wUpdate (model, prevUpdate)
 
 
-processTyping : Doc -> Model -> (Model, WUpdate)
-processTyping newDoc model =
-        let 
+processServerUpdate : WUpdate -> (Model, WUpdate) -> (Model, WUpdate)
+processServerUpdate wUpd (model, prevUpdate) = 
+    case wUpd of
+        SiteId id -> ({model | site <- id}, prevUpdate)
+        Insert wCh -> (integrateInsert wCh model 0, NoUpdate)
+        Delete wCh -> (integrateDel wCh model, NoUpdate)
+
+
+
+
+processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
+processTyping newDoc (model, prevUpdate) =
+    let 
         oldLen = model.doc.len
         newLen = newDoc.len
     in
         if 
             | oldLen == newLen -> (updateCursor newDoc model, NoUpdate)
-            | oldLen - newLen == 1 -> (deleted1 newDoc model, NoUpdate)
+            | oldLen - newLen == 1 -> generateDelete newDoc model
             | newLen - oldLen == 1 -> generateIns newDoc model
             | oldLen - newLen > 1 -> (emptyModel, NoUpdate)
             | newLen - oldLen > 1 -> (emptyModel, NoUpdate)

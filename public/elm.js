@@ -831,12 +831,14 @@ Elm.Constants.make = function (_elm) {
                              ,_0: 0
                              ,_1: endChar}
                     ,debug: ""
+                    ,debugCount: 0
                     ,doc: {_: {}
                           ,cp: 0
                           ,len: 0
                           ,str: ""}
+                    ,docBuffer: _L.fromArray([])
                     ,pool: _L.fromArray([])
-                    ,site: 1
+                    ,site: 0
                     ,start: startChar
                     ,wChars: $Dict.empty};
    _elm.Constants.values = {_op: _op
@@ -884,7 +886,7 @@ Elm.ConvertJson.make = function (_elm) {
                       ,_0: _v0._0 + 1
                       ,_1: $Char.toCode(ch) * _v0._0 + _v0._1};}
             _U.badCase($moduleName,
-            "on line 133, column 35 to 63");
+            "on line 151, column 35 to 63");
          }();
       }),
       {ctor: "_Tuple2",_0: 1,_1: 1},
@@ -910,7 +912,13 @@ Elm.ConvertJson.make = function (_elm) {
    var encodeWUpdate = function (wUp) {
       return function () {
          switch (wUp.ctor)
-         {case "Insert":
+         {case "Delete":
+            return $Json$Encode.object(A2($List._op["::"],
+              {ctor: "_Tuple2"
+              ,_0: "type"
+              ,_1: $Json$Encode.string("Delete")},
+              wCharToJsonList(wUp._0)));
+            case "Insert":
             return $Json$Encode.object(A2($List._op["::"],
               {ctor: "_Tuple2"
               ,_0: "type"
@@ -921,7 +929,7 @@ Elm.ConvertJson.make = function (_elm) {
                                                      ,_0: "type"
                                                      ,_1: $Json$Encode.string("NoUpdate")}]));}
          _U.badCase($moduleName,
-         "between lines 94 and 96");
+         "between lines 111 and 114");
       }();
    };
    var encodeWInsert = function (wCh) {
@@ -949,11 +957,28 @@ Elm.ConvertJson.make = function (_elm) {
          wUpValue);
       }();
    };
+   var wSiteIdDecoder = A2($Json$Decode._op[":="],
+   "siteId",
+   $Json$Decode.$int);
+   var decodeWSiteId = function (str) {
+      return function () {
+         var _v7 = A2($Json$Decode.decodeString,
+         wSiteIdDecoder,
+         str);
+         switch (_v7.ctor)
+         {case "Err":
+            return $Model.NoUpdate;
+            case "Ok":
+            return $Model.SiteId(_v7._0);}
+         _U.badCase($moduleName,
+         "between lines 66 and 68");
+      }();
+   };
    var toChar = function (str) {
       return function () {
-         var _v6 = $List.head($String.toList(str));
-         switch (_v6.ctor)
-         {case "Just": return _v6._0;}
+         var _v10 = $List.head($String.toList(str));
+         switch (_v10.ctor)
+         {case "Just": return _v10._0;}
          return _U.chr("$");
       }();
    };
@@ -990,39 +1015,54 @@ Elm.ConvertJson.make = function (_elm) {
    decPrev,
    decVis,
    decCh);
-   var decodeWInsert = function (str) {
+   var decodeWDelete = function (str) {
       return function () {
-         var _v8 = A2($Json$Decode.decodeString,
+         var _v12 = A2($Json$Decode.decodeString,
          wCharDecoder,
          str);
-         switch (_v8.ctor)
+         switch (_v12.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
-            return $Model.Insert(_v8._0);}
+            return $Model.Delete(_v12._0);}
          _U.badCase($moduleName,
-         "between lines 57 and 59");
+         "between lines 59 and 61");
+      }();
+   };
+   var decodeWInsert = function (str) {
+      return function () {
+         var _v15 = A2($Json$Decode.decodeString,
+         wCharDecoder,
+         str);
+         switch (_v15.ctor)
+         {case "Err":
+            return $Model.NoUpdate;
+            case "Ok":
+            return $Model.Insert(_v15._0);}
+         _U.badCase($moduleName,
+         "between lines 73 and 75");
       }();
    };
    var decodeWUpdate = F2(function (typeStr,
    str) {
       return _U.eq(typeStr,
       "Insert") ? decodeWInsert(str) : _U.eq(typeStr,
-      "Delete") ? $Model.NoUpdate : $Model.NoUpdate;
+      "Delete") ? decodeWDelete(str) : _U.eq(typeStr,
+      "SiteId") ? decodeWSiteId(str) : $Model.NoUpdate;
    });
    var jsonToWUpdate = function (str) {
       return function () {
-         var _v11 = A2($Json$Decode.decodeString,
+         var _v18 = A2($Json$Decode.decodeString,
          A2($Json$Decode._op[":="],
          "type",
          $Json$Decode.string),
          str);
-         switch (_v11.ctor)
+         switch (_v18.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
             return A2(decodeWUpdate,
-              _v11._0,
+              _v18._0,
               str);}
          _U.badCase($moduleName,
          "between lines 42 and 44");
@@ -1037,8 +1077,11 @@ Elm.ConvertJson.make = function (_elm) {
                              ,toChar: toChar
                              ,jsonToWUpdate: jsonToWUpdate
                              ,decodeWUpdate: decodeWUpdate
+                             ,decodeWDelete: decodeWDelete
+                             ,decodeWSiteId: decodeWSiteId
                              ,decodeWInsert: decodeWInsert
                              ,wCharDecoder: wCharDecoder
+                             ,wSiteIdDecoder: wSiteIdDecoder
                              ,wUpdateToJson: wUpdateToJson
                              ,encodeWInsert: encodeWInsert
                              ,encodeWUpdate: encodeWUpdate
@@ -2082,6 +2125,18 @@ Elm.Graph.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm);
+   var integrateDel = F2(function (wChar,
+   model) {
+      return function () {
+         var newWChars = A3($Dict.insert,
+         wChar.id,
+         wChar,
+         model.wChars);
+         return _U.replace([["wChars"
+                            ,newWChars]],
+         model);
+      }();
+   });
    var slidie = F4(function (dir,
    grabber,
    toIncrement,
@@ -2128,10 +2183,9 @@ Elm.Graph.make = function (_elm) {
    var slideForward = A2(slidie,
    1,
    grabNext);
-   var integrateInsert = F4(function (wCh,
+   var integrateInsert = F3(function (wCh,
    model,
-   predIndex,
-   doc) {
+   predIndex) {
       return function () {
          var succ = A2(grabNext,
          wCh,
@@ -2145,13 +2199,11 @@ Elm.Graph.make = function (_elm) {
          var newPred = _U.replace([["next"
                                    ,wCh.id]],
          pred);
-         var newDict = A3($Dict.insert,
+         var newDict = A2($Dict.insert,
          wCh.id,
-         wCh,
-         A3($Dict.insert,
+         wCh)(A2($Dict.insert,
          newSucc.id,
-         newSucc,
-         A3($Dict.insert,
+         newSucc)(A3($Dict.insert,
          newPred.id,
          newPred,
          model.wChars)));
@@ -2256,6 +2308,7 @@ Elm.Graph.make = function (_elm) {
                         ,vis: 1};
          var newModel = _U.replace([["counter"
                                     ,model.counter + 1]
+                                   ,["doc",doc]
                                    ,["debug"
                                     ,A2($Basics._op["++"],
                                     "cursor at:",
@@ -2270,16 +2323,22 @@ Elm.Graph.make = function (_elm) {
                                     A2($Basics._op["++"],
                                     $String.fromChar(pred.ch),
                                     A2($Basics._op["++"],
-                                    "succ: ",
+                                    "succlol: ",
                                     $String.fromChar(succ.ch))))))))]
-                                   ,["doc",doc]],
+                                   ,["buffer"
+                                    ,A2($List._op["::"],
+                                    $Model.Insert(newWChar),
+                                    model.buffer)]
+                                   ,["docBuffer"
+                                    ,A2($List._op["::"],
+                                    doc,
+                                    model.docBuffer)]],
          model);
          return {ctor: "_Tuple2"
-                ,_0: A4(integrateInsert,
+                ,_0: A3(integrateInsert,
                 newWChar,
                 newModel,
-                predIndex,
-                doc)
+                predIndex)
                 ,_1: $Model.Insert(newWChar)};
       }();
    });
@@ -2300,24 +2359,27 @@ Elm.Graph.make = function (_elm) {
                  doc,
                  model);}
             return {ctor: "_Tuple2"
-                   ,_0: _U.replace([["doc"
-                                    ,{_: {}
-                                     ,cp: place
-                                     ,len: 666
-                                     ,str: "whatt"}]],
+                   ,_0: _U.replace([["debug"
+                                    ,"cant find the letter in the list"]],
                    $Constants.emptyModel)
                    ,_1: $Model.NoUpdate};
          }();
       }();
    });
-   var deleted1 = F2(function (doc,
+   var generateDelete = F2(function (doc,
    model) {
       return function () {
-         var oldDoc = model.doc;
+         var oldCurr = $Basics.snd(model.cursor);
+         var oldIndex = $Basics.fst(model.cursor);
+         var oldCursor = model.cursor;
          var place = doc.cp;
          var predecessor = A3(findWChar,
          slideForward,
          place - 1,
+         model);
+         var successor = A3(findWChar,
+         slideForward,
+         place + 1,
          model);
          var currWChar = A3(findWChar,
          slideForward,
@@ -2326,25 +2388,45 @@ Elm.Graph.make = function (_elm) {
          var deletedWChar = _U.replace([["vis"
                                         ,-1]],
          currWChar);
-         var newWChars = A3($Dict.insert,
-         deletedWChar.id,
-         deletedWChar,
-         model.wChars);
-         var newDoc = _U.replace([["str"
-                                  ,$String.fromChar(deletedWChar.ch)]],
-         oldDoc);
-         return _U.replace([["wChars"
-                            ,newWChars]
-                           ,["cursor"
-                            ,{ctor: "_Tuple2"
-                             ,_0: place - 1
-                             ,_1: predecessor}]
-                           ,["buffer"
-                            ,A2($List._op["::"],
-                            deletedWChar,
-                            model.buffer)]
-                           ,["doc",doc]],
+         var newModel = _U.replace([["cursor"
+                                    ,{ctor: "_Tuple2"
+                                     ,_0: oldIndex - 1
+                                     ,_1: successor}]
+                                   ,["doc",doc]
+                                   ,["debug"
+                                    ,A2($Basics._op["++"],
+                                    "DELETING: ",
+                                    A2($Basics._op["++"],
+                                    $String.fromChar(currWChar.ch),
+                                    A2($Basics._op["++"],
+                                    "cursor at:",
+                                    A2($Basics._op["++"],
+                                    $Basics.toString($Basics.fst(model.cursor)),
+                                    A2($Basics._op["++"],
+                                    "thisIndex: ",
+                                    A2($Basics._op["++"],
+                                    $Basics.toString(place),
+                                    A2($Basics._op["++"],
+                                    "pred :",
+                                    A2($Basics._op["++"],
+                                    $String.fromChar(predecessor.ch),
+                                    A2($Basics._op["++"],
+                                    "succhahah: ",
+                                    $String.fromChar(successor.ch))))))))))]
+                                   ,["buffer"
+                                    ,A2($List._op["::"],
+                                    $Model.Delete(deletedWChar),
+                                    model.buffer)]
+                                   ,["docBuffer"
+                                    ,A2($List._op["::"],
+                                    doc,
+                                    model.docBuffer)]],
          model);
+         return {ctor: "_Tuple2"
+                ,_0: A2(integrateDel,
+                deletedWChar,
+                newModel)
+                ,_1: $Model.Delete(deletedWChar)};
       }();
    });
    _elm.Graph.values = {_op: _op
@@ -2358,7 +2440,8 @@ Elm.Graph.make = function (_elm) {
                        ,generateInsChar: generateInsChar
                        ,integrateInsert: integrateInsert
                        ,generateIns: generateIns
-                       ,deleted1: deleted1
+                       ,generateDelete: generateDelete
+                       ,integrateDel: integrateDel
                        ,graphToString: graphToString
                        ,graphToString$: graphToString$};
    return _elm.Graph.values;
@@ -5101,17 +5184,23 @@ Elm.Model.make = function (_elm) {
                         return function (h) {
                            return function (i) {
                               return function (j) {
-                                 return {_: {}
-                                        ,buffer: f
-                                        ,content: h
-                                        ,counter: a
-                                        ,cursor: d
-                                        ,debug: j
-                                        ,doc: i
-                                        ,pool: g
-                                        ,site: b
-                                        ,start: e
-                                        ,wChars: c};
+                                 return function (k) {
+                                    return function (l) {
+                                       return {_: {}
+                                              ,buffer: f
+                                              ,content: h
+                                              ,counter: a
+                                              ,cursor: d
+                                              ,debug: j
+                                              ,debugCount: k
+                                              ,doc: i
+                                              ,docBuffer: l
+                                              ,pool: g
+                                              ,site: b
+                                              ,start: e
+                                              ,wChars: c};
+                                    };
+                                 };
                               };
                            };
                         };
@@ -5127,6 +5216,10 @@ Elm.Model.make = function (_elm) {
    };
    var W = function (a) {
       return {ctor: "W",_0: a};
+   };
+   var SiteId = function (a) {
+      return {ctor: "SiteId"
+             ,_0: a};
    };
    var NoUpdate = {ctor: "NoUpdate"};
    var Delete = function (a) {
@@ -5161,6 +5254,7 @@ Elm.Model.make = function (_elm) {
                        ,Insert: Insert
                        ,Delete: Delete
                        ,NoUpdate: NoUpdate
+                       ,SiteId: SiteId
                        ,W: W
                        ,T: T
                        ,Model: Model};
@@ -14776,6 +14870,7 @@ Elm.Typing.make = function (_elm) {
    $Graph = Elm.Graph.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Json$Encode = Elm.Json.Encode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Model = Elm.Model.make(_elm),
@@ -14797,44 +14892,95 @@ Elm.Typing.make = function (_elm) {
       model);
    });
    var processTyping = F2(function (newDoc,
-   model) {
+   _v0) {
       return function () {
-         var newLen = newDoc.len;
-         var oldLen = model.doc.len;
-         return _U.eq(oldLen,
-         newLen) ? {ctor: "_Tuple2"
-                   ,_0: A2(updateCursor,
-                   newDoc,
-                   model)
-                   ,_1: $Model.NoUpdate} : _U.eq(oldLen - newLen,
-         1) ? {ctor: "_Tuple2"
-              ,_0: A2($Graph.deleted1,
-              newDoc,
-              model)
-              ,_1: $Model.NoUpdate} : _U.eq(newLen - oldLen,
-         1) ? A2($Graph.generateIns,
-         newDoc,
-         model) : _U.cmp(oldLen - newLen,
-         1) > 0 ? {ctor: "_Tuple2"
-                  ,_0: $Constants.emptyModel
-                  ,_1: $Model.NoUpdate} : _U.cmp(newLen - oldLen,
-         1) > 0 ? {ctor: "_Tuple2"
-                  ,_0: $Constants.emptyModel
-                  ,_1: $Model.NoUpdate} : {ctor: "_Tuple2"
-                                          ,_0: $Constants.emptyModel
-                                          ,_1: $Model.NoUpdate};
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var newLen = newDoc.len;
+                 var oldLen = _v0._0.doc.len;
+                 return _U.eq(oldLen,
+                 newLen) ? {ctor: "_Tuple2"
+                           ,_0: A2(updateCursor,
+                           newDoc,
+                           _v0._0)
+                           ,_1: $Model.NoUpdate} : _U.eq(oldLen - newLen,
+                 1) ? A2($Graph.generateDelete,
+                 newDoc,
+                 _v0._0) : _U.eq(newLen - oldLen,
+                 1) ? A2($Graph.generateIns,
+                 newDoc,
+                 _v0._0) : _U.cmp(oldLen - newLen,
+                 1) > 0 ? {ctor: "_Tuple2"
+                          ,_0: $Constants.emptyModel
+                          ,_1: $Model.NoUpdate} : _U.cmp(newLen - oldLen,
+                 1) > 0 ? {ctor: "_Tuple2"
+                          ,_0: $Constants.emptyModel
+                          ,_1: $Model.NoUpdate} : {ctor: "_Tuple2"
+                                                  ,_0: $Constants.emptyModel
+                                                  ,_1: $Model.NoUpdate};
+              }();}
+         _U.badCase($moduleName,
+         "between lines 137 and 147");
+      }();
+   });
+   var processServerUpdate = F2(function (wUpd,
+   _v4) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return function () {
+                 switch (wUpd.ctor)
+                 {case "Delete":
+                    return {ctor: "_Tuple2"
+                           ,_0: A2($Graph.integrateDel,
+                           wUpd._0,
+                           _v4._0)
+                           ,_1: $Model.NoUpdate};
+                    case "Insert":
+                    return {ctor: "_Tuple2"
+                           ,_0: A3($Graph.integrateInsert,
+                           wUpd._0,
+                           _v4._0,
+                           0)
+                           ,_1: $Model.NoUpdate};
+                    case "SiteId":
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.replace([["site"
+                                            ,wUpd._0]],
+                           _v4._0)
+                           ,_1: _v4._1};}
+                 _U.badCase($moduleName,
+                 "between lines 127 and 130");
+              }();}
+         _U.badCase($moduleName,
+         "between lines 127 and 130");
       }();
    });
    var processEdit = F2(function (edit,
-   model) {
+   _v12) {
       return function () {
-         switch (edit.ctor)
-         {case "T":
-            return A2(processTyping,
-              edit._0,
-              model);}
+         switch (_v12.ctor)
+         {case "_Tuple2":
+            return function () {
+                 switch (edit.ctor)
+                 {case "T":
+                    return A2(processTyping,
+                      edit._0,
+                      {ctor: "_Tuple2"
+                      ,_0: _v12._0
+                      ,_1: _v12._1});
+                    case "W":
+                    return A2(processServerUpdate,
+                      edit._0,
+                      {ctor: "_Tuple2"
+                      ,_0: _v12._0
+                      ,_1: _v12._1});}
+                 _U.badCase($moduleName,
+                 "between lines 120 and 122");
+              }();}
          _U.badCase($moduleName,
-         "between lines 115 and 116");
+         "between lines 120 and 122");
       }();
    });
    var handleServerUpdate = function (wUpdate) {
@@ -14849,23 +14995,25 @@ Elm.Typing.make = function (_elm) {
       _L.fromArray([A2($Html.textarea,
                    _L.fromArray([$Html$Attributes.id("typingZone")
                                 ,$Html$Attributes.cols(40)
-                                ,$Html$Attributes.rows(20)]),
+                                ,$Html$Attributes.rows(20)
+                                ,A2($Html$Attributes.property,
+                                "value",
+                                $Json$Encode.string($Graph.graphToString(m.wChars)))]),
                    _L.fromArray([]))
                    ,$Html.text(A2($Basics._op["++"],
-                   "\nDOc ------",
-                   $Basics.toString(m.doc)))
+                   "SITE ID",
+                   $Basics.toString(m.site)))
+                   ,$Html.text(A2($Basics._op["++"],
+                   "DEBUG COUNT",
+                   $Basics.toString(m.debugCount)))
                    ,$Html.text(A2($Basics._op["++"],
                    "\n CURSOR ----",
                    $Basics.toString(m.cursor)))
-                   ,$Html.text(A2($Basics._op["++"],
-                   "~~~",
-                   A2($Basics._op["++"],
-                   $Graph.graphToString(m.wChars),
-                   "~~~")))
+                   ,$Html.text($Graph.graphToString(m.wChars))
                    ,$Html.text($Basics.toString(m.wChars))
                    ,$Html.text(A2($Basics._op["++"],
-                   "DEBUG: ....",
-                   m.debug))]));
+                   "DOC BUFFER~~~",
+                   $Basics.toString(m.docBuffer)))]));
    };
    var prettyDictionary = function (d) {
       return A3($List.foldl,
@@ -14916,7 +15064,7 @@ Elm.Typing.make = function (_elm) {
    var incomingPort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
    socket,
    A2($SocketIO.on,
-   "ServerWUpdates",
+   "serverWUpdates",
    incoming.address)));
    var serverUpdates = A3($Signal.filter,
    throwOutNoUpdates,
@@ -14933,15 +15081,19 @@ Elm.Typing.make = function (_elm) {
    typingToEdit,
    serverUpdateToEdit);
    var modelFold = A3($Signal.foldp,
-   F2(function (edit,_v3) {
+   F2(function (edit,_v20) {
       return function () {
-         switch (_v3.ctor)
+         switch (_v20.ctor)
          {case "_Tuple2":
             return A2(processEdit,
               edit,
-              _v3._0);}
+              {ctor: "_Tuple2"
+              ,_0: _U.replace([["debugCount"
+                               ,_v20._0.debugCount + 1]],
+              _v20._0)
+              ,_1: _v20._1});}
          _U.badCase($moduleName,
-         "on line 111, column 52 to 74");
+         "on line 116, column 56 to 130");
       }();
    }),
    {ctor: "_Tuple2"
@@ -14968,13 +15120,13 @@ Elm.Typing.make = function (_elm) {
    },
    localUpdatesAsJsonToSend));
    var main = A2($Signal.map,
-   function (_v7) {
+   function (_v23) {
       return function () {
-         switch (_v7.ctor)
+         switch (_v23.ctor)
          {case "_Tuple2":
-            return view(_v7._0);}
+            return view(_v23._0);}
          _U.badCase($moduleName,
-         "on line 143, column 35 to 43");
+         "on line 163, column 35 to 43");
       }();
    },
    modelFold);
@@ -14997,6 +15149,7 @@ Elm.Typing.make = function (_elm) {
                         ,edits: edits
                         ,modelFold: modelFold
                         ,processEdit: processEdit
+                        ,processServerUpdate: processServerUpdate
                         ,processTyping: processTyping
                         ,updateCursor: updateCursor
                         ,main: main};
@@ -15117,13 +15270,6 @@ Elm.Woot.make = function (_elm) {
    var integratePool = function (model) {
       return model;
    };
-   var integrateDel = F2(function (wChar,
-   dict) {
-      return A3($Dict.insert,
-      wChar.id,
-      _U.replace([["vis",-1]],wChar),
-      dict);
-   });
    var canIns = F2(function (wCh,
    dict) {
       return A2($Dict.member,
@@ -15154,7 +15300,7 @@ Elm.Woot.make = function (_elm) {
               wUpdate._0,
               dict);}
          _U.badCase($moduleName,
-         "between lines 24 and 26");
+         "between lines 24 and 29");
       }();
    });
    var subSeq = F3(function (dict,
@@ -15171,7 +15317,6 @@ Elm.Woot.make = function (_elm) {
                       ,canIns: canIns
                       ,canDel: canDel
                       ,canIntegrate: canIntegrate
-                      ,integrateDel: integrateDel
                       ,integratePool: integratePool};
    return _elm.Woot.values;
 };

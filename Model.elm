@@ -25,9 +25,9 @@ type alias WChar = {id: String
                 , vis: Int
                 , ch: Char}
 
-type WUpdate = Insert WChar | Delete WChar | NoUpdate
+type WUpdate = Insert WChar | Delete WChar | NoUpdate | SiteId Int
 
-type Edit = W WUpdate | T Doc
+type Edit = W WUpdate | T Doc 
 
 ---- TODO - need a notion of the start and end collabs
 
@@ -37,10 +37,12 @@ type alias Model = {counter: Int
                     , wChars: Dict.Dict String WChar
                     , cursor: (Int, WChar)
                     , start: WChar
-                    , buffer: List WChar
+                    , buffer: List WUpdate
                     , pool: List WUpdate
                     , content: Content
                     , doc: Doc
-                    , debug: String}
+                    , debug: String
+                    , debugCount: Int
+                    , docBuffer: List Doc}
 
 

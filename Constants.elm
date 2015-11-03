@@ -6,7 +6,7 @@ import Graphics.Input.Field exposing (..)
 import Dict
 
 emptyModel : Model
-emptyModel = {site = 1
+emptyModel = {site = 0
         , counter = 0
         , wChars = Dict.empty
         , start = startChar
@@ -15,7 +15,9 @@ emptyModel = {site = 1
         , content = noContent
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
-        , debug = ""}
+        , debug = ""
+        , debugCount = 0
+        , docBuffer = []}
 
 
 highlightStyle : Highlight
