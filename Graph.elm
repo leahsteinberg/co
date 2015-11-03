@@ -173,18 +173,9 @@ integrateInsert wCh model local =
                     |> Dict.insert wCh.id wCh
         newStr = graphToString newDict
         newLen = String.length newStr
---        newCursor = if local then ((fst model.cursor) + 1, newSucc) else cursorUpdateServer wCh newDict model.cursor
---                            if shouldBumpCursor wCh (snd model.cursor) newDict then ((fst model.cursor) + 1, snd model.cursor)
---                                    else model.cursor
---        newDoc  = {cp = , str = newStr, len = newLen}
-        -- need to find the index of this new wChar. Need to update the cursor appropriately.
-        -- lets make a naive solution!!!
-
     in 
         {model | wChars <- newDict
                 , doc <- {cp = 666, str = newStr, len = newLen}
---            , cursor <- newCursor
-
         }
 
 
@@ -205,17 +196,16 @@ generateIns doc model =
 generateDelete : Doc -> Model -> (Model, WUpdate)
 generateDelete doc model = 
     let
-        place = doc.cp 
-        predecessor = (findWChar slideForward (place - 1) model) ----== my problem
-        successor = findWChar slideForward (place + 1) model
-        currWChar = findWChar slideForward place model
+        place = doc.cp  
+        predecessor = ithVisible model.wChars (place - 1)----== my problem
+        successor = ithVisible model.wChars (place + 1)
+        currWChar = ithVisible model.wChars (place)
         deletedWChar = {currWChar | vis <- -1}
-        oldCursor = model.cursor
-        oldIndex = fst model.cursor
-        oldCurr = snd model.cursor
-        newModel = {model | cursor <- (oldIndex - 1, successor)
-                , doc <- doc
-                , debug <- "DELETING: "++ String.fromChar currWChar.ch++"cursor at:" ++ toString (fst model.cursor) ++ "thisIndex: " ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch ++ "succhahah: " ++ String.fromChar successor.ch
+        newModel = {model |
+                debug <- "DELETING: "
+                ++ String.fromChar currWChar.ch++ "thisIndex: " 
+                ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch 
+                ++ "succ: " ++ String.fromChar successor.ch
                 , buffer <- (Delete deletedWChar):: model.buffer 
                 , docBuffer <- doc:: model.docBuffer
 

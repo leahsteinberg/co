@@ -145,7 +145,7 @@ processTyping newDoc (model, prevUpdate) =
     in
         if 
             | oldLen == newLen -> (updateCursor newDoc {model | doc <- newDoc, docBuffer <- newDoc::model.docBuffer}, NoUpdate)
-            | oldLen - newLen == 1 -> generateDelete newDoc {model| cursor <- (0, grabNext startChar model.wChars)}
+            | oldLen - newLen == 1 -> generateDelete newDoc model
             | newLen - oldLen == 1 -> generateIns newDoc model
 --{model| cursor <- (0, grabNext startChar model.wChars)}
             | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "BAD CASE 3"}, NoUpdate)
