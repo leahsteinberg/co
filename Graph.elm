@@ -134,11 +134,38 @@ generateInsChar char predIndex doc model =
 
                             }
     in 
-        (integrateInsert newWChar newModel predIndex, Insert newWChar)
+        (integrateInsert newWChar newModel True, Insert newWChar)
 
 
-integrateInsert : WChar -> Model -> Int -> Model
-integrateInsert wCh model predIndex = 
+
+cursorUpdateServer : WChar -> Dict.Dict String WChar -> (Int, WChar) -> (Int, WChar)
+cursorUpdateServer addedWCh dict cursor =
+    let 
+        currIndex = fst cursor
+        currWChar = snd cursor
+        addedPrev = grabPrev addedWCh dict
+    in
+        if addedPrev.id == currWChar.id then (currIndex, addedWCh)
+            else if shouldBumpCursor addedWCh currWChar dict then (currIndex + 1, currWChar)
+                else cursor
+
+
+shouldBumpCursor : WChar -> WChar -> Dict.Dict String WChar -> Bool
+shouldBumpCursor  addedWCh cursorWCh dict = shouldBumpCursor' (grabNext startChar dict) addedWCh cursorWCh dict
+
+
+
+shouldBumpCursor' : WChar -> WChar -> WChar -> Dict.Dict String WChar-> Bool
+shouldBumpCursor' currWCh addedWCh cursorWCh dict =
+    if
+        |currWCh.id == addedWCh.id -> True
+        |currWCh.id == cursorWCh.id -> False
+        |currWCh.id == "END" -> True
+        |otherwise -> shouldBumpCursor' (grabNext currWCh dict) addedWCh currWCh dict
+
+
+integrateInsert : WChar -> Model -> Bool -> Model
+integrateInsert wCh model local = 
     let
         pred = grabPrev wCh model.wChars
         succ = grabNext wCh model.wChars
@@ -147,9 +174,21 @@ integrateInsert wCh model predIndex =
         newDict = Dict.insert newPred.id newPred model.wChars
                     |> Dict.insert newSucc.id newSucc
                     |> Dict.insert wCh.id wCh
+        newStr = graphToString newDict
+        newLen = String.length newStr
+        newCursor = if local then ((fst model.cursor) + 1, newSucc) else cursorUpdateServer wCh newDict model.cursor
+--                            if shouldBumpCursor wCh (snd model.cursor) newDict then ((fst model.cursor) + 1, snd model.cursor)
+--                                    else model.cursor
+        newDoc  = {cp = fst newCursor, str = newStr, len = newLen}
+        -- need to find the index of this new wChar. Need to update the cursor appropriately.
+        -- lets make a naive solution!!!
+
     in 
         {model | wChars <- newDict
-            , cursor <- (predIndex + 2, newSucc)
+            , cursor <- newCursor
+            , doc <- newDoc
+            , docBuffer <- newDoc :: model.docBuffer
+
         }
 
 
@@ -206,8 +245,12 @@ integrateDel : WChar -> Model -> Model
 integrateDel wChar model = 
     let
         newWChars = Dict.insert wChar.id wChar model.wChars
+        newStr = graphToString newWChars
+        newLen = String.length newStr
     in 
         {model | wChars <- newWChars
+                , doc <- {cp = fst model.cursor, str = newStr, len = newLen}
+
 
                 }
 

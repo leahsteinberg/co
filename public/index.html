@@ -52,15 +52,26 @@ var sendUpdate = function(){
 	woot.ports.typingPort.send(toSend);
 }
 
-
-window.setInterval(sendUpdate, 150);
-
-
-textArea.oninput = function(e){
-	sendUpdate();
+ textArea.oninput = function(e){
+ 	console.log("received input!!");
+ 	sendUpdate();
 
 }
 
+textArea.onkeydown = function(e){
+	var charCode = e.keyCode || e.which;
+	if (charCode >=37 && charCode <= 40){
+		window.setTimeout(sendUpdate, 150);
+	}
+}
+
+
+
+textArea.onmousedown = function(e){
+	console.log("on mousedown");
+	//e.stopPropagation();
+	window.setTimeout(sendUpdate, 200);
+}
 
 
 </script>

@@ -24,6 +24,8 @@ highlightStyle : Highlight
 highlightStyle = {color = green, width = 4}
 
 
+docSilly stri = {cp = 900, str = stri, len = 88}
+
 fieldStyle : Style
 fieldStyle = {defaultStyle | 
                          highlight <- highlightStyle

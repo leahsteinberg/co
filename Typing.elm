@@ -82,18 +82,19 @@ view m =
 --        property "value" (Json.string (graphToString m.wChars))
 --        property "value" (Json.string "0"),
 --        , (text ("doc----" ++ (toString t) ++ "-----"))
---        , (text ("\nDOc ------" ++ toString (m.doc)))
+       , (text ("\nDOc ------" ++ toString (m.doc)))
         , (text ("SITE ID" ++ toString m.site))
         , (text ("DEBUG COUNT" ++ toString m.debugCount))
 --        , (text ("LEN " ++ toString m.doc.len))
-        , (text ("\n CURSOR ----" ++ toString m.cursor))
+       , (text ("\n CURSOR ----" ++ toString m.cursor))
         , (text (graphToString m.wChars))
         , (text (toString m.wChars))
---        , (text ("DEBUG: ...." ++ m.debug))
+        , (text ("DEBUG: ...." ++ m.debug))
 --        , (text (toString m.buffer))
         , (text ("DOC BUFFER~~~" ++ toString m.docBuffer))
 
         ]
+-- - - - - - - - - - - - - - - - - - - - -
 
 
 handleTyping : Doc -> Edit
@@ -126,10 +127,8 @@ processServerUpdate : WUpdate -> (Model, WUpdate) -> (Model, WUpdate)
 processServerUpdate wUpd (model, prevUpdate) = 
     case wUpd of
         SiteId id -> ({model | site <- id}, prevUpdate)
-        Insert wCh -> (integrateInsert wCh model 0, NoUpdate)
+        Insert wCh -> (integrateInsert wCh model False, NoUpdate)
         Delete wCh -> (integrateDel wCh model, NoUpdate)
-
-
 
 
 processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
@@ -139,12 +138,12 @@ processTyping newDoc (model, prevUpdate) =
         newLen = newDoc.len
     in
         if 
-            | oldLen == newLen -> (updateCursor newDoc model, NoUpdate)
+            | oldLen == newLen -> (updateCursor newDoc {model| doc <- newDoc, docBuffer <- newDoc::model.docBuffer}, NoUpdate)
             | oldLen - newLen == 1 -> generateDelete newDoc model
             | newLen - oldLen == 1 -> generateIns newDoc model
-            | oldLen - newLen > 1 -> (emptyModel, NoUpdate)
-            | newLen - oldLen > 1 -> (emptyModel, NoUpdate)
-            | otherwise -> (emptyModel, NoUpdate)
+            | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "lol"}, NoUpdate)
+            | newLen - oldLen > 1 -> ({emptyModel |debug <- "haha" ++ toString oldLen ++ "new Len" ++ toString newLen}, NoUpdate)
+            | otherwise -> ({emptyModel |doc <- docSilly "heehee"}, NoUpdate)
 
 
 

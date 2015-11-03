@@ -42,7 +42,7 @@ setInterval(
 io.sockets.on('connection', function(socket){
   
 
-    socket.on('example', function(msg){
+   // socket.on('example', function(msg){
 
     var idUpdate = {"siteId": siteCounter, "type": "SiteId"}
     var toSend = JSON.stringify(idUpdate);
@@ -51,8 +51,8 @@ io.sockets.on('connection', function(socket){
     console.log('a user connected, siteId: ', siteCounter);
 
     siteCounter = siteCounter + 1;
-    });
-        
+   // });
+  //      
 
 //     console.log('examp: ' + msg);
     
