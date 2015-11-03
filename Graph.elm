@@ -182,6 +182,7 @@ integrateInsert wCh model local =
 
     in 
         {model | wChars <- newDict
+                , doc <- {cp = 666, str = newStr, len = newLen}
 --            , cursor <- newCursor
 
         }

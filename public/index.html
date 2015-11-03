@@ -54,7 +54,7 @@ var sendUpdate = function(){
 
  textArea.oninput = function(e){
  	console.log("received input!!");
- 	sendUpdate();
+ 	sendUpdate(200);
 
 }
 
@@ -67,10 +67,10 @@ textArea.onkeydown = function(e){
 
 
 
-textArea.onmousedown = function(e){
+window.onmousedown = function(e){
 	console.log("on mousedown");
 	//e.stopPropagation();
-	window.setTimeout(sendUpdate, 200);
+//	window.setTimeout(sendUpdate, 100);
 }
 
 

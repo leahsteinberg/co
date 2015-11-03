@@ -148,9 +148,9 @@ processTyping newDoc (model, prevUpdate) =
             | oldLen - newLen == 1 -> generateDelete newDoc {model| cursor <- (0, grabNext startChar model.wChars)}
             | newLen - oldLen == 1 -> generateIns newDoc model
 --{model| cursor <- (0, grabNext startChar model.wChars)}
-            | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "lol"}, NoUpdate)
-            | newLen - oldLen > 1 -> ({emptyModel |debug <- "haha" ++ toString oldLen ++ "new Len" ++ toString newLen}, NoUpdate)
-            | otherwise -> ({emptyModel |doc <- docSilly "heehee"}, NoUpdate)
+            | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "BAD CASE 3"}, NoUpdate)
+            | newLen - oldLen > 1 -> ({emptyModel |debug <- "BAD CASE 1:, oldLen : " ++ toString oldLen ++ "new Len: " ++ toString newLen}, NoUpdate)
+            | otherwise -> ({emptyModel |doc <- docSilly "BAD CASE 2"}, NoUpdate)
 
 
 
