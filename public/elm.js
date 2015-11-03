@@ -843,6 +843,7 @@ Elm.Constants.make = function (_elm) {
                           ,len: 0
                           ,str: ""}
                     ,docBuffer: _L.fromArray([])
+                    ,editBuffer: _L.fromArray([])
                     ,pool: _L.fromArray([])
                     ,site: 0
                     ,start: startChar
@@ -2131,140 +2132,70 @@ Elm.Graph.make = function (_elm) {
    $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm);
-   var slidie = F4(function (dir,
-   grabber,
-   toIncrement,
-   model) {
-      return function () {
-         var currWChar = $Basics.snd(model.cursor);
-         var newChar = A2(grabber,
-         currWChar,
-         model.wChars);
-         var currIndex = $Basics.fst(model.cursor);
-         var newIndex = toIncrement ? currIndex + dir : currIndex;
-         return _U.replace([["cursor"
-                            ,{ctor: "_Tuple2"
-                             ,_0: newIndex
-                             ,_1: newChar}]],
-         model);
-      }();
-   });
-   var grabPrev = F2(function (wCh,
-   dict) {
-      return function () {
-         var _v0 = A2($Dict.get,
-         wCh.prev,
-         dict);
-         switch (_v0.ctor)
-         {case "Just": return _v0._0;}
-         return $Constants.startChar;
-      }();
-   });
-   var slideBackward = A2(slidie,
-   -1,
-   grabPrev);
-   var grabNext = F2(function (wCh,
-   dict) {
-      return function () {
-         var _v2 = A2($Dict.get,
-         wCh.next,
-         dict);
-         switch (_v2.ctor)
-         {case "Just": return _v2._0;}
-         return $Constants.endChar;
-      }();
-   });
-   var slideForward = A2(slidie,
-   1,
-   grabNext);
-   var shouldBumpCursor$ = F4(function (currWCh,
-   addedWCh,
-   cursorWCh,
-   dict) {
-      return _U.eq(currWCh.id,
-      addedWCh.id) ? true : _U.eq(currWCh.id,
-      cursorWCh.id) ? false : _U.eq(currWCh.id,
-      "END") ? true : A4(shouldBumpCursor$,
-      A2(grabNext,currWCh,dict),
-      addedWCh,
-      currWCh,
-      dict);
-   });
-   var shouldBumpCursor = F3(function (addedWCh,
-   cursorWCh,
-   dict) {
-      return A4(shouldBumpCursor$,
-      A2(grabNext,
-      $Constants.startChar,
-      dict),
-      addedWCh,
-      cursorWCh,
-      dict);
-   });
-   var cursorUpdateServer = F3(function (addedWCh,
-   dict,
-   cursor) {
-      return function () {
-         var addedPrev = A2(grabPrev,
-         addedWCh,
-         dict);
-         var currWChar = $Basics.snd(cursor);
-         var currIndex = $Basics.fst(cursor);
-         return _U.eq(addedPrev.id,
-         currWChar.id) ? {ctor: "_Tuple2"
-                         ,_0: currIndex
-                         ,_1: addedWCh} : A3(shouldBumpCursor,
-         addedWCh,
-         currWChar,
-         dict) ? {ctor: "_Tuple2"
-                 ,_0: currIndex + 1
-                 ,_1: currWChar} : cursor;
-      }();
-   });
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
    var graphToString$ = F2(function (wCh,
    dict) {
       return _U.eq(wCh.id,
       "START") ? A2($Basics._op["++"],
       "",
       A2(graphToString$,
-      A2(grabNext,wCh,dict),
+      A2($Woot.grabNext,wCh,dict),
       dict)) : _U.eq(wCh.id,
       "END") ? "" : _U.cmp(wCh.vis,
       0) < 1 ? A2($Basics._op["++"],
       "",
       A2(graphToString$,
-      A2(grabNext,wCh,dict),
+      A2($Woot.grabNext,wCh,dict),
       dict)) : A2($Basics._op["++"],
       $String.fromChar(wCh.ch),
       A2(graphToString$,
-      A2(grabNext,wCh,dict),
+      A2($Woot.grabNext,wCh,dict),
       dict));
    });
    var graphToString = function (dict) {
       return function () {
-         var _v4 = A2($Dict.get,
+         var _v0 = A2($Dict.get,
          "START",
          dict);
-         switch (_v4.ctor)
+         switch (_v0.ctor)
          {case "Just":
             return A2(graphToString$,
-              _v4._0,
+              _v0._0,
               dict);}
          return "";
       }();
    };
+   var integrateDel = F2(function (wChar,
+   model) {
+      return function () {
+         var newWChars = A3($Dict.insert,
+         wChar.id,
+         wChar,
+         model.wChars);
+         var newStr = graphToString(newWChars);
+         var newLen = $String.length(newStr);
+         return _U.replace([["wChars"
+                            ,newWChars]
+                           ,["doc"
+                            ,{_: {}
+                             ,cp: $Basics.fst(model.cursor)
+                             ,len: newLen
+                             ,str: newStr}]],
+         model);
+      }();
+   });
    var integrateInsert = F3(function (wCh,
    model,
    local) {
       return function () {
-         var succ = A2(grabNext,
+         var succ = A2($Woot.grabNext,
          wCh,
          model.wChars);
          var newSucc = _U.replace([["prev"
                                    ,wCh.id]],
          succ);
-         var pred = A2(grabPrev,
+         var pred = A2($Woot.grabPrev,
          wCh,
          model.wChars);
          var newPred = _U.replace([["next"

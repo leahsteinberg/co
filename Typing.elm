@@ -22,6 +22,7 @@ import Task exposing (..)
 import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
 import Model exposing (..)
 import Constants exposing (..)
+import Woot exposing (grabNext)
 import Graph exposing (generateIns, generateDelete, graphToString, integrateInsert, integrateDel)
 
 
@@ -90,8 +91,10 @@ view m =
         , (text (graphToString m.wChars))
         , (text (toString m.wChars))
         , (text ("DEBUG: ...." ++ m.debug))
+
 --        , (text (toString m.buffer))
         , (text ("DOC BUFFER~~~" ++ toString m.docBuffer))
+        , (text ("......edit buffer ......." ++ toString m.editBuffer))
 
         ]
 -- - - - - - - - - - - - - - - - - - - - -
@@ -114,7 +117,7 @@ edits : Signal Edit
 edits = Signal.merge typingToEdit serverUpdateToEdit
 
 modelFold : Signal (Model, WUpdate)
-modelFold = Signal.foldp (\edit (model, prevUpdate) -> processEdit edit ({model | debugCount <- model.debugCount + 1}, prevUpdate)) (emptyModel, NoUpdate) edits
+modelFold = Signal.foldp (\edit (model, prevUpdate) -> processEdit edit ({model | debugCount <- model.debugCount + 1, editBuffer<-edit::model.editBuffer}, prevUpdate)) (emptyModel, NoUpdate) edits
 
 processEdit : Edit -> (Model, WUpdate) -> (Model, WUpdate)
 processEdit edit (model, prevUpdate) =
@@ -131,6 +134,9 @@ processServerUpdate wUpd (model, prevUpdate) =
         Delete wCh -> (integrateDel wCh model, NoUpdate)
 
 
+
+
+
 processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
 processTyping newDoc (model, prevUpdate) =
     let 
@@ -138,9 +144,10 @@ processTyping newDoc (model, prevUpdate) =
         newLen = newDoc.len
     in
         if 
-            | oldLen == newLen -> (updateCursor newDoc {model| doc <- newDoc, docBuffer <- newDoc::model.docBuffer}, NoUpdate)
-            | oldLen - newLen == 1 -> generateDelete newDoc model
+            | oldLen == newLen -> (updateCursor newDoc {model | doc <- newDoc, docBuffer <- newDoc::model.docBuffer}, NoUpdate)
+            | oldLen - newLen == 1 -> generateDelete newDoc {model| cursor <- (0, grabNext startChar model.wChars)}
             | newLen - oldLen == 1 -> generateIns newDoc model
+--{model| cursor <- (0, grabNext startChar model.wChars)}
             | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "lol"}, NoUpdate)
             | newLen - oldLen > 1 -> ({emptyModel |debug <- "haha" ++ toString oldLen ++ "new Len" ++ toString newLen}, NoUpdate)
             | otherwise -> ({emptyModel |doc <- docSilly "heehee"}, NoUpdate)

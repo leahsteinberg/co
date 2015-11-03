@@ -43,6 +43,7 @@ type alias Model = {counter: Int
                     , doc: Doc
                     , debug: String
                     , debugCount: Int
-                    , docBuffer: List Doc}
+                    , docBuffer: List Doc
+                    , editBuffer: List Edit}
 
 

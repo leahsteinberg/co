@@ -62,17 +62,7 @@ canAnchor wCh =
         | wCh.id == "START" || wCh.id == "END" -> True
         | otherwise -> wCh.vis > 0 
 
-grabNext : WChar -> Dict.Dict String WChar  -> WChar
-grabNext wCh dict =
-    case Dict.get wCh.next dict of
-        Just next -> next
-        _ -> endChar
 
-grabPrev : WChar -> Dict.Dict String WChar ->  WChar
-grabPrev wCh dict=
-    case Dict.get wCh.prev dict of
-        Just prev -> prev
-        _ -> startChar
 
 slideForward : Bool -> Model -> Model
 slideForward  = slidie 1 grabNext 
@@ -111,10 +101,10 @@ findWChar slider goalIndex model =
 
 
 -- a -1 
-generateInsChar : Char -> Int -> Doc -> Model -> (Model, WUpdate)
-generateInsChar char predIndex doc model =
+generateInsChar : Char -> Int -> Int -> Doc -> Model -> (Model, WUpdate)
+generateInsChar char predIndex nextIndex doc model =
     let
-        pred = findWChar slideForward predIndex model
+        pred = ithVisible model.wChars predIndex 
         succ = grabNext pred model.wChars
         newId = toString model.site ++ "-" ++ toString model.counter
         newWChar = {id = newId
@@ -123,17 +113,24 @@ generateInsChar char predIndex doc model =
                     , next = succ.id
                     , vis = 1}
         newModel = {model | counter <- model.counter + 1
-                                , doc <- doc
-                    , debug <- "cursor at:" ++ toString (fst model.cursor) 
-                        ++ "predIndex: " ++ toString predIndex 
-                        ++ "pred :" 
-                        ++ String.fromChar pred.ch ++ "succlol: " ++ String.fromChar succ.ch
-                        , buffer <-  Insert newWChar ::model.buffer
-                        , docBuffer <- doc:: model.docBuffer
+                    , doc <- doc
+                    , docBuffer <- doc :: model.docBuffer
+                    , debug <- "ith -1" ++ toString (ithVisible model.wChars -1) 
+                                ++ ", ith 0" ++ toString (ithVisible model.wChars 0) 
+                                 ++ ", ith 1" ++ toString (ithVisible model.wChars 1) }
+--                   , debug <- "nextIndex:" ++ toString nextIndex
+--                        ++ "predIndex: " ++ toString predIndex 
+--                        ++ "pred :" 
+--                        ++ toString pred.id ++ "next: " ++ toString succ.id
+--                        ++ "CH --" ++ String.fromChar newWChar.ch
+--                    }
+--                        , buffer <-  Insert newWChar ::model.buffer
+--                        , docBuffer <- doc:: model.docBuffer
 
 
-                            }
+                            
     in 
+--        ({emptyModel | debug <- "prev: " ++ String.fromChar pred.ch ++ ", succ: " ++ String.fromChar succ.ch}, Insert newWChar)
         (integrateInsert newWChar newModel True, Insert newWChar)
 
 
@@ -176,18 +173,16 @@ integrateInsert wCh model local =
                     |> Dict.insert wCh.id wCh
         newStr = graphToString newDict
         newLen = String.length newStr
-        newCursor = if local then ((fst model.cursor) + 1, newSucc) else cursorUpdateServer wCh newDict model.cursor
+--        newCursor = if local then ((fst model.cursor) + 1, newSucc) else cursorUpdateServer wCh newDict model.cursor
 --                            if shouldBumpCursor wCh (snd model.cursor) newDict then ((fst model.cursor) + 1, snd model.cursor)
 --                                    else model.cursor
-        newDoc  = {cp = fst newCursor, str = newStr, len = newLen}
+--        newDoc  = {cp = , str = newStr, len = newLen}
         -- need to find the index of this new wChar. Need to update the cursor appropriately.
         -- lets make a naive solution!!!
 
     in 
         {model | wChars <- newDict
-            , cursor <- newCursor
-            , doc <- newDoc
-            , docBuffer <- newDoc :: model.docBuffer
+--            , cursor <- newCursor
 
         }
 
@@ -195,13 +190,13 @@ integrateInsert wCh model local =
 generateIns : Doc -> Model -> (Model, WUpdate)
 generateIns doc model = 
     let
-        place = doc.cp - 1
-        predIndex = place - 1
-        letter = List.head (List.drop place (toList  doc.str))
+        nextIndex = doc.cp - 1
+        prevIndex = doc.cp - 2 
+        letter = List.head (List.drop (nextIndex) (toList  doc.str))
 
     in
         case letter of 
-            Just l -> generateInsChar l predIndex doc model 
+            Just l -> generateInsChar l prevIndex nextIndex doc model 
             _ -> ({emptyModel | debug <- "cant find the letter in the list"}, NoUpdate)
 
 

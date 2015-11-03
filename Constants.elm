@@ -17,7 +17,8 @@ emptyModel = {site = 0
         , pool = []
         , debug = ""
         , debugCount = 0
-        , docBuffer = []}
+        , docBuffer = []
+        , editBuffer = []}
 
 
 highlightStyle : Highlight
