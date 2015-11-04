@@ -68,7 +68,7 @@ io.sockets.on('connection', function(socket){
             return;
         }
         //var site = parsedMsg.slice(0, parsedMsg.id.indexOf("-"));
-       // console.log("site is:", site);
+       console.log("msg:", parsedMsg);
         socket.broadcast.emit("serverWUpdates", parsedMsg);
 
     thing = thing + 1

@@ -23,7 +23,7 @@ import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
 import Model exposing (..)
 import Constants exposing (..)
 import Woot exposing (grabNext)
-import Graph exposing (generateIns, generateDelete, graphToString, integrateInsert, integrateDel)
+import Graph exposing (generateInsert, generateDelete, graphToString, integrateInsert, integrateDelete)
 
 
 
@@ -67,34 +67,25 @@ port typingPort: Signal Doc
 
 typing = Signal.dropRepeats typingPort
 
--- - - - - - - - - - - - - - - - - - - - -
-
-prettyDictionary : Dict.Dict String WChar -> String
-prettyDictionary d =
-    List.foldl (\tup accStr -> accStr ++ "\n\n" ++(toString tup) ++ "\n") "" (Dict.toList d)
+-- - - - - - - - - V I E W - - - - - - - - - - - -
 
 
-view : Model -> Html
-view m =
+view : Model -> WUpdate ->  Html
+view m upd =
         div
         []
         [
         (textarea [id "typingZone", cols 40, rows 20, property "value" (Json.string (graphToString m.wChars))] [])
---        property "value" (Json.string (graphToString m.wChars))
---        property "value" (Json.string "0"),
---        , (text ("doc----" ++ (toString t) ++ "-----"))
-       , (text ("\nDOc ------" ++ toString (m.doc)))
-        , (text ("SITE ID" ++ toString m.site))
---        , (text ("LEN " ++ toString m.doc.len))
-        , (text (graphToString m.wChars))
+--        , (text ("\nDOc ------" ++ toString (m.doc)))
+        , (text ("SITE ID" ++ toString m.site ++ "    "))
+        , (text (toString upd))
         , (text (toString m.wChars))
-        , (text ("DEBUG: ...." ++ m.debug))
-
---        , (text (toString m.buffer))
-
-
+        , (div
+        []
+        [(text ("DEBUG: ...." ++ m.debug))
+        ])
         ]
--- - - - - - - - - - - - - - - - - - - - -
+
 
 
 handleTyping : Doc -> Edit
@@ -116,10 +107,13 @@ edits = Signal.merge typingToEdit serverUpdateToEdit
 modelFold : Signal (Model, WUpdate)
 modelFold = Signal.foldp processEdit (emptyModel, NoUpdate) edits
 
+
+-- - - - - - - -  S I G N A L  P R O C E S S I N G - - - - - -
+
 processEdit : Edit -> (Model, WUpdate) -> (Model, WUpdate)
 processEdit edit (model, prevUpdate) =
         case edit of
-            T typing -> processTyping typing (model, prevUpdate)
+            T typing -> processTyping typing ({model|debug<-""}, prevUpdate)
             W wUpdate ->  processServerUpdate wUpdate (model, prevUpdate)
 
 
@@ -127,11 +121,8 @@ processServerUpdate : WUpdate -> (Model, WUpdate) -> (Model, WUpdate)
 processServerUpdate wUpd (model, prevUpdate) = 
     case wUpd of
         SiteId id -> ({model | site <- id}, prevUpdate)
-        Insert wCh -> (integrateInsert wCh model False, NoUpdate)
-        Delete wCh -> (integrateDel wCh model, NoUpdate)
-
-
-
+        Insert wCh -> (integrateInsert wCh model, NoUpdate)
+        Delete wCh -> (integrateDelete wCh model, NoUpdate)
 
 
 processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
@@ -142,23 +133,12 @@ processTyping newDoc (model, prevUpdate) =
     in
         if 
             | oldLen == newLen -> (model, NoUpdate)
---                (updateCursor newDoc {model | doc <- newDoc, docBuffer <- newDoc::model.docBuffer}, NoUpdate)
             | oldLen - newLen == 1 -> generateDelete newDoc model
-            | newLen - oldLen == 1 -> generateIns newDoc model
---{model| cursor <- (0, grabNext startChar model.wChars)}
-            | oldLen - newLen > 1 -> ({emptyModel |doc <- docSilly "BAD CASE 3"}, NoUpdate)
+            | newLen - oldLen == 1 -> generateInsert newDoc model
+            | oldLen - newLen > 1 -> ({emptyModel |debug <- "BAD CASE 3"}, NoUpdate)
             | newLen - oldLen > 1 -> ({emptyModel |debug <- "BAD CASE 1:, oldLen : " ++ toString oldLen ++ "new Len: " ++ toString newLen}, NoUpdate)
-            | otherwise -> ({emptyModel |doc <- docSilly "BAD CASE 2"}, NoUpdate)
+            | otherwise -> ({emptyModel |debug <- "BAD CASE 2"}, NoUpdate)
 
 
-
---updateCursor : Doc -> Model -> Model
---updateCursor  newDoc model = {model | doc <- newDoc
---                                , cursor <- (newDoc.cp, Graph.findWChar Graph.slideBackward newDoc.cp model)}
-
-
-
-
-
-main = Signal.map (\(mod, upd) -> view mod) modelFold
+main = Signal.map (\(mod, upd) -> view mod upd) modelFold
 

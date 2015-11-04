@@ -14,11 +14,11 @@ subSeq' : Dict WId WChar -> WChar -> WChar -> Dict WId WChar -> Dict WId WChar
 subSeq' dict curr end subDict =
     let
         newDict = Dict.insert curr.id curr subDict
-
     in
         if
             | curr.id == end.id -> subDict
-            | otherwise -> subSeq' dict (grabNext curr dict) end newDict
+            | otherwise -> Dict.insert curr.id curr (Dict.insert end.id end subDict)
+--subSeq' dict (grabNext curr dict) end newDict
 
 
 grabNext : WChar -> Dict.Dict WId WChar  -> WChar
@@ -36,17 +36,6 @@ grabPrev wCh dict=
 contains : WChar -> Dict WId WChar -> Bool
 contains wCh dict = Dict.member wCh.id dict
 
-canIns : WChar -> Dict WId WChar -> Bool
-canIns wCh dict = Dict.member wCh.next dict && Dict.member wCh.prev dict
-
-canDel : WChar -> Dict WId WChar -> Bool
-canDel wCh dict = contains wCh dict
-
-canIntegrate : WUpdate -> Dict WId WChar -> Bool
-canIntegrate wUpdate dict =
-    case wUpdate of
-        Insert wCh -> canIns wCh dict
-        Delete wCh -> canDel wCh dict
 
 ithVisible : Dict WId WChar -> Int -> WChar
 ithVisible dict goalPlace = 
@@ -73,20 +62,24 @@ ithVisible' dict goalPlace currWChar =
 
     
 isVisible : WChar -> Bool
-isVisible wCh = True
---wCh.vis > 0 || wCh.id == "START" || wCh.id == "END"
+isVisible wCh = wCh.vis > 0 || wCh.id == startId || wCh.id == endId
 
 
 -- fold over pool, integrating those that we can integrate
 integratePool : Model -> Model
 integratePool model = model
 
+canIns : WChar -> Dict WId WChar -> Bool
+canIns wCh dict = Dict.member wCh.next dict && Dict.member wCh.prev dict
 
---integrateDel : 
+canDel : WChar -> Dict WId WChar -> Bool
+canDel wCh dict = contains wCh dict
 
--- integrateIns
+canIntegrate : WUpdate -> Dict WId WChar -> Bool
+canIntegrate wUpdate dict =
+    case wUpdate of
+        Insert wCh -> canIns wCh dict
+        Delete wCh -> canDel wCh dict
 
 
--- generateIns
 
--- generateDel
