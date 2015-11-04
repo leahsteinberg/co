@@ -21,12 +21,10 @@ import Result exposing (..)
 --        encode 2 editValue
 
 
-decId = ("id" := Dec.string)
-
+decId = ("id" := Dec.tuple2 (,) int int)
 decVis = ("vis" := Dec.int)
-
-decNext = ("next" := Dec.string)
-decPrev = ("prev" := Dec.string)
+decNext = ("next" := Dec.tuple2 (,) int int)
+decPrev = ("prev" := Dec.tuple2 (,) int int)
 decCh = ("ch" := Dec.string)
 
 
@@ -77,8 +75,8 @@ decodeWInsert str =
 
 wCharDecoder : Decoder WChar
 wCharDecoder = 
-    Dec.object5 
-            (\id next prev vis chr -> WChar id next prev vis (toChar chr))
+    Dec.object5
+            (\ id next prev vis chr -> WChar id next prev vis (toChar chr))
                 decId decNext decPrev decVis decCh
 
 wSiteIdDecoder : Decoder Int
@@ -116,9 +114,9 @@ encodeWUpdate wUp =
 
 wCharToJsonList : WChar -> List (String, Value)
 wCharToJsonList wCh = 
-                    [     ("id", Enc.string wCh.id)
-                        , ("prev", Enc.string wCh.prev)
-                        , ("next", Enc.string wCh.next)
+                    [     ("id", Enc.list [Enc.int (fst wCh.id), Enc.int (snd wCh.id)])
+                        , ("prev", Enc.list [Enc.int (fst wCh.prev), Enc.int (snd wCh.prev)])
+                        , ("next", Enc.list [Enc.int (fst wCh.next), Enc.int (snd wCh.next)])
                         , ("vis", Enc.int wCh.vis)
                         , ("ch", Enc.string (String.fromChar wCh.ch))
                     ]

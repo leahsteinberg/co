@@ -10,15 +10,12 @@ emptyModel = {site = 0
         , counter = 0
         , wChars = Dict.empty
         , start = startChar
-        , cursor = (0, endChar)
-        , buffer = []
-        , content = noContent
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
-        , debug = ""
-        , debugCount = 0
-        , docBuffer = []
-        , editBuffer = []}
+        , debug = ""}
+
+emptyWIdDict : Dict.Dict String WChar
+emptyWIdDict = Dict.empty
 
 
 highlightStyle : Highlight
@@ -36,15 +33,18 @@ fieldStyle = {defaultStyle |
 --startChar = W "START" '`' startChar endChar -100
 --endChar = W "END" '`' startChar endChar -100
 
+startId = (0, -1)
+endId = (0, 1)
 
-startChar = {id = "START"
+
+startChar = {id = startId
         , vis = -100
         , ch = '`'
-        , prev = "START"
-        , next = "END"}
+        , prev = startId
+        , next = endId}
 
-endChar = {id = "END"
+endChar = {id = endId
         , vis = -100
         , ch = '`'
-        , prev = "START"
-        , next = "END"}
+        , prev = startId
+        , next = endId}

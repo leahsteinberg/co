@@ -19,9 +19,9 @@ type alias Doc = {cp: Int, str: String, len: Int}
 
 --id invisible content prev next
 
-type alias WChar = {id: String
-                , next: String
-                , prev: String
+type alias WChar = {id: WId
+                , next: WId
+                , prev: WId
                 , vis: Int
                 , ch: Char}
 
@@ -31,19 +31,14 @@ type Edit = W WUpdate | T Doc
 
 ---- TODO - need a notion of the start and end collabs
 
+type alias WId = (Int, Int)
 
 type alias Model = {counter: Int
                     , site: ID
-                    , wChars: Dict.Dict String WChar
-                    , cursor: (Int, WChar)
+                    , wChars: Dict.Dict WId WChar
                     , start: WChar
-                    , buffer: List WUpdate
                     , pool: List WUpdate
-                    , content: Content
                     , doc: Doc
-                    , debug: String
-                    , debugCount: Int
-                    , docBuffer: List Doc
-                    , editBuffer: List Edit}
+                    , debug: String}
 
 
