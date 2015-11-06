@@ -36,7 +36,7 @@ integrateInsert wChar model =
         wPrev = grabPrev wChar model.wString
         wNext = grabNext wChar model.wString
     in
-        integrateInsert' wChar wPrev wNext (pos model.wString wPrev) model
+        integrateInsert' wChar wPrev wNext (pos model.wString wNext) model
 
 
 -- - - - - - I N S E R T   I M P L E M E N T A T I O N - - - - - - - 
@@ -60,6 +60,9 @@ intInsertChar wCh pos model =
         newLen = String.length newStr
     in 
         {model | wString <- newWStr
+                , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
+                    ++ "   pos is   " ++ toString pos
+
                 , doc <- {cp = 666, str = newStr, len = newLen}
         }
 
@@ -71,7 +74,7 @@ integrateInsert' wCh pred succ pos model =
         idOrderSubStr = pred :: (withoutPrecedenceOrdered subStr) ++ [succ]
         (newPred, newSucc) = findLaterWChar wCh idOrderSubStr
         
-        debugModel =  {model | debug <- 
+        debugModel =  {model | debug <- model.debug ++
                                 "IN RECURSIVE INSERT!!!" 
                                 ++ "pred" ++ toString pred 
                                 ++ ",   succ...." ++ toString  succ
@@ -86,14 +89,13 @@ integrateInsert' wCh pred succ pos model =
             x :: xs -> integrateInsert' wCh newPred newSucc pos debugModel
 
 
-
-
-
 generateInsChar : Char -> Int -> Int -> Doc -> Model -> (Model, WUpdate)
 generateInsChar char predIndex nextIndex doc model =
     let
         pred = ithVisible model.wString predIndex 
         succ = ithVisible model.wString nextIndex
+
+
         newId = (model.site, model.counter)
         newWChar = {id = newId
                     , ch = char
@@ -103,12 +105,12 @@ generateInsChar char predIndex nextIndex doc model =
         newModel = {model | counter <- model.counter + 1}  
         debugModel = {newModel | debug <- "newWchar" ++ toString newWChar
                                            ++ "   pred" ++ toString pred
-                                           ++ "succ    " ++ toString succ}             
+                                           ++ "succ    " ++ toString succ
+                                            ++ "   pred index:   " ++ toString predIndex
+                                            ++ "    next Index   " ++ toString nextIndex} 
+
     in 
---        (debugModel , Insert newWChar)
-        (integrateInsert' newWChar pred succ predIndex newModel , Insert newWChar)
-
-
+        (integrateInsert' newWChar pred succ nextIndex debugModel , Insert newWChar)
 
 
 
@@ -134,39 +136,6 @@ findLaterWChar insCh wStr =
         x :: y :: [] -> (x, y)
         x :: xs -> findLaterWChar insCh xs
 
---findLater' : WChar -> WString -> WChar -> (WChar -> WChar)
---findLater' insCh wStr prevCh =
---    case wStr of
---        [] -> (prevCh, endChar)
----- error case!!!
---        x :: [] -> (prevCh, x)
---        x :: xs -> if wIdOrder x insCh == GT 
---                    then (prevCh, x)
---                    else findLater' insCh xs x
-
-
-
-
-
---findLaterWChar : WChar -> WString -> (WChar, WChar)
---findLaterWChar addingWC lW =
---    case lW of
---        [] -> (addingWC, addingWC)
---        x :: [] -> (addingWC, addingWC)
---        x1 :: x2 :: [] -> (x1, x2)
---        x1 :: x2 :: xs -> if isLater x2 addingWC then (x1, x2) else  findLaterWChar addingWC (x2::xs)
-
-
---isLater : WChar -> WChar -> Bool
---isLater possLater compare =
---    let
---        (possSite, possClock) = possLater.id
---        (compSite, compClock) = compare.id
-    
---    in 
---        possSite > compSite || (possSite == compSite && possClock > compClock)
-
-
 
 -- - - - - - D E L E T E   A P I - - - - - - - 
 
@@ -184,9 +153,7 @@ generateDelete doc model =
                 ++ String.fromChar currWChar.ch++ "thisIndex: " 
                 ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch 
                 ++ "succ: " ++ String.fromChar successor.ch
-
-                    }
-
+                }
     in
         (integrateDelete deletedWChar newModel, Delete deletedWChar)
        
@@ -201,26 +168,5 @@ integrateDelete wChar model =
         {model | wString <- newWString
                 , doc <- {cp = 666, str = newStr, len = newLen}
                 }
-
-
-
---graphToString : Dict.Dict WId WChar -> String
---graphToString dict =
---    case Dict.get startId dict of
---        Just start -> graphToString' start dict
---        _ -> ""
-
---graphToString' : WChar -> Dict.Dict WId WChar-> String
---graphToString' wCh dict =
---    if 
---        | wCh.id == startId -> "" ++ graphToString' (grabNext wCh dict) dict
---        | wCh.id == endId -> ""
---        | wCh.vis <= 0 -> "" ++ graphToString' (grabNext wCh dict) dict
---        | otherwise -> String.fromChar wCh.ch ++ graphToString' (grabNext wCh dict) dict
-
-
-
-
-
 
 

@@ -49,10 +49,11 @@ subSeqGrab wStr end =
 
 ithVisible : WString -> Int -> WChar
 ithVisible wStr i =
-    case wStr of
-        [] -> endChar
+    if i == -1 then startChar else 
+        case wStr of
+            [] -> endChar
 -- error case!
-        x :: xs -> if i == 0 then x else ithVisible xs (i - 1)
+            x :: xs -> if i == 0 then x else ithVisible xs (i - 1)
 
 setInvisible : WString -> WId -> WString
 setInvisible wStr id =
@@ -69,41 +70,9 @@ pos wStr wCh =
         x :: xs -> if x.id == wCh.id then 0 else 1 + (pos xs wCh)
 
 
---subSeq : Dict WId WChar -> WChar -> WChar -> Dict WId WChar
---subSeq dict start end = subSeq' dict (grabNext start dict) end Dict.empty
-
-
---subSeq' : Dict WId WChar -> WChar -> WChar -> Dict WId WChar -> Dict WId WChar
---subSeq' dict curr end subDict =
---    let
---        newDict = Dict.insert curr.id curr subDict
---    in
---        if
---            | curr.id == end.id -> subDict
---            | otherwise -> subSeq' dict (grabNext curr dict) end newDict
-
-
-
---ithVisible' : Dict WId WChar -> Int -> WChar -> WChar
---ithVisible' dict goalPlace currWChar = 
---    let
---        isVis = isVisible currWChar
---    in
-
---        if 
---            |isVis && goalPlace == 0 -> currWChar
---            |isVis -> ithVisible' dict (goalPlace - 1) (grabNext currWChar dict)
---            |currWChar.id == endId -> currWChar
---            |otherwise -> ithVisible' dict goalPlace (grabNext currWChar dict)
-
-
-
     
 isVisible : WChar -> Bool
 isVisible wCh = wCh.vis > 0 || wCh.id == startId || wCh.id == endId
-
-
-
 
 
 grabNext : WChar -> WString  -> WChar
@@ -123,16 +92,7 @@ contains : WChar -> Dict WId WChar -> Bool
 contains wCh dict = Dict.member wCh.id dict
 
 
---ithVisible : Dict WId WChar -> Int -> WChar
---ithVisible dict goalPlace = 
---    let
---        starter = case Dict.get startId dict of
---            Just start -> start
---            _ -> startChar
---    in
---        if goalPlace == -1 then starter else ithVisible' dict goalPlace (grabNext starter dict)
 
--- fold over pool, integrating those that we can integrate
 integratePool : Model -> Model
 integratePool model = model
 
