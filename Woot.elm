@@ -17,8 +17,7 @@ subSeq' dict curr end subDict =
     in
         if
             | curr.id == end.id -> subDict
-            | otherwise -> Dict.insert curr.id curr (Dict.insert end.id end subDict)
---subSeq' dict (grabNext curr dict) end newDict
+            | otherwise -> subSeq' dict (grabNext curr dict) end newDict
 
 
 grabNext : WChar -> Dict.Dict WId WChar  -> WChar

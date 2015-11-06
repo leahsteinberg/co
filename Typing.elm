@@ -82,7 +82,7 @@ view m upd =
         , (text (toString m.wChars))
         , (div
         []
-        [(text ("DEBUG: ...." ++ m.debug))
+        [(text ("                                      DEBUG: ...." ++ m.debug))
         ])
         ]
 
@@ -113,7 +113,7 @@ modelFold = Signal.foldp processEdit (emptyModel, NoUpdate) edits
 processEdit : Edit -> (Model, WUpdate) -> (Model, WUpdate)
 processEdit edit (model, prevUpdate) =
         case edit of
-            T typing -> processTyping typing ({model|debug<-""}, prevUpdate)
+            T typing -> processTyping typing (model, prevUpdate)
             W wUpdate ->  processServerUpdate wUpdate (model, prevUpdate)
 
 

@@ -40,24 +40,9 @@ integrateInsert wChar model =
         _ -> {model | debug <- "Dont have necessary prev and next to add"  }
 
 
-integrateInsert' : WChar -> WChar -> WChar -> Model -> Model 
-integrateInsert' wCh pred succ model =
-    let
-        subStr = subSeq model.wChars pred succ
-        idOrderSubStr = pred :: (withoutPrecedenceOrdered subStr) ++ [succ]
-        (newPred, newSucc) = findLaterWChar wCh idOrderSubStr
-        debugModel =  {model | debug <-
-                             "sub str:  " 
-                            ++ toString subStr 
-                            ++ "          idorder:    " ++ toString idOrderSubStr
-                                }
-    in 
-        if Dict.isEmpty subStr then intInsertChar wCh pred succ model else integrateInsert' wCh newPred newSucc model
 
 
 -- - - - - - I N S E R T   I M P L E M E N T A T I O N - - - - - - - 
-
-
 
 generateInsChar : Char -> Int -> Int -> Doc -> Model -> (Model, WUpdate)
 generateInsChar char predIndex nextIndex doc model =
@@ -70,9 +55,37 @@ generateInsChar char predIndex nextIndex doc model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newModel = {model | counter <- model.counter + 1}                
+        newModel = {model | counter <- model.counter + 1}  
+        debugModel = {newModel | debug <- "newWchar" ++ toString newWChar
+                                           ++ "   pred" ++ toString pred
+                                           ++ "succ    " ++ toString succ}             
     in 
+--        (debugModel , Insert newWChar)
         (integrateInsert' newWChar pred succ newModel , Insert newWChar)
+
+
+
+
+integrateInsert' : WChar -> WChar -> WChar -> Model -> Model 
+integrateInsert' wCh pred succ model =
+    let
+        subStr = subSeq model.wChars pred succ
+        idOrderSubStr = pred :: (withoutPrecedenceOrdered subStr) ++ [succ]
+        (newPred, newSucc) = findLaterWChar wCh idOrderSubStr
+        debugModel =  {model | debug <- 
+                                "IN RECURSIVE INSERT!!!" 
+                                ++ "pred" ++ toString pred 
+                                ++ ",   succ...." ++ toString  succ
+                                ++  "sub str:  "  ++ toString subStr 
+                                ++ "          idorder:    " ++ toString idOrderSubStr
+                                ++ "new pred -> " ++ toString newPred
+                                ++ "new Succ ->" ++ toString newSucc
+                                }
+    in 
+        if Dict.isEmpty subStr then intInsertChar wCh pred succ model else debugModel
+--            integrateInsert' wCh newPred newSucc debugModel
+
+
 
 
 intInsertChar : WChar -> WChar -> WChar -> Model -> Model
@@ -95,7 +108,7 @@ withoutPrecedenceOrdered : Dict.Dict WId WChar -> List WChar
 withoutPrecedenceOrdered dict =
     let
         prevAndNextAbsent wC = not (Dict.member wC.prev dict) && not (Dict.member wC.next dict)
-        includeAbsent = (\wCh wChList -> if prevAndNextAbsent wCh then  wCh::wChList else wChList)
+        includeAbsent = (\wCh wChList -> if prevAndNextAbsent wCh then wCh::wChList else wChList)
 
     in
         List.foldl includeAbsent [] (Dict.values dict)
