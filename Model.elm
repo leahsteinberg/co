@@ -25,17 +25,17 @@ type alias WChar = {id: WId
                 , vis: Int
                 , ch: Char}
 
+type alias WString = List WChar
+
 type WUpdate = Insert WChar | Delete WChar | NoUpdate | SiteId Int
 
 type Edit = W WUpdate | T Doc 
-
----- TODO - need a notion of the start and end collabs
 
 type alias WId = (Int, Int)
 
 type alias Model = {counter: Int
                     , site: ID
-                    , wChars: Dict.Dict WId WChar
+                    , wString: WString
                     , start: WChar
                     , pool: List WUpdate
                     , doc: Doc

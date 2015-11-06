@@ -8,7 +8,8 @@ import Dict
 emptyModel : Model
 emptyModel = {site = 0
         , counter = 0
-        , wChars = Dict.insert endId endChar (Dict.insert startId startChar Dict.empty)
+--        , wChars = Dict.insert endId endChar (Dict.insert startId startChar Dict.empty)
+        , wString = []
         , start = startChar
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
@@ -17,7 +18,8 @@ emptyModel = {site = 0
 emptyDelModel : Model
 emptyDelModel = {site = 0
         , counter = 0
-        , wChars = Dict.insert fakeDeleted.id fakeDeleted (Dict.insert endId {endChar| prev<- (7,0)} (Dict.insert startId {startChar|next<- (7,0)} Dict.empty))
+        , wString = []
+--        , wChars = Dict.insert fakeDeleted.id fakeDeleted (Dict.insert endId {endChar| prev<- (7,0)} (Dict.insert startId {startChar|next<- (7,0)} Dict.empty))
         , start = startChar
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
@@ -46,8 +48,6 @@ fieldStyle = {defaultStyle |
 
                             }
 
---startChar = W "START" '`' startChar endChar -100
---endChar = W "END" '`' startChar endChar -100
 
 startId = (0, -1)
 endId = (0, 1)

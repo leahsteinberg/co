@@ -22,8 +22,8 @@ import Task exposing (..)
 import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
 import Model exposing (..)
 import Constants exposing (..)
-import Woot exposing (grabNext)
-import Graph exposing (generateInsert, generateDelete, graphToString, integrateInsert, integrateDelete)
+import Woot exposing (grabNext, wToString)
+import Graph exposing (generateInsert, generateDelete, integrateInsert, integrateDelete)
 
 
 
@@ -75,11 +75,11 @@ view m upd =
         div
         []
         [
-        (textarea [id "typingZone", cols 40, rows 20, property "value" (Json.string (graphToString m.wChars))] [])
+        (textarea [id "typingZone", cols 40, rows 20, property "value" (Json.string (wToString m.wString))] [])
 --        , (text ("\nDOc ------" ++ toString (m.doc)))
         , (text ("SITE ID" ++ toString m.site ++ "    "))
         , (text (toString upd))
-        , (text (toString m.wChars))
+        , (text (toString m.wString))
         , (div
         []
         [(text ("                                      DEBUG: ...." ++ m.debug))
