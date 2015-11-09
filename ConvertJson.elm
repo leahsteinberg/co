@@ -8,18 +8,6 @@ import List exposing (head)
 import Debug
 import Result exposing (..)
 
---decodeInsert : String -> Edit
---decodeInsert str = 
---    let
---        decoder = object2 (,) ("parent" := string) (id)
-
---editToJson : Edit -> String
---editToJson edit = 
---    let
---        editValue = getEditValue edit 
---    in 
---        encode 2 editValue
-
 
 decId = ("id" := Dec.tuple2 (,) int int)
 decVis = ("vis" := Dec.int)
@@ -90,10 +78,12 @@ wUpdateToJson wUpdate =
     in
         encode 2 wUpValue
 
-
---encodeWUpdate wUp =
---    case wUp of
---    Insert wCh -> encodeWInsert wCh
+stringUpdateToJson : String -> String
+stringUpdateToJson str =
+    let
+        strValue = encodeStringUpdate str
+    in
+        encode 2 strValue
 
 
 encodeWInsert wCh =
@@ -103,6 +93,9 @@ encodeWInsert wCh =
             , ("prev", Enc.string wCh.prev)
             , ("vis", Enc.int wCh.vis)]        
 
+encodeStringUpdate : String -> Value
+encodeStringUpdate str =
+    object [("type", Enc.string "StringUpdate"), ("string", Enc.string str)]
 
 encodeWUpdate : WUpdate -> Value
 encodeWUpdate wUp =
@@ -110,6 +103,7 @@ encodeWUpdate wUp =
         Insert wCh -> object (("type", Enc.string "Insert") :: wCharToJsonList wCh)
         Delete wCh -> object (("type", Enc.string "Delete") :: wCharToJsonList wCh)
         NoUpdate -> object [("type", Enc.string "NoUpdate")]
+        Caret n -> object [("type", Enc.string "Caret"), ("pos", Enc.int n)]
 
 
 wCharToJsonList : WChar -> List (String, Value)

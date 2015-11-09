@@ -4,6 +4,7 @@ import Dict exposing (..)
 import Model exposing (..)
 import Constants exposing (..)
 import String exposing (fromChar)
+import Set exposing (..)
 
 -- - - - - - - - - - U T I L I T I E S - - - - - - - - - -
 
@@ -88,21 +89,17 @@ grabPrev wCh wStr =
         [] -> startChar
 
 
-contains : WChar -> Dict WId WChar -> Bool
-contains wCh dict = Dict.member wCh.id dict
-
-
 
 integratePool : Model -> Model
 integratePool model = model
 
-canIns : WChar -> Dict WId WChar -> Bool
-canIns wCh dict = Dict.member wCh.next dict && Dict.member wCh.prev dict
+canIns : WChar -> Set WId -> Bool
+canIns wCh set = Set.member wCh.next set && Set.member wCh.prev set
 
-canDel : WChar -> Dict WId WChar -> Bool
-canDel wCh dict = contains wCh dict
+canDel : WChar -> Set WId -> Bool
+canDel wCh set = Set.member wCh.id set
 
-canIntegrate : WUpdate -> Dict WId WChar -> Bool
+canIntegrate : WUpdate -> Set WId -> Bool
 canIntegrate wUpdate dict =
     case wUpdate of
         Insert wCh -> canIns wCh dict

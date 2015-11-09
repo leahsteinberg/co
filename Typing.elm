@@ -19,11 +19,16 @@ import SocketIO exposing (..)
 import Task exposing (..)
 
 
-import ConvertJson exposing (jsonToWUpdate, wUpdateToJson)
+import ConvertJson exposing (jsonToWUpdate, wUpdateToJson, stringUpdateToJson)
 import Model exposing (..)
 import Constants exposing (..)
-import Woot exposing (grabNext, wToString)
-import Graph exposing (generateInsert, generateDelete, integrateInsert, integrateDelete)
+import Woot exposing (grabNext
+                        , wToString
+                        , canIntegrate)
+import Graph exposing (generateInsert
+                        , generateDelete
+                        , integrateRemoteInsert
+                        , integrateRemoteDelete)
 
 
 
@@ -37,19 +42,36 @@ incoming : Signal.Mailbox String
 incoming = Signal.mailbox "null"
 
 
-socket = io "http://localhost:4004" defaultOptions
+port windowLocPort : String
+
+
+socket =  io windowLocPort defaultOptions
 
 port incomingPort : Task x ()
 port incomingPort = socket `andThen` SocketIO.on "serverWUpdates" incoming.address
 
 
-throwOutNoUpdates : WUpdate -> Bool
-throwOutNoUpdates wUp = 
+onlyCarets : WUpdate -> Bool
+onlyCarets wUp =
+    case wUp of
+        Caret n -> True
+        _ -> False
+
+
+throwOutNoUpdatesAndCaret : WUpdate -> Bool
+throwOutNoUpdatesAndCaret wUp = 
     case wUp of
         NoUpdate -> False
+        --Caret n -> False
         _ -> True
 
-serverUpdates = Signal.filter throwOutNoUpdates NoUpdate ((\u -> jsonToWUpdate u) <~ incoming.signal)
+serverUpdates = Signal.filter throwOutNoUpdatesAndCaret NoUpdate ((\u -> jsonToWUpdate u) <~ incoming.signal)
+
+port sendCaretUpdatesPort : Signal String
+port sendCaretUpdatesPort = caretUpdatesToSend
+
+port sendNewStringUpdatesPort : Signal String
+port sendNewStringUpdatesPort = sendNewString
 
 port sendUpdatesPort : Signal (Task x ())
 port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "localEdits" i) <~ localUpdatesAsJsonToSend
@@ -57,8 +79,16 @@ port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "localEdits" i) <~ 
 localUpdatesAsJsonToSend : Signal String
 localUpdatesAsJsonToSend = wUpdateToJson <~ cleanedUpdatesToSend
 
+caretUpdatesToSend = wUpdateToJson <~ updateCaretPos
+
+
 cleanedUpdatesToSend : Signal WUpdate
-cleanedUpdatesToSend = Signal.filter throwOutNoUpdates NoUpdate (snd <~ modelFold)
+cleanedUpdatesToSend = Signal.filter throwOutNoUpdatesAndCaret NoUpdate (snd <~ modelFold)
+
+updateCaretPos : Signal WUpdate
+updateCaretPos = Signal.filter onlyCarets NoUpdate (snd <~ modelFold)
+
+
 
 port initializePort : Task x ()
 port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
@@ -70,20 +100,37 @@ typing = Signal.dropRepeats typingPort
 -- - - - - - - - - V I E W - - - - - - - - - - - -
 
 
-view : Model -> WUpdate ->  Html
+sendNewString : Signal String
+sendNewString = Signal.map (\(mod, upd) -> stringUpdateToJson mod.doc.str) modelFold
+
+view : Model -> WUpdate -> Html
 view m upd =
+    let debugHtml = if debug then 
+            div
+            []
+            [
+--                    , (text (toString m.wSeen))
+             (text ("             \nDOc ------" ++ toString (m.doc)))
+            , (text ("                SITE ID" ++ toString m.site ++ "    "))
+            , (text ("                          " ++ (toString upd)))
+--            , (text ("                           " ++(toString m.wString)))
+            ,(text ("                                      DEBUG: ...." ++ m.debug))
+            ] 
+
+            else div [] []
+    in
+
         div
         []
         [
-        (textarea [id "typingZone", cols 40, rows 20, property "value" (Json.string (wToString m.wString))] [])
---        , (text ("\nDOc ------" ++ toString (m.doc)))
-        , (text ("SITE ID" ++ toString m.site ++ "    "))
-        , (text (toString upd))
-        , (text (toString m.wString))
-        , (div
-        []
-        [(text ("                                      DEBUG: ...." ++ m.debug))
-        ])
+        (textarea 
+            [id "typingZone"
+            , cols 40
+            , rows 20
+            , property "value" (Json.string (wToString m.wString))
+            ] [])
+
+        , debugHtml
         ]
 
 
@@ -100,12 +147,37 @@ handleServerUpdate wUpdate = W wUpdate
 serverUpdateToEdit : Signal Edit
 serverUpdateToEdit = handleServerUpdate <~ serverUpdates
 
-
 edits : Signal Edit
 edits = Signal.merge typingToEdit serverUpdateToEdit
 
 modelFold : Signal (Model, WUpdate)
 modelFold = Signal.foldp processEdit (emptyModel, NoUpdate) edits
+
+integrateRemoteUpdate : WUpdate -> (Model, WUpdate) -> (Model, WUpdate)
+integrateRemoteUpdate wUpd (m, prevUpd) =
+    let
+        moveToProcessed x m = {m | processedPool <- x :: m.processedPool}
+    in
+
+        case wUpd of
+            Insert wCh -> if canIntegrate wUpd m.wSeen 
+                        then integrateRemoteInsert wCh m 
+                        else integratePool (moveToProcessed wUpd m, prevUpd)
+
+            Delete wCh -> if canIntegrate wUpd m.wSeen
+                                then integrateRemoteDelete wCh m
+                                else integratePool (moveToProcessed wUpd m, prevUpd)
+
+            _ -> integratePool (moveToProcessed wUpd m, prevUpd)
+
+integratePool : (Model, WUpdate) -> (Model, WUpdate)
+integratePool (m, w) = 
+    case m.pool of 
+        
+        [] -> ({m | pool <- m.processedPool, processedPool <- []}, w)
+        
+        x :: xs -> integrateRemoteUpdate x ({m | pool <- xs}, w)
+                
 
 
 -- - - - - - - -  S I G N A L  P R O C E S S I N G - - - - - -
@@ -119,10 +191,21 @@ processEdit edit (model, prevUpdate) =
 
 processServerUpdate : WUpdate -> (Model, WUpdate) -> (Model, WUpdate)
 processServerUpdate wUpd (model, prevUpdate) = 
-    case wUpd of
-        SiteId id -> ({model | site <- id}, prevUpdate)
-        Insert wCh -> (integrateInsert wCh model, NoUpdate)
-        Delete wCh -> (integrateDelete wCh model, NoUpdate)
+    let
+        poolUpdate = ({model | pool <- wUpd :: model.pool}, prevUpdate)
+    in
+        case wUpd of
+            SiteId id -> ({model | site <- id}, prevUpdate)
+
+            Insert wCh -> if canIntegrate wUpd model.wSeen 
+                            then integrateRemoteInsert wCh model 
+                            else poolUpdate
+                        
+            Delete wCh -> if canIntegrate wUpd model.wSeen 
+                            then integrateRemoteDelete wCh model
+                            else poolUpdate
+
+
 
 
 processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
@@ -140,5 +223,8 @@ processTyping newDoc (model, prevUpdate) =
             | otherwise -> ({emptyModel |debug <- "BAD CASE 2"}, NoUpdate)
 
 
-main = Signal.map (\(mod, upd) -> view mod upd) modelFold
+
+
+
+main = show "hi"
 

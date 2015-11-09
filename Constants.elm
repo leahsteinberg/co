@@ -4,6 +4,10 @@ import Model exposing (..)
 import Color exposing (green)
 import Graphics.Input.Field exposing (..)
 import Dict
+import Set
+
+debug = False
+
 
 emptyModel : Model
 emptyModel = {site = 0
@@ -13,7 +17,12 @@ emptyModel = {site = 0
         , start = startChar
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
-        , debug = ""}
+        , processedPool = []
+        , debug = ""
+        , wSeen = Set.insert startId Set.empty
+                        |> Set.insert endId
+
+    }
 
 emptyDelModel : Model
 emptyDelModel = {site = 0
@@ -23,7 +32,10 @@ emptyDelModel = {site = 0
         , start = startChar
         , doc = {cp = 0, str = "", len = 0}
         , pool = []
-        , debug = ""}
+        , processedPool = []
+        , debug = ""
+        , wSeen = Set.insert startId Set.empty
+                        |> Set.insert endId}
 
 
 fakeDeleted = {id = (7,0)

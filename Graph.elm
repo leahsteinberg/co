@@ -7,7 +7,7 @@ import String exposing (toList)
 import List 
 import Constants exposing (endChar, startChar, emptyModel, endId, startId)
 import ConvertJson exposing (wUpdateToJson)
-
+import Set
 import Woot exposing (..)
 import Graphics.Input.Field exposing (..)
 
@@ -15,28 +15,37 @@ import Graphics.Input.Field exposing (..)
 -- - - - - - I N S E R T   A P I - - - - - - - 
 
 
-
+-- only called when typing is local
 generateInsert : Doc -> Model -> (Model, WUpdate)
 generateInsert doc model = 
     let
         nextIndex = doc.cp - 1
         prevIndex = doc.cp - 2 
         stringListFromInserted = List.drop (nextIndex) (toList  doc.str)
+        newCPModel = {model | doc<-doc}
     in
         case stringListFromInserted of 
-            x :: xs -> generateInsChar x prevIndex nextIndex doc model 
-            _ -> (emptyModel, NoUpdate)
+            x :: xs -> generateInsChar x prevIndex nextIndex doc newCPModel
+            _ -> (newCPModel, NoUpdate)
 -- error case!
 
 
-
-integrateInsert : WChar -> Model -> Model
-integrateInsert wChar model =
+-- only called when typing is remote
+integrateRemoteInsert : WChar -> Model -> (Model, WUpdate)
+integrateRemoteInsert wChar model =
     let
         wPrev = grabPrev wChar model.wString
         wNext = grabNext wChar model.wString
+        insertPos = pos model.wString wNext
+        currCP = model.doc.cp
+        newCP = if currCP > insertPos then currCP + 1 else currCP
+        newCPModel =  {model | doc <- updateCP model.doc newCP}
+        newModel = integrateInsert' wChar wPrev wNext insertPos newCPModel
+--       
     in
-        integrateInsert' wChar wPrev wNext (pos model.wString wNext) model
+        (newModel, Caret newModel.doc.cp)
+
+        
 
 
 -- - - - - - I N S E R T   I M P L E M E N T A T I O N - - - - - - - 
@@ -60,10 +69,10 @@ intInsertChar wCh pos model =
         newLen = String.length newStr
     in 
         {model | wString <- newWStr
+                , wSeen <- Set.insert wCh.id model.wSeen
                 , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
                     ++ "   pos is   " ++ toString pos
-
-                , doc <- {cp = 666, str = newStr, len = newLen}
+                , doc <- updateStrAndLen model.doc newStr newLen
         }
 
 
@@ -73,20 +82,10 @@ integrateInsert' wCh pred succ pos model =
         subStr = subSeq model.wString pred succ
         idOrderSubStr = pred :: (withoutPrecedenceOrdered subStr) ++ [succ]
         (newPred, newSucc) = findLaterWChar wCh idOrderSubStr
-        
-        debugModel =  {model | debug <- model.debug ++
-                                "IN RECURSIVE INSERT!!!" 
-                                ++ "pred" ++ toString pred 
-                                ++ ",   succ...." ++ toString  succ
-                                ++  "sub str:  "  ++ toString subStr 
-                                ++ "          idorder:    " ++ toString idOrderSubStr
-                                ++ "new pred -> " ++ toString newPred
-                                ++ "new Succ ->" ++ toString newSucc
-                                }
     in 
         case subStr of
             [] -> intInsertChar wCh pos model
-            x :: xs -> integrateInsert' wCh newPred newSucc pos debugModel
+            x :: xs -> integrateInsert' wCh newPred newSucc pos model
 
 
 generateInsChar : Char -> Int -> Int -> Doc -> Model -> (Model, WUpdate)
@@ -94,15 +93,14 @@ generateInsChar char predIndex nextIndex doc model =
     let
         pred = ithVisible model.wString predIndex 
         succ = ithVisible model.wString nextIndex
-
-
         newId = (model.site, model.counter)
         newWChar = {id = newId
                     , ch = char
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newModel = {model | counter <- model.counter + 1}  
+        newModel = {model | counter <- model.counter + 1
+                            , doc <- doc}  
         debugModel = {newModel | debug <- "newWchar" ++ toString newWChar
                                            ++ "   pred" ++ toString pred
                                            ++ "succ    " ++ toString succ
@@ -146,10 +144,15 @@ generateDelete doc model =
         place = doc.cp  
         predecessor = ithVisible model.wString (place - 1)----== my problem
         successor = ithVisible model.wString (place + 1)
+
         currWChar = ithVisible model.wString (place)
+
         deletedWChar = {currWChar | vis <- -1}
+
+
         newModel = {model |
-                debug <- "DELETING: "
+                doc <- doc
+                , debug <- "DELETING: "
                 ++ String.fromChar currWChar.ch++ "thisIndex: " 
                 ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch 
                 ++ "succ: " ++ String.fromChar successor.ch
@@ -157,6 +160,19 @@ generateDelete doc model =
     in
         (integrateDelete deletedWChar newModel, Delete deletedWChar)
        
+
+integrateRemoteDelete : WChar -> Model -> (Model, WUpdate)
+integrateRemoteDelete wChar model =
+    let 
+        currCP = model.doc.cp
+        deletePos = pos model.wString wChar
+        newCP = if currCP > deletePos then currCP - 1 else currCP
+        newDocModel =  {model | doc <- (updateCP model.doc newCP)}
+        newModel = integrateDelete wChar newDocModel
+
+    in 
+        (newModel, Caret newModel.doc.cp)
+
 
 integrateDelete : WChar -> Model -> Model
 integrateDelete wChar model = 
@@ -166,7 +182,17 @@ integrateDelete wChar model =
         newLen = String.length newStr
     in 
         {model | wString <- newWString
-                , doc <- {cp = 666, str = newStr, len = newLen}
                 }
 
 
+-- - -- -  - - - - - - - - - - - - - - - - - - - - 
+
+
+updateCP : Doc -> Int -> Doc
+updateCP doc cp =
+    {doc | cp <- cp}    
+
+
+updateStrAndLen : Doc -> String -> Int -> Doc
+updateStrAndLen doc str len =
+    {doc | str <- str, len <- len}

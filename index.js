@@ -25,17 +25,17 @@ app.get('/', function(req, res) {
 
 
 
-var delaySendOfSiteId = function(socket) {
-    console.log("t-!!!", this);
-    console.log( "s-!!!",socket);
+// var delaySendOfSiteId = function(socket) {
+//     console.log("t-!!!", this);
+//     console.log( "s-!!!",socket);
 
-setInterval(
-            function(msg){
+// setInterval(
+//             function(msg){
   
 
-        }, 200);
+//         }, 200);
 
-}
+// }
 
 
 
