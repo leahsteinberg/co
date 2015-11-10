@@ -18,7 +18,7 @@ var textArea = CodeMirror.fromTextArea(textAreaOld);
 // var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
 // var letterInd = 0;
 
-textArea.on("change", function(i, c){
+textArea.on("inputRead", function(i, c){
 
 	console.log("omg!!", c);
 	var toSend = {};
@@ -44,6 +44,51 @@ textArea.on("change", function(i, c){
 
 
 });
+
+
+
+
+woot.ports.sendNewStringUpdatesPort.subscribe(stringUpdate);
+
+function stringUpdate(str){
+
+	console.log("got string update!!!");
+	var stringUpdate = JSON.parse(str);
+	//console.log(stringUpdate);
+	textArea.setValue(stringUpdate.string);
+
+	///sendNewStringUpdatesPort
+
+}
+
+
+// function addLetter(){
+// 	letterInd = (letterInd + 1) % letters.length;
+// 	textArea.value = letters[letterInd] + textArea.value
+
+// }
+
+
+
+var sendUpdate = function(){
+    if (woot === undefined 
+    	|| woot.ports === undefined 
+    	|| textArea === undefined 
+    	|| textArea.value === undefined) 
+    {
+    	return
+    }
+	var currString = textArea.value;
+	var cp = textArea.indexFromPos(textArea.getCursor);
+
+
+	var toSend = {len: currString.length
+								, cp: cp
+								, str: currString}
+	woot.ports.typingPort.send(toSend);
+}
+
+
 
 getCaretPosition = function(){
 	if (textArea === undefined || textArea === []) {
@@ -80,45 +125,7 @@ function caretUpdate(cp){
 	}
 
 }
-woot.ports.sendNewStringUpdatesPort.subscribe(stringUpdate);
 
-function stringUpdate(str){
-
-	console.log("got string update!!!");
-	var stringUpdate = JSON.parse(str);
-	//console.log(stringUpdate);
-	//textArea.setValue(stringUpdate.string);
-
-	///sendNewStringUpdatesPort
-
-}
-
-
-// function addLetter(){
-// 	letterInd = (letterInd + 1) % letters.length;
-// 	textArea.value = letters[letterInd] + textArea.value
-
-// }
-
-
-
-var sendUpdate = function(){
-    if (woot === undefined 
-    	|| woot.ports === undefined 
-    	|| textArea === undefined 
-    	|| textArea.value === undefined) 
-    {
-    	return
-    }
-	var currString = textArea.value;
-	var cp = textArea.indexFromPos(textArea.getCursor);
-
-
-	var toSend = {len: currString.length
-								, cp: cp
-								, str: currString}
-	woot.ports.typingPort.send(toSend);
-}
 
 //  textArea.oninput = function(e){
 //  	console.log("received input!!");
