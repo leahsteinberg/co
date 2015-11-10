@@ -11,7 +11,7 @@
 <script src="public/elm.js"></script>
 <script>
 var div = document.getElementById('anchor');
-var woot = Elm.embed(Elm.Typing, div, {typingPort: {cp: 0, str: "", len: 0}
+var woot = Elm.embed(Elm.Typing, div, {typingPort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
 										, windowLocPort: window.location.origin});
 var textAreaOld = document.getElementById('typingZone');
 var textArea = CodeMirror.fromTextArea(textAreaOld);
@@ -20,26 +20,26 @@ var textArea = CodeMirror.fromTextArea(textAreaOld);
 
 textArea.on("change", function(i, c){
 
-	//console.log("omg!!", c);
-	if (c.removed[0] != ""){
-		currString = textArea.getValue();
-	}
-	if (c['text'][0] != 0){
-		inserted = c.text[0];
-		currString = textArea.getValue();
-	}
-	console.log("curr string", currString);
-
-	console.log(textArea.indexFromPos(c.to));
+	console.log("omg!!", c);
+	var toSend = {};
 	var cp = textArea.indexFromPos(textArea.getCursor());
 
 
-	var toSend = {len: currString.length
-								, cp: cp
-								, str: currString}
+	if (c.removed[0] != ""){
+		toSend["type"] = "Delete";
+		currString = textArea.getValue();
+		toSend["ch"] = c.removed[0]
+	}
+	if (c['text'][0] != ""){
+		toSend["type"] = "Insert";
+		toSend["ch"] = c.text[0]
+	}
+	toSend.cp = cp;
+
+
 	console.log("tosend is", toSend);
 
-	woot.ports.typingPort.send(toSend);
+	woot.ports.typingPort.send(JSON.stringify(toSend));
 
 
 
@@ -86,8 +86,8 @@ function stringUpdate(str){
 
 	console.log("got string update!!!");
 	var stringUpdate = JSON.parse(str);
-	console.log(stringUpdate);
-//	textArea.setValue(str);
+	//console.log(stringUpdate);
+	//textArea.setValue(stringUpdate.string);
 
 	///sendNewStringUpdatesPort
 

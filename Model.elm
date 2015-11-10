@@ -28,9 +28,11 @@ type alias WChar = {id: WId
 
 type alias WString = List WChar
 
-type WUpdate =  Insert WChar | Delete WChar | NoUpdate | SiteId Int | Caret Int
+type WUpdate = Insert WChar | Delete WChar | NoUpdate | SiteId Int | Caret Int
 
-type Edit = W WUpdate | T Doc 
+type Edit = W WUpdate | T Typing
+
+type Typing = I Char Int | D Char Int | NoTUpdate
 
 
 type alias WId = (Int, Int)

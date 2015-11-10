@@ -54,7 +54,11 @@ ithVisible wStr i =
         case wStr of
             [] -> endChar
 -- error case!
-            x :: xs -> if i == 0 then x else ithVisible xs (i - 1)
+            x :: xs -> if i == 0 && isVisible x then x 
+                else 
+                    if isVisible x then ithVisible xs (i - 1)
+                        else ithVisible xs i 
+--                            {ch = 'W', prev = startId, next = endId, vis = -1000, id = (66, 66)}
 
 setInvisible : WString -> WId -> WString
 setInvisible wStr id =
@@ -73,7 +77,12 @@ pos wStr wCh =
 
     
 isVisible : WChar -> Bool
-isVisible wCh = wCh.vis > 0 || wCh.id == startId || wCh.id == endId
+isVisible wCh = 
+    if 
+        | wCh.id == startId -> True
+        | wCh.id == endId -> True
+        | wCh.vis > 0 -> True
+        | otherwise -> False
 
 
 grabNext : WChar -> WString  -> WChar

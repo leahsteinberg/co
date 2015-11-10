@@ -19,7 +19,7 @@ import SocketIO exposing (..)
 import Task exposing (..)
 
 
-import ConvertJson exposing (jsonToWUpdate, wUpdateToJson, stringUpdateToJson)
+import ConvertJson exposing (jsonToWUpdate, wUpdateToJson, stringUpdateToJson, jsonToTypingUpdate)
 import Model exposing (..)
 import Constants exposing (..)
 import Woot exposing (grabNext
@@ -93,9 +93,9 @@ updateCaretPos = Signal.filter onlyCarets NoUpdate (snd <~ modelFold)
 port initializePort : Task x ()
 port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
 
-port typingPort: Signal Doc
+port typingPort: Signal String
 
-typing = Signal.dropRepeats typingPort
+typing = jsonToTypingUpdate <~ typingPort
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
 
@@ -135,8 +135,8 @@ view m upd =
 
 
 
-handleTyping : Doc -> Edit
-handleTyping doc = T doc
+handleTyping : Typing -> Edit
+handleTyping typing = T typing
 
 typingToEdit : Signal Edit
 typingToEdit = handleTyping <~ typing
@@ -208,23 +208,18 @@ processServerUpdate wUpd (model, prevUpdate) =
 
 
 
-processTyping : Doc -> (Model, WUpdate) -> (Model, WUpdate)
-processTyping newDoc (model, prevUpdate) =
-    let 
-        oldLen = model.doc.len
-        newLen = newDoc.len
-    in
-        if 
-            | oldLen == newLen -> (model, NoUpdate)
-            | oldLen - newLen == 1 -> generateDelete newDoc model
-            | newLen - oldLen == 1 -> generateInsert newDoc model
-            | oldLen - newLen > 1 -> ({emptyModel |debug <- "BAD CASE 3"}, NoUpdate)
-            | newLen - oldLen > 1 -> ({emptyModel |debug <- "BAD CASE 1:, oldLen : " ++ toString oldLen ++ "new Len: " ++ toString newLen}, NoUpdate)
-            | otherwise -> ({emptyModel |debug <- "BAD CASE 2"}, NoUpdate)
+processTyping : Typing -> (Model, WUpdate) -> (Model, WUpdate)
+processTyping typ (model, prevUpdate) = 
+    case typ of
+        I ch place -> generateInsert ch place model
+        D ch place -> generateDelete ch place model
+        NoTUpdate -> ({model | debug <- "not T UPDST CASE"}, NoUpdate)
+        _ -> ({model| debug <- "wtf case"}, NoUpdate)
+
+
+sendDebug model str = ({model | debug <- str ++ model.debug}, NoUpdate)
 
 
 
-
-
-main = show "hi"
+main = (\t (m,w) -> show (toString t ++ "    " ++ (wToString m.wString) ++ "   " ++ toString m.debug ++ toString m.wString) ) <~ typing ~ modelFold
 

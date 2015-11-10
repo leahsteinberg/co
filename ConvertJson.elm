@@ -8,6 +8,19 @@ import List exposing (head)
 import Debug
 import Result exposing (..)
 
+jsonToWUpdate : String -> WUpdate
+jsonToWUpdate str = 
+    case Dec.decodeString ("type" := Dec.string) str of
+        Ok x -> decodeWUpdate x str
+        Err error -> NoUpdate
+
+
+jsonToTypingUpdate : String -> Typing
+jsonToTypingUpdate str =
+    case Dec.decodeString ("type" := Dec.string) str of
+        Ok x -> decodeTyping x str 
+        Err error -> NoTUpdate
+
 
 decId = ("id" := Dec.tuple2 (,) int int)
 decVis = ("vis" := Dec.int)
@@ -23,11 +36,33 @@ toChar str =
         _ -> '$'
 
 
-jsonToWUpdate : String -> WUpdate
-jsonToWUpdate str = 
-    case Dec.decodeString ("type" := Dec.string) str of
-        Ok x -> decodeWUpdate x str
-        Err error -> NoUpdate
+decodeTyping : String -> String -> Typing
+decodeTyping typeStr str =
+    if 
+        | typeStr == "Insert" -> 
+            case Dec.decodeString tInsertDecoder str of
+                Ok x -> x
+                Err error -> NoTUpdate
+        | typeStr == "Delete" -> 
+                case Dec.decodeString tDeleteDecoder str of
+                    Ok x -> x
+                    Err error -> NoTUpdate
+
+tInsertDecoder :  Decoder Typing
+tInsertDecoder  =
+    object2 
+        (\ ch  cp -> I (toChar ch) cp)
+        decCh decCP 
+
+tDeleteDecoder : Decoder Typing 
+tDeleteDecoder =
+    object2
+        (\ ch cp -> D (toChar ch) cp)
+             decCh decCP
+
+
+decCP = ("cp" := Dec.int)
+
 
 
 decodeWUpdate : String -> String -> WUpdate
@@ -37,6 +72,14 @@ decodeWUpdate typeStr str =
         | typeStr == "Delete" -> decodeWDelete str
         | typeStr == "SiteId" -> decodeWSiteId str
         | otherwise -> NoUpdate
+
+
+
+decodeWInsert : String -> WUpdate
+decodeWInsert str = 
+    case Dec.decodeString wCharDecoder str of
+        Ok wCh -> Insert wCh
+        Err e -> NoUpdate
 
 
 
@@ -54,12 +97,6 @@ decodeWSiteId str =
         Err e -> NoUpdate
 
 
-decodeWInsert : String -> WUpdate
-decodeWInsert str = 
-    case Dec.decodeString wCharDecoder str of
-        Ok wCh -> Insert wCh
-        Err e -> NoUpdate
-
 
 wCharDecoder : Decoder WChar
 wCharDecoder = 
@@ -70,7 +107,7 @@ wCharDecoder =
 wSiteIdDecoder : Decoder Int
 wSiteIdDecoder = "siteId" := int
 
-
+-- - - - - - - -  - - - - - --
 wUpdateToJson : WUpdate -> String
 wUpdateToJson wUpdate =
     let

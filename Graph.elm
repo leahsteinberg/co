@@ -3,7 +3,7 @@ module Graph where
 import Model exposing (..)
 import Dict 
 import Debug
-import String exposing (toList)
+import String exposing (toList, fromChar)
 import List 
 import Constants exposing (endChar, startChar, emptyModel, endId, startId)
 import ConvertJson exposing (wUpdateToJson)
@@ -16,17 +16,12 @@ import Graphics.Input.Field exposing (..)
 
 
 -- only called when typing is local
-generateInsert : Doc -> Model -> (Model, WUpdate)
-generateInsert doc model = 
+generateInsert : Char -> Int -> Model -> (Model, WUpdate)
+generateInsert ch place model = 
     let
-        nextIndex = doc.cp - 1
-        prevIndex = doc.cp - 2 
-        stringListFromInserted = List.drop (nextIndex) (toList  doc.str)
-        newCPModel = {model | doc<-doc}
+         debugModel = {model | debug <- "ch is  " ++ fromChar ch ++ "   place is   " ++ toString place}
     in
-        case stringListFromInserted of 
-            x :: xs -> generateInsChar x prevIndex nextIndex doc newCPModel
-            _ -> (newCPModel, NoUpdate)
+        generateInsChar ch (place - 2) (place - 1) {debugModel | doc <- updateCP model.doc place }
 -- error case!
 
 
@@ -70,8 +65,8 @@ intInsertChar wCh pos model =
     in 
         {model | wString <- newWStr
                 , wSeen <- Set.insert wCh.id model.wSeen
-                , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
-                    ++ "   pos is   " ++ toString pos
+--                , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
+--                    ++ "   pos is   " ++ toString pos
                 , doc <- updateStrAndLen model.doc newStr newLen
         }
 
@@ -88,8 +83,8 @@ integrateInsert' wCh pred succ pos model =
             x :: xs -> integrateInsert' wCh newPred newSucc pos model
 
 
-generateInsChar : Char -> Int -> Int -> Doc -> Model -> (Model, WUpdate)
-generateInsChar char predIndex nextIndex doc model =
+generateInsChar : Char -> Int -> Int -> Model -> (Model, WUpdate)
+generateInsChar char predIndex nextIndex model =
     let
         pred = ithVisible model.wString predIndex 
         succ = ithVisible model.wString nextIndex
@@ -99,8 +94,7 @@ generateInsChar char predIndex nextIndex doc model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newModel = {model | counter <- model.counter + 1
-                            , doc <- doc}  
+        newModel = {model | counter <- model.counter + 1}  
         debugModel = {newModel | debug <- "newWchar" ++ toString newWChar
                                            ++ "   pred" ++ toString pred
                                            ++ "succ    " ++ toString succ
@@ -138,10 +132,9 @@ findLaterWChar insCh wStr =
 -- - - - - - D E L E T E   A P I - - - - - - - 
 
 
-generateDelete : Doc -> Model -> (Model, WUpdate)
-generateDelete doc model = 
+generateDelete : Char -> Int -> Model -> (Model, WUpdate)
+generateDelete ch place model = 
     let
-        place = doc.cp  
         predecessor = ithVisible model.wString (place - 1)----== my problem
         successor = ithVisible model.wString (place + 1)
 
@@ -149,13 +142,15 @@ generateDelete doc model =
 
         deletedWChar = {currWChar | vis <- -1}
 
-
         newModel = {model |
-                doc <- doc
-                , debug <- "DELETING: "
-                ++ String.fromChar currWChar.ch++ "thisIndex: " 
-                ++ toString place ++ "pred :" ++ String.fromChar predecessor.ch 
-                ++ "succ: " ++ String.fromChar successor.ch
+                doc <- updateCP model.doc place
+                , debug <- "CHAR deleteing is -- " ++ fromChar ch
+
+                ++ "    DELETING: "
+                ++ String.fromChar currWChar.ch ++ "/thisIndex: " 
+                ++ toString place ++ "/pred :" ++ String.fromChar predecessor.ch 
+                ++ "/succ: " ++ String.fromChar successor.ch
+                ++ "/place: " ++ toString place
                 }
     in
         (integrateDelete deletedWChar newModel, Delete deletedWChar)

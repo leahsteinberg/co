@@ -8,6 +8,26 @@ import Set
 
 debug = False
 
+fakeModel : Model
+fakeModel = {site = 0
+            , counter = 6
+            , wString = [{ ch = 'a', id = (2,0), next = (0,1), prev = (0,-1), vis = 1 },{ ch = 'b', id = (2,1), next = (0,1), prev = (2,0), vis = 1 },{ ch = ' ', id = (2,2), next = (0,1), prev = (2,1), vis = 1 },{ ch = 'c', id = (2,3), next = (0,1), prev = (2,2), vis = -1 },{ ch = 'd', id = (2,4), next = (0,1), prev = (2,3), vis = 1 }]
+            , start = startChar
+            , doc = {cp = 4, str = "ab d", len = 4}
+            , pool = []
+            , processedPool = []
+            , debug = ""
+            , wSeen =  Set.insert startId Set.empty
+                        |> Set.insert endId
+                        |> Set.insert (2,0)
+                        |> Set.insert (2, 1)
+                        |> Set.insert (2, 2)
+                        |> Set.insert (2, 4)
+            }
+
+
+
+
 
 emptyModel : Model
 emptyModel = {site = 0
