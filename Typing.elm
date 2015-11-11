@@ -163,7 +163,7 @@ modelFold = Signal.foldp processEdit (emptyModel, W NoUpdate) edits
 
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
-main = show <~ (tUpdatePort)
+main = (\ t s -> show  ("typing: " ++ toString t ++ "server: " ++ toString s)) <~ (tUpdatePort) ~ cleanedUpdatesToSend
 
 
 

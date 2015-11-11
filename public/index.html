@@ -15,12 +15,15 @@ var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "In
 var textAreaOld = document.getElementById('TUpdateZone');
 var textArea = CodeMirror.fromTextArea(textAreaOld);
 
-textArea.on("inputRead", function(i, c){
+textArea.on("change", function (i, c){
+		console.log("omg!!", c);
 
-	console.log("omg!!", c);
+	if (c.origin != "+input" && c.origin != "+delete"){
+		return;
+	}
+
 	var toSend = {};
 	var cp = textArea.indexFromPos(textArea.getCursor());
-
 
 	if (c.removed[0] != ""){
 		toSend["type"] = "Delete";
@@ -39,9 +42,6 @@ textArea.on("inputRead", function(i, c){
 	woot.ports.tUpdatePort.send(JSON.stringify(toSend));
 });
 
-textArea.on("keydown", function(i, c){
-	console.log("key down!!!", c);
-});
 
 /// to do !! figure out an easy way to get an event when the USER deletes something from the text area.. not if it's programmatically deleted
 
@@ -62,12 +62,10 @@ function docUpdate(str){
 		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
 			return;
 		}
+
 		var location = docUpdate["index"];
 		var from = textArea.posFromIndex(location)
-		textArea.replaceRange(docUpdate["ch"], from);
-
-
-
+		textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
 	}
 	else if (docUpdate["type"] === "typingDelete"){
 		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
@@ -75,7 +73,9 @@ function docUpdate(str){
 		}
 		var location = docUpdate["index"];
 		var from = textArea.posFromIndex(location)
-		textArea.replace("", from);
+		var to = textArea.posFromIndex(location + 1)
+		console.log("should be deleteing", from, " ", to);
+		textArea.replaceRange("", from, to, "server!!!");
 
 
 	}
