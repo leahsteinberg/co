@@ -15,8 +15,8 @@ import Graphics.Input.Field exposing (..)
 -- - - - - - I N S E R T   A P I - - - - - - - 
 
 
--- only called when typing is local
-generateInsert : Char -> Int -> Model -> (Model, WUpdate)
+-- only called when TUpdate is local
+generateInsert : Char -> Int -> Model -> (Model, Edit)
 generateInsert ch place model = 
     let
          debugModel = {model | debug <- "ch is  " ++ fromChar ch ++ "   place is   " ++ toString place}
@@ -25,8 +25,8 @@ generateInsert ch place model =
 -- error case!
 
 
--- only called when typing is remote
-integrateRemoteInsert : WChar -> Model -> (Model, WUpdate)
+-- only called when TUpdate is remote
+integrateRemoteInsert : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert wChar model =
     let
         wPrev = grabPrev wChar model.wString
@@ -38,7 +38,7 @@ integrateRemoteInsert wChar model =
         newModel = integrateInsert' wChar wPrev wNext insertPos newCPModel
 --       
     in
-        (newModel, Caret newModel.doc.cp)
+        (newModel, T (I wChar.ch insertPos))
 
         
 
@@ -83,7 +83,7 @@ integrateInsert' wCh pred succ pos model =
             x :: xs -> integrateInsert' wCh newPred newSucc pos model
 
 
-generateInsChar : Char -> Int -> Int -> Model -> (Model, WUpdate)
+generateInsChar : Char -> Int -> Int -> Model -> (Model, Edit)
 generateInsChar char predIndex nextIndex model =
     let
         pred = ithVisible model.wString predIndex 
@@ -102,7 +102,7 @@ generateInsChar char predIndex nextIndex model =
                                             ++ "    next Index   " ++ toString nextIndex} 
 
     in 
-        (integrateInsert' newWChar pred succ nextIndex debugModel , Insert newWChar)
+        (integrateInsert' newWChar pred succ nextIndex debugModel , W (Insert newWChar))
 
 
 
@@ -132,7 +132,7 @@ findLaterWChar insCh wStr =
 -- - - - - - D E L E T E   A P I - - - - - - - 
 
 
-generateDelete : Char -> Int -> Model -> (Model, WUpdate)
+generateDelete : Char -> Int -> Model -> (Model, Edit)
 generateDelete ch place model = 
     let
         predecessor = ithVisible model.wString (place - 1)----== my problem
@@ -153,10 +153,10 @@ generateDelete ch place model =
                 ++ "/place: " ++ toString place
                 }
     in
-        (integrateDelete deletedWChar newModel, Delete deletedWChar)
+        (integrateDelete deletedWChar newModel, W (Delete deletedWChar))
        
 
-integrateRemoteDelete : WChar -> Model -> (Model, WUpdate)
+integrateRemoteDelete : WChar -> Model -> (Model, Edit)
 integrateRemoteDelete wChar model =
     let 
         currCP = model.doc.cp
@@ -166,7 +166,7 @@ integrateRemoteDelete wChar model =
         newModel = integrateDelete wChar newDocModel
 
     in 
-        (newModel, Caret newModel.doc.cp)
+        (newModel, T (D wChar.ch deletePos))
 
 
 integrateDelete : WChar -> Model -> Model

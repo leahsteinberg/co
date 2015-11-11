@@ -5,20 +5,11 @@ import Set exposing (..)
 
 
 
---type Edit = Insert Int String | Delete Int | None | Paste Int String
-
-
---type alias Operation = {edit: Edit
---                        , pHash: String
---                        , clientId: ID}
-
---type alias Update = (Edit, Content)
 
 type alias ID = Int
 
 type alias Doc = {cp: Int, str: String, len: Int}
 
---id invisible content prev next
 
 type alias WChar = {id: WId
                 , next: WId
@@ -30,9 +21,9 @@ type alias WString = List WChar
 
 type WUpdate = Insert WChar | Delete WChar | NoUpdate | SiteId Int | Caret Int
 
-type Edit = W WUpdate | T Typing
+type Edit = W WUpdate | T TUpdate
 
-type Typing = I Char Int | D Char Int | NoTUpdate
+type TUpdate = I Char Int | D Char Int | NoTUpdate
 
 
 type alias WId = (Int, Int)
@@ -43,10 +34,10 @@ type alias Model =
                     , site: ID
                     , wString: WString
                     , start: WChar
-                    , pool: List WUpdate
                     , doc: Doc
                     , debug: String
                     , wSeen: Set WId
+                    , pool: List WUpdate
                     , processedPool: List WUpdate
                 }
 

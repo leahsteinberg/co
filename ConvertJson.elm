@@ -15,10 +15,10 @@ jsonToWUpdate str =
         Err error -> NoUpdate
 
 
-jsonToTypingUpdate : String -> Typing
-jsonToTypingUpdate str =
+jsonToTUpdate : String -> TUpdate
+jsonToTUpdate str =
     case Dec.decodeString ("type" := Dec.string) str of
-        Ok x -> decodeTyping x str 
+        Ok x -> decodeTUpdate x str 
         Err error -> NoTUpdate
 
 
@@ -36,8 +36,8 @@ toChar str =
         _ -> '$'
 
 
-decodeTyping : String -> String -> Typing
-decodeTyping typeStr str =
+decodeTUpdate : String -> String -> TUpdate
+decodeTUpdate typeStr str =
     if 
         | typeStr == "Insert" -> 
             case Dec.decodeString tInsertDecoder str of
@@ -48,13 +48,13 @@ decodeTyping typeStr str =
                     Ok x -> x
                     Err error -> NoTUpdate
 
-tInsertDecoder :  Decoder Typing
+tInsertDecoder :  Decoder TUpdate
 tInsertDecoder  =
     object2 
         (\ ch  cp -> I (toChar ch) cp)
         decCh decCP 
 
-tDeleteDecoder : Decoder Typing 
+tDeleteDecoder : Decoder TUpdate 
 tDeleteDecoder =
     object2
         (\ ch cp -> D (toChar ch) cp)
@@ -108,6 +108,15 @@ wSiteIdDecoder : Decoder Int
 wSiteIdDecoder = "siteId" := int
 
 -- - - - - - - -  - - - - - --
+
+tUpdateToJson : TUpdate -> String
+tUpdateToJson tUpd =
+    let
+        tUpValue = encodeTUpdate tUpd
+    in
+        encode 2 tUpValue
+
+
 wUpdateToJson : WUpdate -> String
 wUpdateToJson wUpdate =
     let
@@ -152,4 +161,20 @@ wCharToJsonList wCh =
                         , ("ch", Enc.string (String.fromChar wCh.ch))
                     ]
 
+
+tUpToJsonList : Char -> Int -> List (String, Value)
+tUpToJsonList ch index = 
+    [
+        ("ch", Enc.string (String.fromChar ch))
+        , ("index", Enc.int index)
+
+    ]
+
+
+encodeTUpdate : TUpdate -> Value
+encodeTUpdate tUp =
+    case tUp of
+        I ch index -> object (("type", Enc.string "typingInsert") :: tUpToJsonList ch index)
+        D ch index -> object (("type", Enc.string "typingDelete") :: tUpToJsonList ch index)
+        _ -> object [("type", Enc.string "typingNoUpdate")]
 

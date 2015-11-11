@@ -1,22 +1,19 @@
 <!DOCTYPE html>
   <head> 
-  Types
   </head>
 <body>
 <script src="public/lib/codemirror.js"></script>
 <link rel="stylesheet" href="public/lib/codemirror.css">
 <div id="anchor"> </div>
-<textarea id="typingZone"></textarea>
+<textarea id="TUpdateZone"></textarea>
 
 <script src="public/elm.js"></script>
 <script>
 var div = document.getElementById('anchor');
-var woot = Elm.embed(Elm.Typing, div, {typingPort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
+var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
 										, windowLocPort: window.location.origin});
-var textAreaOld = document.getElementById('typingZone');
+var textAreaOld = document.getElementById('TUpdateZone');
 var textArea = CodeMirror.fromTextArea(textAreaOld);
-// var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
-// var letterInd = 0;
 
 textArea.on("inputRead", function(i, c){
 
@@ -39,34 +36,53 @@ textArea.on("inputRead", function(i, c){
 
 	console.log("tosend is", toSend);
 
-	woot.ports.typingPort.send(JSON.stringify(toSend));
+	woot.ports.tUpdatePort.send(JSON.stringify(toSend));
 
 
 
 });
 
 
+woot.ports.docUpdatesPort.subscribe(docUpdate);
+
+function docUpdate(str){
+	var docUpdate = JSON.parse(str);
+
+	console.log("doc update", docUpdate);
+	if (docUpdate === undefined || docUpdate["type"] === undefined){
+		return;
+	}
+	
+	if (docUpdate["type"] === "typingInsert" {
+		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+			return;
+		}
+
+
+	}
+	else if (docUpdate["type"] === "typingDelete"{
+		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+			return;
+		}
+
+
+	}
+
+}
 
 
 woot.ports.sendNewStringUpdatesPort.subscribe(stringUpdate);
 
 function stringUpdate(str){
 
-	console.log("got string update!!!");
-	var stringUpdate = JSON.parse(str);
+	//console.log("got string update!!!");
+	//var stringUpdate = JSON.parse(str);
 	//console.log(stringUpdate);
-	textArea.setValue(stringUpdate.string);
+	//textArea.setValue(stringUpdate.string);
 
 	///sendNewStringUpdatesPort
 
 }
-
-
-// function addLetter(){
-// 	letterInd = (letterInd + 1) % letters.length;
-// 	textArea.value = letters[letterInd] + textArea.value
-
-// }
 
 
 
@@ -85,7 +101,7 @@ var sendUpdate = function(){
 	var toSend = {len: currString.length
 								, cp: cp
 								, str: currString}
-	woot.ports.typingPort.send(toSend);
+	woot.ports.TUpdatePort.send(toSend);
 }
 
 
@@ -110,6 +126,9 @@ getCaretPosition = function(){
 }
 
 
+
+
+
 woot.ports.sendCaretUpdatesPort.subscribe(caretUpdate);
 
 function caretUpdate(cp){
@@ -127,26 +146,6 @@ function caretUpdate(cp){
 }
 
 
-//  textArea.oninput = function(e){
-//  	console.log("received input!!");
-//  	sendUpdate(200);
-
-// }
-
-// textArea.onkeydown = function(e){
-// 	var charCode = e.keyCode || e.which;
-// 	if (charCode >=37 && charCode <= 40){
-// 		window.setTimeout(sendUpdate, 150);
-// 	}
-// }
-
-
-
-// window.onmousedown = function(e){
-// 	console.log("on mousedown");
-// 	//e.stopPropagation();
-// //	window.setTimeout(sendUpdate, 100);
-// }
 
 
 </script>
