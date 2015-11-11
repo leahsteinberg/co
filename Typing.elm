@@ -163,7 +163,7 @@ modelFold = Signal.foldp processEdit (emptyModel, W NoUpdate) edits
 
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
-main = show "Strongly" 
+main = show <~ (tUpdatePort)
 
 
 

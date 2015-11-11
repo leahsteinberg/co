@@ -37,10 +37,15 @@ textArea.on("inputRead", function(i, c){
 	console.log("tosend is", toSend);
 
 	woot.ports.tUpdatePort.send(JSON.stringify(toSend));
-
-
-
 });
+
+textArea.on("keydown", function(i, c){
+	console.log("key down!!!", c);
+});
+
+/// to do !! figure out an easy way to get an event when the USER deletes something from the text area.. not if it's programmatically deleted
+
+
 
 
 woot.ports.docUpdatesPort.subscribe(docUpdate);
@@ -53,17 +58,24 @@ function docUpdate(str){
 		return;
 	}
 	
-	if (docUpdate["type"] === "typingInsert" {
+	if (docUpdate["type"] === "typingInsert" ){
 		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
 			return;
 		}
+		var location = docUpdate["index"];
+		var from = textArea.posFromIndex(location)
+		textArea.replaceRange(docUpdate["ch"], from);
+
 
 
 	}
-	else if (docUpdate["type"] === "typingDelete"{
+	else if (docUpdate["type"] === "typingDelete"){
 		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
 			return;
 		}
+		var location = docUpdate["index"];
+		var from = textArea.posFromIndex(location)
+		textArea.replace("", from);
 
 
 	}

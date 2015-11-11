@@ -153,7 +153,7 @@ generateDelete ch place model =
                 ++ "/place: " ++ toString place
                 }
     in
-        (integrateDelete deletedWChar newModel, W (Delete deletedWChar))
+        (integrateDelete deletedWChar newModel,  W (Delete deletedWChar))
        
 
 integrateRemoteDelete : WChar -> Model -> (Model, Edit)
