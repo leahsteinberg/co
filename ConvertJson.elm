@@ -56,9 +56,9 @@ tInsertDecoder  =
 
 tDeleteDecoder : Decoder TUpdate 
 tDeleteDecoder =
-    object2
-        (\ ch cp -> D (toChar ch) cp)
-             decCh decCP
+    object
+        (\ cp -> D cp)
+              decCP
 
 
 decCP = ("cp" := Dec.int)

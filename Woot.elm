@@ -73,7 +73,10 @@ pos : WString -> WChar -> Int
 pos wStr wCh =
     case wStr of 
         [] -> 0
-        x :: xs -> if x.id == wCh.id then 0 else 1 + (pos xs wCh)
+        x :: xs -> 
+            if
+                | isVisible x -> if x.id == wCh.id then 0 else 1 + (pos xs wCh)
+                | otherwise -> if x.id == wCh.id then 0 else pos xs wCh
 
 
     

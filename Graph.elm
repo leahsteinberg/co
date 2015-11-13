@@ -26,12 +26,14 @@ generateInsert ch place model =
 
 
 -- only called when TUpdate is remote
+--- todod!!! this is an 
 integrateRemoteInsert : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert wChar model =
     let
         wPrev = grabPrev wChar model.wString
         wNext = grabNext wChar model.wString
         insertPos = pos model.wString wNext
+--- should prev line have wprev or wNext
         currCP = model.doc.cp
         newCP = if currCP > insertPos then currCP + 1 else currCP
         newCPModel =  {model | doc <- updateCP model.doc newCP}
@@ -162,7 +164,8 @@ integrateRemoteDelete wChar model =
         currCP = model.doc.cp
         deletePos = pos model.wString wChar
         newCP = if currCP > deletePos then currCP - 1 else currCP
-        newDocModel =  {model | doc <- (updateCP model.doc newCP)}
+        newDocModel =  {model | doc <- (updateCP model.doc newCP)
+                    , debug <- "deleting" ++ fromChar wChar.ch ++ " at " ++ toString deletePos}
         newModel = integrateDelete wChar newDocModel
 
     in 

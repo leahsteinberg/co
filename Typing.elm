@@ -163,8 +163,13 @@ modelFold = Signal.foldp processEdit (emptyModel, W NoUpdate) edits
 
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
-main = (\ t s -> show  ("typing: " ++ toString t ++ "server: " ++ toString s)) <~ (tUpdatePort) ~ cleanedUpdatesToSend
+main = viewEmpty
+ 
+--    (\ (m, w) s -> show  ("server: " ++ toString s ++ "debug: " ++ m.debug)) <~ modelFold ~ serverUpdates
 
+
+viewEmpty : Html
+viewEmpty = div [] []
 
 
 view : Model -> WUpdate -> Html

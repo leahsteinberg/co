@@ -15,31 +15,41 @@ var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "In
 var textAreaOld = document.getElementById('TUpdateZone');
 var textArea = CodeMirror.fromTextArea(textAreaOld);
 
-textArea.on("change", function (i, c){
-		console.log("omg!!", c);
+textArea.on("beforeChange", function (i, c){
+	console.log("omg! ", c);
 
-	if (c.origin != "+input" && c.origin != "+delete"){
-		return;
-	}
+	// if (c.origin != "+input" && c.origin != "+delete"){
+	// 	return;
+	// }
 
 	var toSend = {};
-	var cp = textArea.indexFromPos(textArea.getCursor());
+	var cp = textArea.indexFromPos(c.from);
 
-	if (c.removed[0] != ""){
+	if (c.origin === "+delete"){
+	//if (c.removed[0] != ""){
 		toSend["type"] = "Delete";
-		currString = textArea.getValue();
-		toSend["ch"] = c.removed[0]
+		//currString = textArea.getValue();
+		//toSend["ch"] = c.removed[0]
 	}
-	if (c['text'][0] != ""){
+	else if (c.origin === "+input"){
 		toSend["type"] = "Insert";
-		toSend["ch"] = c.text[0]
+
+		if (c['text'].length === 2){
+			console.log("ENTER!!!");
+			toSend["ch"] = "\n";
+		}
+		else {
+			console.log("letter", c.text[0]);
+			toSend["ch"] = c.text[0]
+		}
 	}
+
 	toSend.cp = cp;
-
-
-	console.log("tosend is", toSend);
-
+	//console.log(toSend);
 	woot.ports.tUpdatePort.send(JSON.stringify(toSend));
+
+	//c.cancel();
+
 });
 
 
@@ -53,7 +63,7 @@ woot.ports.docUpdatesPort.subscribe(docUpdate);
 function docUpdate(str){
 	var docUpdate = JSON.parse(str);
 
-	console.log("doc update", docUpdate);
+	console.log("REGISTERING server Update", docUpdate);
 	if (docUpdate === undefined || docUpdate["type"] === undefined){
 		return;
 	}
@@ -74,10 +84,15 @@ function docUpdate(str){
 		var location = docUpdate["index"];
 		var from = textArea.posFromIndex(location)
 		var to = textArea.posFromIndex(location + 1)
-		console.log("should be deleteing", from, " ", to);
+		var caret = textArea.indexFromPosition(textArea.getCaret());
+		var newCaret = caret;
+		if (caret >= location) {
+			newCaret += 1;
+
+		}
+
 		textArea.replaceRange("", from, to, "server!!!");
-
-
+		textArea.setCursor(textArea.posFromIndex(newCaret));
 	}
 
 }
@@ -119,22 +134,22 @@ var sendUpdate = function(){
 
 
 getCaretPosition = function(){
-	if (textArea === undefined || textArea === []) {
-		console.log("text area is", textArea);
-		return;
-	}
-	var pos = 0;
-    if (document.selection) {
-    	textArea.focus ();
-    	var Sel = document.selection.createRange();
-    	var SelLength = document.selection.createRange().text.length;
-    	Sel.moveStart ('character', -textArea.value.length);
-    	pos = Sel.text.length - SelLength;
-    }
-    //Firefox support
-    else if (textArea.selectionStart || textArea.selectionStart == '0')
-    	pos = textArea.selectionStart;
-    return pos;
+	// if (textArea === undefined || textArea === []) {
+	// 	console.log("text area is", textArea);
+	// 	return;
+	// }
+	// var pos = 0;
+ //    if (document.selection) {
+ //    	textArea.focus ();
+ //    	var Sel = document.selection.createRange();
+ //    	var SelLength = document.selection.createRange().text.length;
+ //    	Sel.moveStart ('character', -textArea.value.length);
+ //    	pos = Sel.text.length - SelLength;
+ //    }
+ //    //Firefox support
+ //    else if (textArea.selectionStart || textArea.selectionStart == '0')
+ //    	pos = textArea.selectionStart;
+ //    return pos;
 }
 
 
@@ -145,15 +160,15 @@ woot.ports.sendCaretUpdatesPort.subscribe(caretUpdate);
 
 function caretUpdate(cp){
 
-	console.log("got caret update!!!", JSON.parse(cp));
-	cp = JSON.parse(cp);
-	if (cp != undefined && cp["type"] != undefined && cp["type"] === "Caret"){
-		if (cp['pos'] != undefined){
-			console.log("caret before: ", getCaretPosition());
-			//textArea.setSelectionRange(cp.pos, cp.pos)
-			console.log("caret after:", getCaretPosition());
-		}
-	}
+	// console.log("got caret update!!!", JSON.parse(cp));
+	// cp = JSON.parse(cp);
+	// if (cp != undefined && cp["type"] != undefined && cp["type"] === "Caret"){
+	// 	if (cp['pos'] != undefined){
+	// 		console.log("caret before: ", getCaretPosition());
+	// 		//textArea.setSelectionRange(cp.pos, cp.pos)
+	// 		console.log("caret after:", getCaretPosition());
+	// 	}
+	// }
 
 }
 
