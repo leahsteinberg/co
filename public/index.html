@@ -71,7 +71,8 @@ function docUpdate(str){
     textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
     
     var to = textArea.posFromIndex(location + 1);
-    textArea.markText(from, to, {css: {color: colors[0]}});
+    console.log("from", from, "to", to);
+    textArea.markText(from, to, {css: "color: blue"});
     updateCaret("insert");
   }
   else if (docUpdate["type"] === "typingDelete"){
