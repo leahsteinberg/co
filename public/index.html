@@ -39,7 +39,6 @@ textArea.on("change", function (i, c){
           toSend["type"] = "Insert";
       console.log("letter", c.text[0]);
       toSend["ch"] = c.text[0]
-  
   }
   else if (c['text'].length === 2){
         toSend["type"] = "Insert";
@@ -69,10 +68,10 @@ function docUpdate(str){
     }
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
-    var fromx = textArea.posFromIndex(location - 1);
-    var to = textArea.posFromIndex(location + 1);
     textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
-    textArea.markText(fromx, to, {css: colors[0], inclusiveRight: true, inclusiveLeft: true, className: "other"});
+    
+    var to = textArea.posFromIndex(location + 1);
+    textArea.markText(from, to, {css: {color: colors[0]}});
     updateCaret("insert");
   }
   else if (docUpdate["type"] === "typingDelete"){
