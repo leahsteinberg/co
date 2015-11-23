@@ -12,6 +12,7 @@ Elm.TUpdate.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Constants = Elm.Constants.make(_elm),
    $ConvertJson = Elm.ConvertJson.make(_elm),
+   $DraftTests = Elm.DraftTests.make(_elm),
    $Editor = Elm.Editor.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
@@ -21,7 +22,7 @@ Elm.TUpdate.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $SocketIO = Elm.SocketIO.make(_elm),
    $Task = Elm.Task.make(_elm);
-   var main = $Graphics$Element.show("");
+   var main = $Graphics$Element.show($DraftTests.runTests);
    var tUpdatePort = Elm.Native.Port.make(_elm).inboundSignal("tUpdatePort",
    "String",
    function (v) {
@@ -83,7 +84,7 @@ Elm.TUpdate.make = function (_elm) {
               e,
               _v0._0);}
          _U.badCase($moduleName,
-         "on line 143, column 40 to 56");
+         "on line 146, column 40 to 56");
       }();
    }),
    {ctor: "_Tuple2"
