@@ -6,10 +6,8 @@
 <link rel="stylesheet" href="public/lib/codemirror.css">
 <style>
 .other {
-	color: "#7f00ff";
+  color: "#7f00ff";
 }
-
-
 </style>
 <div id="anchor"> </div>
 <textarea id="TUpdateZone"></textarea>
@@ -18,229 +16,115 @@
 <script>
 var div = document.getElementById('anchor');
 var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
-										, windowLocPort: window.location.origin});
+                    , windowLocPort: window.location.origin});
 var textAreaOld = document.getElementById('TUpdateZone');
 var textArea = CodeMirror.fromTextArea(textAreaOld);
-
 var colors = ["#80ff00", "#7f00ff", "#ff8000"];
 var userColors = {};
-
 textArea.on("change", function (i, c){
-	console.log("omg! ", c);
-			console.log("omg!!", c);
-	if (c.origin != "+input" && c.origin != "+delete"){
-		return;
-	}
-	var toSend = {};
-	var cursor = textArea.getCursor();
-	var cp = textArea.indexFromPos(cursor);
-	if (c.removed[0] != ""){
-		toSend["type"] = "Delete";
-		currString = textArea.getValue();
-		toSend["ch"] = c.removed[0]
-	}
-	if (c['text'][0] != ""){
-
-					toSend["type"] = "Insert";
-
-			console.log("letter", c.text[0]);
-			toSend["ch"] = c.text[0]
-	
-
-	}
-	else if  (c['text'].length === 2){
-				toSend["type"] = "Insert";
-
-			console.log("ENTER!!!");
-			toSend["ch"] = "\n";
-	}
-	toSend.cp = cp;
-	console.log("tosend is", toSend);
-	//doc.markText(from: {line, ch}, to: {line, ch}, ?options: object) → TextMarker
-	textArea.markText
-	woot.ports.tUpdatePort.send(JSON.stringify(toSend));
-
-	// // if (c.origin != "+input" && c.origin != "+delete"){
-	// // 	return;
-	// // }
-
-	// var toSend = {};
-	// var cp = textArea.indexFromPos(c.from);
-
-	// if (c.origin === "+delete"){
-	// //if (c.removed[0] != ""){
-	// 	toSend["type"] = "Delete";
-	// 	//currString = textArea.getValue();
-	// 	toSend["ch"] = c.removed[0]
-	// }
-	// else if (c.origin === "+input"){
-	// 	toSend["type"] = "Insert";
-
-	// 	if (c['text'].length === 2){
-	// 		console.log("ENTER!!!");
-	// 		toSend["ch"] = "\n";
-	// 	}
-	// 	else {
-	// 		console.log("letter", c.text[0]);
-	// 		toSend["ch"] = c.text[0]
-	// 	}
-	// }
-
-	// toSend.cp = cp;
-	// //console.log(toSend);
-	// woot.ports.tUpdatePort.send(JSON.stringify(toSend));
-
-	// //c.cancel();
-
+  console.log("omg! ", c);
+      console.log("omg!!", c);
+  if (c.origin != "+input" && c.origin != "+delete"){
+    return;
+  }
+  var toSend = {};
+  var cursor = textArea.getCursor();
+  var cp = textArea.indexFromPos(cursor);
+  if (c.removed[0] != ""){
+    toSend["type"] = "Delete";
+    currString = textArea.getValue();
+    toSend["ch"] = c.removed[0]
+  }
+  if (c['text'][0] != ""){
+          toSend["type"] = "Insert";
+      console.log("letter", c.text[0]);
+      toSend["ch"] = c.text[0]
+  
+  }
+  else if (c['text'].length === 2){
+        toSend["type"] = "Insert";
+      console.log("ENTER!!!");
+      toSend["ch"] = "\n";
+  }
+  toSend.cp = cp;
+  console.log("tosend is", toSend);
+  //doc.markText(from: {line, ch}, to: {line, ch}, ?options: object) → TextMarker
+  textArea.markText
+  woot.ports.tUpdatePort.send(JSON.stringify(toSend));
+ 
 });
-
-
 /// to do !! figure out an easy way to get an event when the USER deletes something from the text area.. not if it's programmatically deleted
-
-
-
-
 woot.ports.docUpdatesPort.subscribe(docUpdate);
-
 function docUpdate(str){
-	var docUpdate = JSON.parse(str);
-
-	console.log("REGISTERING server Update", docUpdate);
-	if (docUpdate === undefined || docUpdate["type"] === undefined){
-		return;
-	}
-	
-	if (docUpdate["type"] === "typingInsert" ){
-		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
-			return;
-		}
-
-		var location = docUpdate["index"];
-		var from = textArea.posFromIndex(location);
-		var fromx = textArea.posFromIndex(location - 1);
-		var to = textArea.posFromIndex(location + 1);
-
-		textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
-		textArea.markText(fromx, to, {css: colors[0], inclusiveRight: true, inclusiveLeft: true, className: "other"});
-		updateCaret("insert");
-
-
-
-	}
-	else if (docUpdate["type"] === "typingDelete"){
-		if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
-			return;
-		}
-		var location = docUpdate["index"];
-		var from = textArea.posFromIndex(location)
-		var to = textArea.posFromIndex(location + 1)
-		textArea.replaceRange("", from, to, "server!!!");
-		updateCaret("delete");
-
-	}
-
+  var docUpdates = JSON.parse(str);
+  console.log("REGISTERING server Update", docUpdate);
+  if (docUpdates === undefined || docUpdates.length === 0){
+    return;
+  }
+  var docUpdate = docUpdates[0];
+  
+  if (docUpdate["type"] === "typingInsert" ){
+    if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+      return;
+    }
+    var location = docUpdate["index"];
+    var from = textArea.posFromIndex(location);
+    var fromx = textArea.posFromIndex(location - 1);
+    var to = textArea.posFromIndex(location + 1);
+    textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
+    textArea.markText(fromx, to, {css: colors[0], inclusiveRight: true, inclusiveLeft: true, className: "other"});
+    updateCaret("insert");
+  }
+  else if (docUpdate["type"] === "typingDelete"){
+    if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+      return;
+    }
+    var location = docUpdate["index"];
+    var from = textArea.posFromIndex(location)
+    var to = textArea.posFromIndex(location + 1)
+    textArea.replaceRange("", from, to, "server!!!");
+    updateCaret("delete");
+  }
 }
-
 function updateCaret(action){
-	var update;
-	if (action === "insert"){
-		update = function(x) {return x + 1;};
-
-	} else if (action === "delete") {
-		update = function(x){return x - 1};
-	}
-	var caret = textArea.indexFromPos(textArea.getCursor());
-	var newCaret = caret;
-	if (caret > location) {
-			newCaret = update(caret);
-
-	}
-
-	textArea.setCursor(textArea.posFromIndex(newCaret));
-
-
-
+  var update;
+  if (action === "insert"){
+    update = function(x) {return x + 1;};
+  } else if (action === "delete") {
+    update = function(x){return x - 1};
+  }
+  var caret = textArea.indexFromPos(textArea.getCursor());
+  var newCaret = caret;
+  if (caret > location) {
+      newCaret = update(caret);
+  }
+  textArea.setCursor(textArea.posFromIndex(newCaret));
 }
 woot.ports.sendNewStringUpdatesPort.subscribe(stringUpdate);
-
 function stringUpdate(str){
 
-	//console.log("got string update!!!");
-	//var stringUpdate = JSON.parse(str);
-	//console.log(stringUpdate);
-	//textArea.setValue(stringUpdate.string);
-
-	///sendNewStringUpdatesPort
-
 }
-
 setInterval(function(){
-	console.log(textArea.indexFromPos(textArea.getCursor()))
+  console.log(textArea.indexFromPos(textArea.getCursor()))
 }, 500);
-
-
 var sendUpdate = function(){
     if (woot === undefined 
-    	|| woot.ports === undefined 
-    	|| textArea === undefined 
-    	|| textArea.value === undefined) 
+      || woot.ports === undefined 
+      || textArea === undefined 
+      || textArea.value === undefined) 
     {
-    	return
+      return
     }
-	var currString = textArea.value;
-	var cp = textArea.indexFromPos(textArea.getCursor);
-
-
-	var toSend = {len: currString.length
-								, cp: cp
-								, str: currString}
-	woot.ports.TUpdatePort.send(toSend);
+  var currString = textArea.value;
+  var cp = textArea.indexFromPos(textArea.getCursor);
+  var toSend = {len: currString.length
+                , cp: cp
+                , str: currString}
+  woot.ports.TUpdatePort.send(toSend);
 }
-
-
-
 getCaretPosition = function(){
-	// if (textArea === undefined || textArea === []) {
-	// 	console.log("text area is", textArea);
-	// 	return;
-	// }
-	// var pos = 0;
- //    if (document.selection) {
- //    	textArea.focus ();
- //    	var Sel = document.selection.createRange();
- //    	var SelLength = document.selection.createRange().text.length;
- //    	Sel.moveStart ('character', -textArea.value.length);
- //    	pos = Sel.text.length - SelLength;
- //    }
- //    //Firefox support
- //    else if (textArea.selectionStart || textArea.selectionStart == '0')
- //    	pos = textArea.selectionStart;
- //    return pos;
-}
-
-
-
-
-
-woot.ports.sendCaretUpdatesPort.subscribe(caretUpdate);
-
-function caretUpdate(cp){
-
-	// console.log("got caret update!!!", JSON.parse(cp));
-	// cp = JSON.parse(cp);
-	// if (cp != undefined && cp["type"] != undefined && cp["type"] === "Caret"){
-	// 	if (cp['pos'] != undefined){
-	// 		console.log("caret before: ", getCaretPosition());
-	// 		//textArea.setSelectionRange(cp.pos, cp.pos)
-	// 		console.log("caret after:", getCaretPosition());
-	// 	}
-	// }
 
 }
-
-
-
-
 </script>
 </body>
 </html>

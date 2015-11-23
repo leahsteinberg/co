@@ -1,0 +1,208 @@
+Elm.TUpdate = Elm.TUpdate || {};
+Elm.TUpdate.make = function (_elm) {
+   "use strict";
+   _elm.TUpdate = _elm.TUpdate || {};
+   if (_elm.TUpdate.values)
+   return _elm.TUpdate.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "TUpdate",
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $ConvertJson = Elm.ConvertJson.make(_elm),
+   $Editor = Elm.Editor.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $SocketIO = Elm.SocketIO.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var main = $Graphics$Element.show("");
+   var tUpdatePort = Elm.Native.Port.make(_elm).inboundSignal("tUpdatePort",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+      v);
+   });
+   var tUpdate = A2($Signal._op["<~"],
+   $ConvertJson.jsonToTUpdate,
+   tUpdatePort);
+   var windowLocPort = Elm.Native.Port.make(_elm).inbound("windowLocPort",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+      v);
+   });
+   var socket = A2($SocketIO.io,
+   windowLocPort,
+   $SocketIO.defaultOptions);
+   var initializePort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
+   socket,
+   A2($SocketIO.emit,
+   "example",
+   "whaddup")));
+   var incoming = $Signal.mailbox("null");
+   var incomingPort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
+   socket,
+   A2($SocketIO.on,
+   "serverWUpdates",
+   incoming.address)));
+   var serverUpdates = A2($Signal._op["<~"],
+   function (u) {
+      return $ConvertJson.jsonToWUpdates(u);
+   },
+   incoming.signal);
+   var sockConnected = $Signal.mailbox(false);
+   var handleServerUpdate = function (wUpdate) {
+      return $Model.W(wUpdate);
+   };
+   var serverUpdateToEdit = A2($Signal._op["<~"],
+   $List.map(handleServerUpdate),
+   serverUpdates);
+   var handleTUpdate = function (tUpdate) {
+      return $Model.T(tUpdate);
+   };
+   var tUpdateToEdit = A2($Signal._op["<~"],
+   function (t) {
+      return _L.fromArray([handleTUpdate(t)]);
+   },
+   tUpdate);
+   var edits = A2($Signal.merge,
+   tUpdateToEdit,
+   serverUpdateToEdit);
+   var modelFold = A3($Signal.foldp,
+   F2(function (e,_v0) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return A2($Editor.processEdits,
+              e,
+              _v0._0);}
+         _U.badCase($moduleName,
+         "on line 143, column 40 to 56");
+      }();
+   }),
+   {ctor: "_Tuple2"
+   ,_0: $Constants.emptyModel
+   ,_1: _L.fromArray([])},
+   edits);
+   var sendNewString = A2($Signal.map,
+   function (_v4) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return $ConvertJson.stringUpdateToJson(_v4._0.doc.str);}
+         _U.badCase($moduleName,
+         "on line 127, column 44 to 74");
+      }();
+   },
+   modelFold);
+   var sendNewStringUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("sendNewStringUpdatesPort",
+   function (v) {
+      return v;
+   },
+   sendNewString);
+   var editToTUpdate = function (e) {
+      return function () {
+         switch (e.ctor)
+         {case "T": return e._0;
+            case "W":
+            return $Model.NoTUpdate;}
+         _U.badCase($moduleName,
+         "between lines 58 and 60");
+      }();
+   };
+   var docUpdatesToSend = A2($Signal._op["<~"],
+   function (edits) {
+      return A2($List.map,
+      editToTUpdate,
+      edits);
+   },
+   A2($Signal._op["<~"],
+   $Basics.snd,
+   modelFold));
+   var docUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("docUpdatesPort",
+   function (v) {
+      return v;
+   },
+   A2($Signal._op["<~"],
+   function (updates) {
+      return $ConvertJson.tUpdatesToJson(updates);
+   },
+   docUpdatesToSend));
+   var editToWUpdate = function (e) {
+      return function () {
+         switch (e.ctor)
+         {case "T":
+            return $Model.NoUpdate;
+            case "W": return e._0;}
+         _U.badCase($moduleName,
+         "between lines 52 and 54");
+      }();
+   };
+   var cleanedUpdatesToSend = A2($Signal._op["<~"],
+   function (edits) {
+      return A2($List.map,
+      editToWUpdate,
+      edits);
+   },
+   A2($Signal._op["<~"],
+   $Basics.snd,
+   modelFold));
+   var localUpdatesAsJsonToSend = A2($Signal._op["<~"],
+   function (updates) {
+      return $ConvertJson.wUpdatesToJson(updates);
+   },
+   cleanedUpdatesToSend);
+   var sendUpdatesPort = Elm.Native.Task.make(_elm).performSignal("sendUpdatesPort",
+   A2($Signal._op["<~"],
+   function (i) {
+      return A2($Task.andThen,
+      socket,
+      A2($SocketIO.emit,
+      "localEdits",
+      i));
+   },
+   localUpdatesAsJsonToSend));
+   var throwOutNoUpdatesAndCaret = function (wUp) {
+      return function () {
+         switch (wUp.ctor)
+         {case "NoUpdate": return false;}
+         return true;
+      }();
+   };
+   var throwOutNoTUpdates = function (tUp) {
+      return function () {
+         switch (tUp.ctor)
+         {case "NoTUpdate":
+            return false;}
+         return true;
+      }();
+   };
+   _elm.TUpdate.values = {_op: _op
+                         ,throwOutNoTUpdates: throwOutNoTUpdates
+                         ,throwOutNoUpdatesAndCaret: throwOutNoUpdatesAndCaret
+                         ,editToWUpdate: editToWUpdate
+                         ,editToTUpdate: editToTUpdate
+                         ,handleTUpdate: handleTUpdate
+                         ,handleServerUpdate: handleServerUpdate
+                         ,sockConnected: sockConnected
+                         ,incoming: incoming
+                         ,socket: socket
+                         ,tUpdate: tUpdate
+                         ,serverUpdates: serverUpdates
+                         ,localUpdatesAsJsonToSend: localUpdatesAsJsonToSend
+                         ,cleanedUpdatesToSend: cleanedUpdatesToSend
+                         ,docUpdatesToSend: docUpdatesToSend
+                         ,sendNewString: sendNewString
+                         ,serverUpdateToEdit: serverUpdateToEdit
+                         ,tUpdateToEdit: tUpdateToEdit
+                         ,edits: edits
+                         ,modelFold: modelFold
+                         ,main: main};
+   return _elm.TUpdate.values;
+};

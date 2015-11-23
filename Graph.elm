@@ -38,11 +38,8 @@ integrateRemoteInsert wChar model =
         newCP = if currCP > insertPos then currCP + 1 else currCP
         newCPModel =  {model | doc <- updateCP model.doc newCP}
         newModel = integrateInsert' wChar wPrev wNext insertPos newCPModel
---       
     in
         (newModel, T (I wChar.ch insertPos))
-
-        
 
 
 -- - - - - - I N S E R T   I M P L E M E N T A T I O N - - - - - - - 

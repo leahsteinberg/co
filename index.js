@@ -24,54 +24,28 @@ app.get('/', function(req, res) {
 });
 
 
-
-// var delaySendOfSiteId = function(socket) {
-//     console.log("t-!!!", this);
-//     console.log( "s-!!!",socket);
-
-// setInterval(
-//             function(msg){
-  
-
-//         }, 200);
-
-// }
-
-
-
 io.sockets.on('connection', function(socket){
   
 
-   // socket.on('example', function(msg){
 
-    var idUpdate = {"siteId": siteCounter, "type": "SiteId"}
+    var idUpdate = [{"siteId": siteCounter, "type": "SiteId"}]
     var toSend = JSON.stringify(idUpdate);
 
         socket.emit("serverWUpdates", JSON.stringify(idUpdate));
-    console.log('a user connected, siteId: ', siteCounter);
+      console.log('a user connected, siteId: ', siteCounter);
 
     siteCounter = siteCounter + 1;
-   // });
-  //      
-
-//     console.log('examp: ' + msg);
-    
-   
 
     socket.on("localEdits", function (msg){
     	parsedMsg = JSON.parse(msg);
-    	if (parsedMsg === undefined || Object.keys(msg).length === 0){
+    	if (parsedMsg === undefined || parsedMsg.length === 0){
     		console.log("bad message!!!");
     		return;
     	}
-        if (parsedMsg.id === undefined){
-            return;
-        }
+
         //var site = parsedMsg.slice(0, parsedMsg.id.indexOf("-"));
        console.log("msg:", parsedMsg);
-        socket.broadcast.emit("serverWUpdates", parsedMsg);
-
-    thing = thing + 1
+      socket.broadcast.emit("serverWUpdates", parsedMsg);
 
 
     })

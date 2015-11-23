@@ -1,0 +1,51 @@
+Elm.SocketIO = Elm.SocketIO || {};
+Elm.SocketIO.make = function (_elm) {
+   "use strict";
+   _elm.SocketIO = _elm.SocketIO || {};
+   if (_elm.SocketIO.values)
+   return _elm.SocketIO.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "SocketIO",
+   $Basics = Elm.Basics.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Native$SocketIO = Elm.Native.SocketIO.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var connected = $Native$SocketIO.connected;
+   var on = $Native$SocketIO.on;
+   var emit = $Native$SocketIO.emit;
+   var io = $Native$SocketIO.io;
+   var Options = F5(function (a,
+   b,
+   c,
+   d,
+   e) {
+      return {_: {}
+             ,multiplex: a
+             ,reconnection: b
+             ,reconnectionDelay: c
+             ,reconnectionDelayMax: d
+             ,timeout: e};
+   });
+   var defaultOptions = A5(Options,
+   false,
+   true,
+   1000,
+   500,
+   20000);
+   var Socket = {ctor: "Socket"};
+   _elm.SocketIO.values = {_op: _op
+                          ,io: io
+                          ,defaultOptions: defaultOptions
+                          ,emit: emit
+                          ,on: on
+                          ,connected: connected
+                          ,Options: Options};
+   return _elm.SocketIO.values;
+};

@@ -103,8 +103,6 @@ grabPrev wCh wStr =
 
 
 
-integratePool : Model -> Model
-integratePool model = model
 
 canIns : WChar -> Set WId -> Bool
 canIns wCh set = Set.member wCh.next set && Set.member wCh.prev set

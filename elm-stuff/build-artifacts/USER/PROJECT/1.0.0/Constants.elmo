@@ -1,0 +1,182 @@
+Elm.Constants = Elm.Constants || {};
+Elm.Constants.make = function (_elm) {
+   "use strict";
+   _elm.Constants = _elm.Constants || {};
+   if (_elm.Constants.values)
+   return _elm.Constants.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Constants",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Graphics$Input$Field = Elm.Graphics.Input.Field.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var endId = {ctor: "_Tuple2"
+               ,_0: 0
+               ,_1: 1};
+   var startId = {ctor: "_Tuple2"
+                 ,_0: 0
+                 ,_1: -1};
+   var startChar = {_: {}
+                   ,ch: _U.chr("<")
+                   ,id: startId
+                   ,next: endId
+                   ,prev: startId
+                   ,vis: -100};
+   var endChar = {_: {}
+                 ,ch: _U.chr(">")
+                 ,id: endId
+                 ,next: endId
+                 ,prev: startId
+                 ,vis: -100};
+   var highlightStyle = {_: {}
+                        ,color: $Color.green
+                        ,width: 4};
+   var fieldStyle = _U.replace([["highlight"
+                                ,highlightStyle]],
+   $Graphics$Input$Field.defaultStyle);
+   var emptyWIdDict = $Dict.empty;
+   var fakeDeleted = {_: {}
+                     ,ch: _U.chr("t")
+                     ,id: {ctor: "_Tuple2"
+                          ,_0: 7
+                          ,_1: 0}
+                     ,next: endId
+                     ,prev: startId
+                     ,vis: -1};
+   var emptyDelModel = {_: {}
+                       ,counter: 0
+                       ,debug: ""
+                       ,doc: {_: {}
+                             ,cp: 0
+                             ,len: 0
+                             ,str: ""}
+                       ,pool: _L.fromArray([])
+                       ,processedPool: _L.fromArray([])
+                       ,site: 0
+                       ,start: startChar
+                       ,wSeen: $Set.insert(endId)(A2($Set.insert,
+                       startId,
+                       $Set.empty))
+                       ,wString: _L.fromArray([])};
+   var emptyModel = {_: {}
+                    ,counter: 0
+                    ,debug: ""
+                    ,doc: {_: {}
+                          ,cp: 0
+                          ,len: 0
+                          ,str: ""}
+                    ,pool: _L.fromArray([])
+                    ,processedPool: _L.fromArray([])
+                    ,site: 0
+                    ,start: startChar
+                    ,wSeen: $Set.insert(endId)(A2($Set.insert,
+                    startId,
+                    $Set.empty))
+                    ,wString: _L.fromArray([])};
+   var fakeModel = {_: {}
+                   ,counter: 6
+                   ,debug: ""
+                   ,doc: {_: {}
+                         ,cp: 4
+                         ,len: 4
+                         ,str: "ab d"}
+                   ,pool: _L.fromArray([])
+                   ,processedPool: _L.fromArray([])
+                   ,site: 0
+                   ,start: startChar
+                   ,wSeen: $Set.insert({ctor: "_Tuple2"
+                                       ,_0: 2
+                                       ,_1: 4})($Set.insert({ctor: "_Tuple2"
+                                                            ,_0: 2
+                                                            ,_1: 2})($Set.insert({ctor: "_Tuple2"
+                                                                                 ,_0: 2
+                                                                                 ,_1: 1})($Set.insert({ctor: "_Tuple2"
+                                                                                                      ,_0: 2
+                                                                                                      ,_1: 0})($Set.insert(endId)(A2($Set.insert,
+                   startId,
+                   $Set.empty))))))
+                   ,wString: _L.fromArray([{_: {}
+                                           ,ch: _U.chr("a")
+                                           ,id: {ctor: "_Tuple2"
+                                                ,_0: 2
+                                                ,_1: 0}
+                                           ,next: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: 1}
+                                           ,prev: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: -1}
+                                           ,vis: 1}
+                                          ,{_: {}
+                                           ,ch: _U.chr("b")
+                                           ,id: {ctor: "_Tuple2"
+                                                ,_0: 2
+                                                ,_1: 1}
+                                           ,next: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: 1}
+                                           ,prev: {ctor: "_Tuple2"
+                                                  ,_0: 2
+                                                  ,_1: 0}
+                                           ,vis: 1}
+                                          ,{_: {}
+                                           ,ch: _U.chr(" ")
+                                           ,id: {ctor: "_Tuple2"
+                                                ,_0: 2
+                                                ,_1: 2}
+                                           ,next: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: 1}
+                                           ,prev: {ctor: "_Tuple2"
+                                                  ,_0: 2
+                                                  ,_1: 1}
+                                           ,vis: 1}
+                                          ,{_: {}
+                                           ,ch: _U.chr("c")
+                                           ,id: {ctor: "_Tuple2"
+                                                ,_0: 2
+                                                ,_1: 3}
+                                           ,next: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: 1}
+                                           ,prev: {ctor: "_Tuple2"
+                                                  ,_0: 2
+                                                  ,_1: 2}
+                                           ,vis: -1}
+                                          ,{_: {}
+                                           ,ch: _U.chr("d")
+                                           ,id: {ctor: "_Tuple2"
+                                                ,_0: 2
+                                                ,_1: 4}
+                                           ,next: {ctor: "_Tuple2"
+                                                  ,_0: 0
+                                                  ,_1: 1}
+                                           ,prev: {ctor: "_Tuple2"
+                                                  ,_0: 2
+                                                  ,_1: 3}
+                                           ,vis: 1}])};
+   var debug = false;
+   _elm.Constants.values = {_op: _op
+                           ,debug: debug
+                           ,fakeModel: fakeModel
+                           ,emptyModel: emptyModel
+                           ,emptyDelModel: emptyDelModel
+                           ,fakeDeleted: fakeDeleted
+                           ,emptyWIdDict: emptyWIdDict
+                           ,highlightStyle: highlightStyle
+                           ,fieldStyle: fieldStyle
+                           ,startId: startId
+                           ,endId: endId
+                           ,startChar: startChar
+                           ,endChar: endChar};
+   return _elm.Constants.values;
+};

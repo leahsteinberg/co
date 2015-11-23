@@ -987,38 +987,52 @@ Elm.ConvertJson.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm);
-   var mod = F2(function (modBy,
-   modThis) {
-      return A2($Basics._op["%"],
-      modThis,
-      modBy);
+   var tUpToJsonList = F2(function (ch,
+   index) {
+      return _L.fromArray([{ctor: "_Tuple2"
+                           ,_0: "ch"
+                           ,_1: $Json$Encode.string($String.fromChar(ch))}
+                          ,{ctor: "_Tuple2"
+                           ,_0: "index"
+                           ,_1: $Json$Encode.$int(index)}]);
    });
-   var hashString = function (str) {
-      return mod(1299827)($Basics.snd(A3($List.foldl,
-      F2(function (ch,_v0) {
-         return function () {
-            switch (_v0.ctor)
-            {case "_Tuple2":
-               return {ctor: "_Tuple2"
-                      ,_0: _v0._0 + 1
-                      ,_1: $Char.toCode(ch) * _v0._0 + _v0._1};}
-            _U.badCase($moduleName,
-            "on line 151, column 35 to 63");
-         }();
-      }),
-      {ctor: "_Tuple2",_0: 1,_1: 1},
-      $String.toList(str))));
+   var encodeTUpdate = function (tUp) {
+      return function () {
+         switch (tUp.ctor)
+         {case "D":
+            return $Json$Encode.object(A2($List._op["::"],
+              {ctor: "_Tuple2"
+              ,_0: "type"
+              ,_1: $Json$Encode.string("typingDelete")},
+              A2(tUpToJsonList,
+              tUp._0,
+              tUp._1)));
+            case "I":
+            return $Json$Encode.object(A2($List._op["::"],
+              {ctor: "_Tuple2"
+              ,_0: "type"
+              ,_1: $Json$Encode.string("typingInsert")},
+              A2(tUpToJsonList,
+              tUp._0,
+              tUp._1)));}
+         return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
+                                                  ,_0: "type"
+                                                  ,_1: $Json$Encode.string("typingNoUpdate")}]));
+      }();
    };
    var wCharToJsonList = function (wCh) {
       return _L.fromArray([{ctor: "_Tuple2"
                            ,_0: "id"
-                           ,_1: $Json$Encode.string(wCh.id)}
+                           ,_1: $Json$Encode.list(_L.fromArray([$Json$Encode.$int($Basics.fst(wCh.id))
+                                                               ,$Json$Encode.$int($Basics.snd(wCh.id))]))}
                           ,{ctor: "_Tuple2"
                            ,_0: "prev"
-                           ,_1: $Json$Encode.string(wCh.prev)}
+                           ,_1: $Json$Encode.list(_L.fromArray([$Json$Encode.$int($Basics.fst(wCh.prev))
+                                                               ,$Json$Encode.$int($Basics.snd(wCh.prev))]))}
                           ,{ctor: "_Tuple2"
                            ,_0: "next"
-                           ,_1: $Json$Encode.string(wCh.next)}
+                           ,_1: $Json$Encode.list(_L.fromArray([$Json$Encode.$int($Basics.fst(wCh.next))
+                                                               ,$Json$Encode.$int($Basics.snd(wCh.next))]))}
                           ,{ctor: "_Tuple2"
                            ,_0: "vis"
                            ,_1: $Json$Encode.$int(wCh.vis)}
@@ -1044,10 +1058,18 @@ Elm.ConvertJson.make = function (_elm) {
             case "NoUpdate":
             return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
                                                      ,_0: "type"
-                                                     ,_1: $Json$Encode.string("NoUpdate")}]));}
+                                                     ,_1: $Json$Encode.string("NoUpdatelol")}]));}
          _U.badCase($moduleName,
-         "between lines 111 and 114");
+         "between lines 239 and 242");
       }();
+   };
+   var encodeStringUpdate = function (str) {
+      return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
+                                               ,_0: "type"
+                                               ,_1: $Json$Encode.string("StringUpdate")}
+                                              ,{ctor: "_Tuple2"
+                                               ,_0: "string"
+                                               ,_1: $Json$Encode.string(str)}]));
    };
    var encodeWInsert = function (wCh) {
       return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
@@ -1082,34 +1104,90 @@ Elm.ConvertJson.make = function (_elm) {
          wUpValue);
       }();
    };
+   var wUpdatesToJson = function (wUpdates) {
+      return function () {
+         var wUpdateListValue = $Json$Encode.list(A2($List.map,
+         encodeWUpdate,
+         wUpdates));
+         return A2($Json$Encode.encode,
+         2,
+         wUpdateListValue);
+      }();
+   };
+   var tUpdateToJson = function (tUpd) {
+      return function () {
+         var tUpValue = encodeTUpdate(tUpd);
+         return A2($Json$Encode.encode,
+         2,
+         tUpValue);
+      }();
+   };
+   var tUpdatesToJson = function (tUpdates) {
+      return function () {
+         var tUpdateListValue = $Json$Encode.list(A2($List.map,
+         encodeTUpdate,
+         tUpdates));
+         return A2($Json$Encode.encode,
+         2,
+         tUpdateListValue);
+      }();
+   };
    var wSiteIdDecoder = A2($Json$Decode._op[":="],
    "siteId",
    $Json$Decode.$int);
    var decodeWSiteId = function (str) {
       return function () {
-         var _v4 = A2($Json$Decode.decodeString,
+         var _v8 = A2($Json$Decode.decodeString,
          wSiteIdDecoder,
          str);
-         switch (_v4.ctor)
+         switch (_v8.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
-            return $Model.SiteId(_v4._0);}
+            return $Model.SiteId(_v8._0);}
          _U.badCase($moduleName,
-         "between lines 95 and 97");
+         "between lines 169 and 171");
       }();
    };
    var decCP = A2($Json$Decode._op[":="],
    "cp",
    $Json$Decode.$int);
+   var tDeleteStringDecoder = A3($Json$Decode.object2,
+   F2(function (str,cp) {
+      return A2($Model.DS,str,cp);
+   }),
+   A2($Json$Decode._op[":="],
+   "str",
+   $Json$Decode.string),
+   decCP);
+   var tInsertStringDecoder = A3($Json$Decode.object2,
+   F2(function (str,cp) {
+      return A2($Model.IS,str,cp);
+   }),
+   A2($Json$Decode._op[":="],
+   "str",
+   $Json$Decode.string),
+   decCP);
    var toChar = function (str) {
       return function () {
-         var _v7 = $List.head($String.toList(str));
-         switch (_v7.ctor)
-         {case "Just": return _v7._0;}
+         var _v11 = $List.head($String.toList(str));
+         switch (_v11.ctor)
+         {case "Just": return _v11._0;}
          return _U.chr("$");
       }();
    };
+   var tDeleteDecoder = A3($Json$Decode.object2,
+   F2(function (ch,cp) {
+      return A2($Model.D,
+      toChar(ch),
+      cp);
+   }),
+   A2($Json$Decode._op[":="],
+   "ch",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "cp",
+   $Json$Decode.$int));
    var decCh = A2($Json$Decode._op[":="],
    "ch",
    $Json$Decode.string);
@@ -1121,40 +1199,54 @@ Elm.ConvertJson.make = function (_elm) {
    }),
    decCh,
    decCP);
-   var tDeleteDecoder = A3($Json$Decode.object2,
-   F2(function (ch,cp) {
-      return A2($Model.D,
-      toChar(ch),
-      cp);
-   }),
-   decCh,
-   decCP);
-   var decodeTyping = F2(function (typeStr,
+   var decodeTUpdate = F2(function (typeStr,
    str) {
       return _U.eq(typeStr,
       "Insert") ? function () {
-         var _v9 = A2($Json$Decode.decodeString,
+         var _v13 = A2($Json$Decode.decodeString,
          tInsertDecoder,
          str);
-         switch (_v9.ctor)
+         switch (_v13.ctor)
          {case "Err":
             return $Model.NoTUpdate;
-            case "Ok": return _v9._0;}
+            case "Ok": return _v13._0;}
          _U.badCase($moduleName,
-         "between lines 43 and 46");
+         "between lines 98 and 101");
       }() : _U.eq(typeStr,
       "Delete") ? function () {
-         var _v12 = A2($Json$Decode.decodeString,
+         var _v16 = A2($Json$Decode.decodeString,
          tDeleteDecoder,
          str);
-         switch (_v12.ctor)
+         switch (_v16.ctor)
          {case "Err":
             return $Model.NoTUpdate;
-            case "Ok": return _v12._0;}
+            case "Ok": return _v16._0;}
          _U.badCase($moduleName,
-         "between lines 47 and 49");
+         "between lines 102 and 105");
+      }() : _U.eq(typeStr,
+      "InsertString") ? function () {
+         var _v19 = A2($Json$Decode.decodeString,
+         tInsertStringDecoder,
+         str);
+         switch (_v19.ctor)
+         {case "Err":
+            return $Model.NoTUpdate;
+            case "Ok": return _v19._0;}
+         _U.badCase($moduleName,
+         "between lines 106 and 109");
+      }() : _U.eq(typeStr,
+      "DeleteString") ? function () {
+         var _v22 = A2($Json$Decode.decodeString,
+         tDeleteStringDecoder,
+         str);
+         switch (_v22.ctor)
+         {case "Err":
+            return $Model.NoTUpdate;
+            case "Ok": return _v22._0;}
+         _U.badCase($moduleName,
+         "between lines 110 and 112");
       }() : _U.badIf($moduleName,
-      "between lines 41 and 49");
+      "between lines 96 and 112");
    });
    var decPrev = A2($Json$Decode._op[":="],
    "prev",
@@ -1179,7 +1271,7 @@ Elm.ConvertJson.make = function (_elm) {
    var decVis = A2($Json$Decode._op[":="],
    "vis",
    $Json$Decode.$int);
-   var decId = A2($Json$Decode._op[":="],
+   var decodeId = A2($Json$Decode._op[":="],
    "id",
    A3($Json$Decode.tuple2,
    F2(function (v0,v1) {
@@ -1202,37 +1294,37 @@ Elm.ConvertJson.make = function (_elm) {
       vis,
       toChar(chr));
    }),
-   decId,
+   decodeId,
    decNext,
    decPrev,
    decVis,
    decCh);
    var decodeWInsert = function (str) {
       return function () {
-         var _v15 = A2($Json$Decode.decodeString,
+         var _v25 = A2($Json$Decode.decodeString,
          wCharDecoder,
          str);
-         switch (_v15.ctor)
+         switch (_v25.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
-            return $Model.Insert(_v15._0);}
+            return $Model.Insert(_v25._0);}
          _U.badCase($moduleName,
-         "between lines 80 and 82");
+         "between lines 154 and 156");
       }();
    };
    var decodeWDelete = function (str) {
       return function () {
-         var _v18 = A2($Json$Decode.decodeString,
+         var _v28 = A2($Json$Decode.decodeString,
          wCharDecoder,
          str);
-         switch (_v18.ctor)
+         switch (_v28.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
-            return $Model.Delete(_v18._0);}
+            return $Model.Delete(_v28._0);}
          _U.badCase($moduleName,
-         "between lines 88 and 90");
+         "between lines 162 and 164");
       }();
    };
    var decodeWUpdate = F2(function (typeStr,
@@ -1242,52 +1334,148 @@ Elm.ConvertJson.make = function (_elm) {
       "Delete") ? decodeWDelete(str) : _U.eq(typeStr,
       "SiteId") ? decodeWSiteId(str) : $Model.NoUpdate;
    });
-   var jsonToTypingUpdate = function (str) {
+   var jsonToTUpdate = function (str) {
       return function () {
-         var _v21 = A2($Json$Decode.decodeString,
+         var _v31 = A2($Json$Decode.decodeString,
          A2($Json$Decode._op[":="],
          "type",
          $Json$Decode.string),
          str);
-         switch (_v21.ctor)
+         switch (_v31.ctor)
          {case "Err":
             return $Model.NoTUpdate;
             case "Ok":
-            return A2(decodeTyping,
-              _v21._0,
+            return A2(decodeTUpdate,
+              _v31._0,
               str);}
          _U.badCase($moduleName,
-         "between lines 20 and 22");
+         "between lines 75 and 77");
       }();
    };
-   var jsonToWUpdate = function (str) {
+   var jsonObjToWUpdate = function (str) {
       return function () {
-         var _v24 = A2($Json$Decode.decodeString,
+         var _v34 = A2($Json$Decode.decodeString,
          A2($Json$Decode._op[":="],
          "type",
          $Json$Decode.string),
          str);
-         switch (_v24.ctor)
+         switch (_v34.ctor)
          {case "Err":
             return $Model.NoUpdate;
             case "Ok":
             return A2(decodeWUpdate,
-              _v24._0,
+              _v34._0,
               str);}
          _U.badCase($moduleName,
-         "between lines 13 and 15");
+         "between lines 68 and 70");
+      }();
+   };
+   var wCharMaker = F5(function (id,
+   strCh,
+   vis,
+   next,
+   prev) {
+      return {_: {}
+             ,ch: toChar(strCh)
+             ,id: id
+             ,next: next
+             ,prev: prev
+             ,vis: vis};
+   });
+   var siteIdDecoder = A2($Json$Decode.object1,
+   function (id) {
+      return $Model.SiteId(id);
+   },
+   A2($Json$Decode._op[":="],
+   "siteId",
+   $Json$Decode.$int));
+   var wDeleteDecoder = A6($Json$Decode.object5,
+   F5(function (id,
+   ch,
+   vis,
+   next,
+   prev) {
+      return $Model.Delete(A5(wCharMaker,
+      id,
+      ch,
+      vis,
+      next,
+      prev));
+   }),
+   decodeId,
+   A2($Json$Decode._op[":="],
+   "ch",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "vis",
+   $Json$Decode.$int),
+   decNext,
+   decPrev);
+   var insertDeleteDecoder = A7($Json$Decode.object6,
+   F6(function (t,
+   id,
+   ch,
+   vis,
+   next,
+   prev) {
+      return _U.eq(t,
+      "Insert") ? $Model.Insert(A5(wCharMaker,
+      id,
+      ch,
+      vis,
+      next,
+      prev)) : $Model.Delete(A5(wCharMaker,
+      id,
+      ch,
+      vis,
+      next,
+      prev));
+   }),
+   A2($Json$Decode._op[":="],
+   "type",
+   $Json$Decode.string),
+   decodeId,
+   A2($Json$Decode._op[":="],
+   "ch",
+   $Json$Decode.string),
+   A2($Json$Decode._op[":="],
+   "vis",
+   $Json$Decode.$int),
+   decNext,
+   decPrev);
+   var wUpdateDecoder = $Json$Decode.oneOf(_L.fromArray([siteIdDecoder
+                                                        ,insertDeleteDecoder]));
+   var jsonToWUpdates = function (str) {
+      return function () {
+         var _v37 = A2($Json$Decode.decodeString,
+         $Json$Decode.list(wUpdateDecoder),
+         str);
+         switch (_v37.ctor)
+         {case "Err":
+            return _L.fromArray([$Model.NoUpdate]);
+            case "Ok": return _v37._0;}
+         _U.badCase($moduleName,
+         "between lines 60 and 62");
       }();
    };
    _elm.ConvertJson.values = {_op: _op
-                             ,jsonToWUpdate: jsonToWUpdate
-                             ,jsonToTypingUpdate: jsonToTypingUpdate
-                             ,decId: decId
+                             ,wUpdateDecoder: wUpdateDecoder
+                             ,insertDeleteDecoder: insertDeleteDecoder
+                             ,wDeleteDecoder: wDeleteDecoder
+                             ,siteIdDecoder: siteIdDecoder
+                             ,wCharMaker: wCharMaker
+                             ,jsonToWUpdates: jsonToWUpdates
+                             ,jsonObjToWUpdate: jsonObjToWUpdate
+                             ,jsonToTUpdate: jsonToTUpdate
+                             ,decodeId: decodeId
                              ,decVis: decVis
                              ,decNext: decNext
                              ,decPrev: decPrev
                              ,decCh: decCh
                              ,toChar: toChar
-                             ,decodeTyping: decodeTyping
+                             ,decodeTUpdate: decodeTUpdate
+                             ,tInsertStringDecoder: tInsertStringDecoder
+                             ,tDeleteStringDecoder: tDeleteStringDecoder
                              ,tInsertDecoder: tInsertDecoder
                              ,tDeleteDecoder: tDeleteDecoder
                              ,decCP: decCP
@@ -1297,12 +1485,17 @@ Elm.ConvertJson.make = function (_elm) {
                              ,decodeWSiteId: decodeWSiteId
                              ,wCharDecoder: wCharDecoder
                              ,wSiteIdDecoder: wSiteIdDecoder
+                             ,tUpdatesToJson: tUpdatesToJson
+                             ,tUpdateToJson: tUpdateToJson
+                             ,wUpdatesToJson: wUpdatesToJson
                              ,wUpdateToJson: wUpdateToJson
                              ,stringUpdateToJson: stringUpdateToJson
                              ,encodeWInsert: encodeWInsert
                              ,encodeStringUpdate: encodeStringUpdate
                              ,encodeWUpdate: encodeWUpdate
-                             ,wCharToJsonList: wCharToJsonList};
+                             ,wCharToJsonList: wCharToJsonList
+                             ,tUpToJsonList: tUpToJsonList
+                             ,encodeTUpdate: encodeTUpdate};
    return _elm.ConvertJson.values;
 };
 Elm.Debug = Elm.Debug || {};
@@ -2320,6 +2513,281 @@ Elm.Dict.make = function (_elm) {
                       ,fromList: fromList};
    return _elm.Dict.values;
 };
+Elm.Editor = Elm.Editor || {};
+Elm.Editor.make = function (_elm) {
+   "use strict";
+   _elm.Editor = _elm.Editor || {};
+   if (_elm.Editor.values)
+   return _elm.Editor.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "Editor",
+   $Basics = Elm.Basics.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
+   var sendDebug = F2(function (model,
+   str) {
+      return {ctor: "_Tuple2"
+             ,_0: _U.replace([["debug"
+                              ,A2($Basics._op["++"],
+                              str,
+                              model.debug)]],
+             model)
+             ,_1: $Model.W($Model.NoUpdate)};
+   });
+   var createInsertTUpdate = F2(function (_v0,
+   tUpdates) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return A2($List._op["::"],
+              A2($Model.I,_v0._0,_v0._1),
+              tUpdates);}
+         _U.badCase($moduleName,
+         "on line 101, column 46 to 70");
+      }();
+   });
+   var toEditList = function (_v4) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return {ctor: "_Tuple2"
+                   ,_0: _v4._0
+                   ,_1: _L.fromArray([_v4._1])};}
+         _U.badCase($moduleName,
+         "on line 98, column 29 to 42");
+      }();
+   };
+   var processTUpdate = F2(function (typ,
+   model) {
+      return function () {
+         switch (typ.ctor)
+         {case "D":
+            return toEditList(A3($Graph.generateDelete,
+              typ._0,
+              typ._1,
+              model));
+            case "I":
+            return toEditList(A3($Graph.generateInsert,
+              typ._0,
+              typ._1,
+              model));
+            case "IS":
+            return A3(insertString,
+              typ._0,
+              typ._1,
+              model);}
+         _U.badCase($moduleName,
+         "between lines 73 and 76");
+      }();
+   });
+   var insertString = F3(function (string,
+   index,
+   model) {
+      return function () {
+         var strIndexList = A3($List.map2,
+         F2(function (v0,v1) {
+            return {ctor: "_Tuple2"
+                   ,_0: v0
+                   ,_1: v1};
+         }),
+         $String.toList(string),
+         _L.range(index,
+         index + $String.length(string)));
+         var tUpdates = A3($List.foldr,
+         createInsertTUpdate,
+         _L.fromArray([]),
+         strIndexList);
+         return A3($List.foldr,
+         insertCharOfString,
+         {ctor: "_Tuple2"
+         ,_0: model
+         ,_1: _L.fromArray([])},
+         tUpdates);
+      }();
+   });
+   var insertCharOfString = F2(function (tUpdate,
+   _v15) {
+      return function () {
+         switch (_v15.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var $ = A2(processTUpdate,
+                 tUpdate,
+                 _v15._0),
+                 newModel = $._0,
+                 newEdits = $._1;
+                 return {ctor: "_Tuple2"
+                        ,_0: newModel
+                        ,_1: A2($Basics._op["++"],
+                        newEdits,
+                        _v15._1)};
+              }();}
+         _U.badCase($moduleName,
+         "between lines 92 and 95");
+      }();
+   });
+   var processServerUpdate = F2(function (wUpd,
+   model) {
+      return function () {
+         var poolUpdate = {ctor: "_Tuple2"
+                          ,_0: _U.replace([["pool"
+                                           ,A2($List._op["::"],
+                                           wUpd,
+                                           model.pool)]],
+                          model)
+                          ,_1: _L.fromArray([])};
+         return function () {
+            switch (wUpd.ctor)
+            {case "Delete":
+               return A2($Woot.canIntegrate,
+                 wUpd,
+                 model.wSeen) ? toEditList(A2($Graph.integrateRemoteDelete,
+                 wUpd._0,
+                 model)) : poolUpdate;
+               case "Insert":
+               return A2($Woot.canIntegrate,
+                 wUpd,
+                 model.wSeen) ? toEditList(A2($Graph.integrateRemoteInsert,
+                 wUpd._0,
+                 model)) : poolUpdate;
+               case "NoUpdate":
+               return {ctor: "_Tuple2"
+                      ,_0: model
+                      ,_1: _L.fromArray([])};
+               case "SiteId":
+               return {ctor: "_Tuple2"
+                      ,_0: _U.replace([["site"
+                                       ,wUpd._0]],
+                      model)
+                      ,_1: _L.fromArray([])};}
+            _U.badCase($moduleName,
+            "between lines 55 and 66");
+         }();
+      }();
+   });
+   var processEdit = F2(function (edit,
+   model) {
+      return function () {
+         switch (edit.ctor)
+         {case "T":
+            return A2(processTUpdate,
+              edit._0,
+              model);
+            case "W":
+            return A2(processServerUpdate,
+              edit._0,
+              model);}
+         _U.badCase($moduleName,
+         "between lines 46 and 48");
+      }();
+   });
+   var processEdits = F2(function (edits,
+   model) {
+      return function () {
+         var _v26 = $List.head(edits);
+         switch (_v26.ctor)
+         {case "Just":
+            return A2(processEdit,
+              _v26._0,
+              model);}
+         return {ctor: "_Tuple2"
+                ,_0: model
+                ,_1: _L.fromArray([])};
+      }();
+   });
+   var integrateRemoteUpdate = F2(function (wUpd,
+   m) {
+      return function () {
+         var moveToProcessed = F2(function (x,
+         m) {
+            return {ctor: "_Tuple2"
+                   ,_0: _U.replace([["processedPool"
+                                    ,A2($List._op["::"],
+                                    x,
+                                    m.processedPool)]],
+                   m)
+                   ,_1: _L.fromArray([])};
+         });
+         return function () {
+            switch (wUpd.ctor)
+            {case "Delete":
+               return A2($Woot.canIntegrate,
+                 wUpd,
+                 m.wSeen) ? toEditList(A2($Graph.integrateRemoteDelete,
+                 wUpd._0,
+                 m)) : A2(moveToProcessed,
+                 wUpd,
+                 m);
+               case "Insert":
+               return A2($Woot.canIntegrate,
+                 wUpd,
+                 m.wSeen) ? toEditList(A2($Graph.integrateRemoteInsert,
+                 wUpd._0,
+                 m)) : A2(moveToProcessed,
+                 wUpd,
+                 m);}
+            _U.badCase($moduleName,
+            "between lines 14 and 21");
+         }();
+      }();
+   });
+   var integratePool = function (model) {
+      return function () {
+         var _v31 = model.pool;
+         switch (_v31.ctor)
+         {case "::":
+            return A2($Woot.canIntegrate,
+              _v31._0,
+              model.wSeen) ? A2(integrateRemoteUpdate,
+              _v31._0,
+              _U.replace([["pool"
+                          ,A2($List._op["::"],
+                          _v31._0,
+                          model.processedPool)]
+                         ,["processedPool"
+                          ,_L.fromArray([])]],
+              model)) : integratePool(_U.replace([["pool"
+                                                  ,_v31._1]
+                                                 ,["processedPool"
+                                                  ,A2($List._op["::"],
+                                                  _v31._0,
+                                                  model.processedPool)]],
+              model));
+            case "[]":
+            return {ctor: "_Tuple2"
+                   ,_0: _U.replace([["pool"
+                                    ,model.processedPool]
+                                   ,["processedPool"
+                                    ,_L.fromArray([])]],
+                   model)
+                   ,_1: _L.fromArray([])};}
+         _U.badCase($moduleName,
+         "between lines 26 and 35");
+      }();
+   };
+   _elm.Editor.values = {_op: _op
+                        ,integrateRemoteUpdate: integrateRemoteUpdate
+                        ,integratePool: integratePool
+                        ,processEdits: processEdits
+                        ,processEdit: processEdit
+                        ,processServerUpdate: processServerUpdate
+                        ,processTUpdate: processTUpdate
+                        ,insertString: insertString
+                        ,insertCharOfString: insertCharOfString
+                        ,toEditList: toEditList
+                        ,createInsertTUpdate: createInsertTUpdate
+                        ,sendDebug: sendDebug};
+   return _elm.Editor.values;
+};
 Elm.Graph = Elm.Graph || {};
 Elm.Graph.make = function (_elm) {
    "use strict";
@@ -2378,14 +2846,24 @@ Elm.Graph.make = function (_elm) {
          var newCP = _U.cmp(currCP,
          deletePos) > 0 ? currCP - 1 : currCP;
          var newDocModel = _U.replace([["doc"
-                                       ,A2(updateCP,model.doc,newCP)]],
+                                       ,A2(updateCP,model.doc,newCP)]
+                                      ,["debug"
+                                       ,A2($Basics._op["++"],
+                                       "deleting",
+                                       A2($Basics._op["++"],
+                                       $String.fromChar(wChar.ch),
+                                       A2($Basics._op["++"],
+                                       " at ",
+                                       $Basics.toString(deletePos))))]],
          model);
          var newModel = A2(integrateDelete,
          wChar,
          newDocModel);
          return {ctor: "_Tuple2"
                 ,_0: newModel
-                ,_1: $Model.Caret(newModel.doc.cp)};
+                ,_1: $Model.T(A2($Model.D,
+                wChar.ch,
+                deletePos))};
       }();
    });
    var generateDelete = F3(function (ch,
@@ -2435,7 +2913,7 @@ Elm.Graph.make = function (_elm) {
                 ,_0: A2(integrateDelete,
                 deletedWChar,
                 newModel)
-                ,_1: $Model.Delete(deletedWChar)};
+                ,_1: $Model.W($Model.Delete(deletedWChar))};
       }();
    });
    var findLaterWChar = F2(function (insCh,
@@ -2463,7 +2941,7 @@ Elm.Graph.make = function (_elm) {
                    ,_0: $Constants.startChar
                    ,_1: $Constants.endChar};}
          _U.badCase($moduleName,
-         "between lines 123 and 129");
+         "between lines 122 and 128");
       }();
    });
    var withoutPrecedenceOrdered = function (wStr) {
@@ -2509,7 +2987,7 @@ Elm.Graph.make = function (_elm) {
             case "[]":
             return _L.fromArray([wCh]);}
          _U.badCase($moduleName,
-         "between lines 51 and 55");
+         "between lines 50 and 54");
       }();
    });
    var intInsertChar = F3(function (wCh,
@@ -2571,7 +3049,7 @@ Elm.Graph.make = function (_elm) {
                  pos,
                  model);}
             _U.badCase($moduleName,
-            "between lines 81 and 83");
+            "between lines 80 and 82");
          }();
       }();
    });
@@ -2626,7 +3104,7 @@ Elm.Graph.make = function (_elm) {
                 succ,
                 nextIndex,
                 debugModel)
-                ,_1: $Model.Insert(newWChar)};
+                ,_1: $Model.W($Model.Insert(newWChar))};
       }();
    });
    var integrateRemoteInsert = F2(function (wChar,
@@ -2655,7 +3133,9 @@ Elm.Graph.make = function (_elm) {
          newCPModel);
          return {ctor: "_Tuple2"
                 ,_0: newModel
-                ,_1: $Model.Caret(newModel.doc.cp)};
+                ,_1: $Model.T(A2($Model.I,
+                wChar.ch,
+                insertPos))};
       }();
    });
    var generateInsert = F3(function (ch,
@@ -3703,969 +4183,6 @@ Elm.Graphics.Input.Field.make = function (_elm) {
                                       ,Backward: Backward};
    return _elm.Graphics.Input.Field.values;
 };
-Elm.Html = Elm.Html || {};
-Elm.Html.make = function (_elm) {
-   "use strict";
-   _elm.Html = _elm.Html || {};
-   if (_elm.Html.values)
-   return _elm.Html.values;
-   var _op = {},
-   _N = Elm.Native,
-   _U = _N.Utils.make(_elm),
-   _L = _N.List.make(_elm),
-   $moduleName = "Html",
-   $Basics = Elm.Basics.make(_elm),
-   $Graphics$Element = Elm.Graphics.Element.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $VirtualDom = Elm.VirtualDom.make(_elm);
-   var fromElement = $VirtualDom.fromElement;
-   var toElement = $VirtualDom.toElement;
-   var text = $VirtualDom.text;
-   var node = $VirtualDom.node;
-   var body = node("body");
-   var section = node("section");
-   var nav = node("nav");
-   var article = node("article");
-   var aside = node("aside");
-   var h1 = node("h1");
-   var h2 = node("h2");
-   var h3 = node("h3");
-   var h4 = node("h4");
-   var h5 = node("h5");
-   var h6 = node("h6");
-   var header = node("header");
-   var footer = node("footer");
-   var address = node("address");
-   var main$ = node("main");
-   var p = node("p");
-   var hr = node("hr");
-   var pre = node("pre");
-   var blockquote = node("blockquote");
-   var ol = node("ol");
-   var ul = node("ul");
-   var li = node("li");
-   var dl = node("dl");
-   var dt = node("dt");
-   var dd = node("dd");
-   var figure = node("figure");
-   var figcaption = node("figcaption");
-   var div = node("div");
-   var a = node("a");
-   var em = node("em");
-   var strong = node("strong");
-   var small = node("small");
-   var s = node("s");
-   var cite = node("cite");
-   var q = node("q");
-   var dfn = node("dfn");
-   var abbr = node("abbr");
-   var time = node("time");
-   var code = node("code");
-   var $var = node("var");
-   var samp = node("samp");
-   var kbd = node("kbd");
-   var sub = node("sub");
-   var sup = node("sup");
-   var i = node("i");
-   var b = node("b");
-   var u = node("u");
-   var mark = node("mark");
-   var ruby = node("ruby");
-   var rt = node("rt");
-   var rp = node("rp");
-   var bdi = node("bdi");
-   var bdo = node("bdo");
-   var span = node("span");
-   var br = node("br");
-   var wbr = node("wbr");
-   var ins = node("ins");
-   var del = node("del");
-   var img = node("img");
-   var iframe = node("iframe");
-   var embed = node("embed");
-   var object = node("object");
-   var param = node("param");
-   var video = node("video");
-   var audio = node("audio");
-   var source = node("source");
-   var track = node("track");
-   var canvas = node("canvas");
-   var svg = node("svg");
-   var math = node("math");
-   var table = node("table");
-   var caption = node("caption");
-   var colgroup = node("colgroup");
-   var col = node("col");
-   var tbody = node("tbody");
-   var thead = node("thead");
-   var tfoot = node("tfoot");
-   var tr = node("tr");
-   var td = node("td");
-   var th = node("th");
-   var form = node("form");
-   var fieldset = node("fieldset");
-   var legend = node("legend");
-   var label = node("label");
-   var input = node("input");
-   var button = node("button");
-   var select = node("select");
-   var datalist = node("datalist");
-   var optgroup = node("optgroup");
-   var option = node("option");
-   var textarea = node("textarea");
-   var keygen = node("keygen");
-   var output = node("output");
-   var progress = node("progress");
-   var meter = node("meter");
-   var details = node("details");
-   var summary = node("summary");
-   var menuitem = node("menuitem");
-   var menu = node("menu");
-   _elm.Html.values = {_op: _op
-                      ,node: node
-                      ,text: text
-                      ,toElement: toElement
-                      ,fromElement: fromElement
-                      ,body: body
-                      ,section: section
-                      ,nav: nav
-                      ,article: article
-                      ,aside: aside
-                      ,h1: h1
-                      ,h2: h2
-                      ,h3: h3
-                      ,h4: h4
-                      ,h5: h5
-                      ,h6: h6
-                      ,header: header
-                      ,footer: footer
-                      ,address: address
-                      ,main$: main$
-                      ,p: p
-                      ,hr: hr
-                      ,pre: pre
-                      ,blockquote: blockquote
-                      ,ol: ol
-                      ,ul: ul
-                      ,li: li
-                      ,dl: dl
-                      ,dt: dt
-                      ,dd: dd
-                      ,figure: figure
-                      ,figcaption: figcaption
-                      ,div: div
-                      ,a: a
-                      ,em: em
-                      ,strong: strong
-                      ,small: small
-                      ,s: s
-                      ,cite: cite
-                      ,q: q
-                      ,dfn: dfn
-                      ,abbr: abbr
-                      ,time: time
-                      ,code: code
-                      ,$var: $var
-                      ,samp: samp
-                      ,kbd: kbd
-                      ,sub: sub
-                      ,sup: sup
-                      ,i: i
-                      ,b: b
-                      ,u: u
-                      ,mark: mark
-                      ,ruby: ruby
-                      ,rt: rt
-                      ,rp: rp
-                      ,bdi: bdi
-                      ,bdo: bdo
-                      ,span: span
-                      ,br: br
-                      ,wbr: wbr
-                      ,ins: ins
-                      ,del: del
-                      ,img: img
-                      ,iframe: iframe
-                      ,embed: embed
-                      ,object: object
-                      ,param: param
-                      ,video: video
-                      ,audio: audio
-                      ,source: source
-                      ,track: track
-                      ,canvas: canvas
-                      ,svg: svg
-                      ,math: math
-                      ,table: table
-                      ,caption: caption
-                      ,colgroup: colgroup
-                      ,col: col
-                      ,tbody: tbody
-                      ,thead: thead
-                      ,tfoot: tfoot
-                      ,tr: tr
-                      ,td: td
-                      ,th: th
-                      ,form: form
-                      ,fieldset: fieldset
-                      ,legend: legend
-                      ,label: label
-                      ,input: input
-                      ,button: button
-                      ,select: select
-                      ,datalist: datalist
-                      ,optgroup: optgroup
-                      ,option: option
-                      ,textarea: textarea
-                      ,keygen: keygen
-                      ,output: output
-                      ,progress: progress
-                      ,meter: meter
-                      ,details: details
-                      ,summary: summary
-                      ,menuitem: menuitem
-                      ,menu: menu};
-   return _elm.Html.values;
-};
-Elm.Html = Elm.Html || {};
-Elm.Html.Attributes = Elm.Html.Attributes || {};
-Elm.Html.Attributes.make = function (_elm) {
-   "use strict";
-   _elm.Html = _elm.Html || {};
-   _elm.Html.Attributes = _elm.Html.Attributes || {};
-   if (_elm.Html.Attributes.values)
-   return _elm.Html.Attributes.values;
-   var _op = {},
-   _N = Elm.Native,
-   _U = _N.Utils.make(_elm),
-   _L = _N.List.make(_elm),
-   $moduleName = "Html.Attributes",
-   $Basics = Elm.Basics.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $Json$Encode = Elm.Json.Encode.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm),
-   $VirtualDom = Elm.VirtualDom.make(_elm);
-   var attribute = $VirtualDom.attribute;
-   var property = $VirtualDom.property;
-   var stringProperty = F2(function (name,
-   string) {
-      return A2(property,
-      name,
-      $Json$Encode.string(string));
-   });
-   var $class = function (name) {
-      return A2(stringProperty,
-      "className",
-      name);
-   };
-   var id = function (name) {
-      return A2(stringProperty,
-      "id",
-      name);
-   };
-   var title = function (name) {
-      return A2(stringProperty,
-      "title",
-      name);
-   };
-   var accesskey = function ($char) {
-      return A2(stringProperty,
-      "accesskey",
-      $String.fromList(_L.fromArray([$char])));
-   };
-   var contextmenu = function (value) {
-      return A2(stringProperty,
-      "contextmenu",
-      value);
-   };
-   var dir = function (value) {
-      return A2(stringProperty,
-      "dir",
-      value);
-   };
-   var draggable = function (value) {
-      return A2(stringProperty,
-      "draggable",
-      value);
-   };
-   var dropzone = function (value) {
-      return A2(stringProperty,
-      "dropzone",
-      value);
-   };
-   var itemprop = function (value) {
-      return A2(stringProperty,
-      "itemprop",
-      value);
-   };
-   var lang = function (value) {
-      return A2(stringProperty,
-      "lang",
-      value);
-   };
-   var tabindex = function (n) {
-      return A2(stringProperty,
-      "tabIndex",
-      $Basics.toString(n));
-   };
-   var charset = function (value) {
-      return A2(stringProperty,
-      "charset",
-      value);
-   };
-   var content = function (value) {
-      return A2(stringProperty,
-      "content",
-      value);
-   };
-   var httpEquiv = function (value) {
-      return A2(stringProperty,
-      "httpEquiv",
-      value);
-   };
-   var language = function (value) {
-      return A2(stringProperty,
-      "language",
-      value);
-   };
-   var src = function (value) {
-      return A2(stringProperty,
-      "src",
-      value);
-   };
-   var height = function (value) {
-      return A2(stringProperty,
-      "height",
-      $Basics.toString(value));
-   };
-   var width = function (value) {
-      return A2(stringProperty,
-      "width",
-      $Basics.toString(value));
-   };
-   var alt = function (value) {
-      return A2(stringProperty,
-      "alt",
-      value);
-   };
-   var preload = function (value) {
-      return A2(stringProperty,
-      "preload",
-      value);
-   };
-   var poster = function (value) {
-      return A2(stringProperty,
-      "poster",
-      value);
-   };
-   var kind = function (value) {
-      return A2(stringProperty,
-      "kind",
-      value);
-   };
-   var srclang = function (value) {
-      return A2(stringProperty,
-      "srclang",
-      value);
-   };
-   var sandbox = function (value) {
-      return A2(stringProperty,
-      "sandbox",
-      value);
-   };
-   var srcdoc = function (value) {
-      return A2(stringProperty,
-      "srcdoc",
-      value);
-   };
-   var type$ = function (value) {
-      return A2(stringProperty,
-      "type",
-      value);
-   };
-   var value = function (value) {
-      return A2(stringProperty,
-      "value",
-      value);
-   };
-   var placeholder = function (value) {
-      return A2(stringProperty,
-      "placeholder",
-      value);
-   };
-   var accept = function (value) {
-      return A2(stringProperty,
-      "accept",
-      value);
-   };
-   var acceptCharset = function (value) {
-      return A2(stringProperty,
-      "acceptCharset",
-      value);
-   };
-   var action = function (value) {
-      return A2(stringProperty,
-      "action",
-      value);
-   };
-   var autocomplete = function (bool) {
-      return A2(stringProperty,
-      "autocomplete",
-      bool ? "on" : "off");
-   };
-   var autosave = function (value) {
-      return A2(stringProperty,
-      "autosave",
-      value);
-   };
-   var enctype = function (value) {
-      return A2(stringProperty,
-      "enctype",
-      value);
-   };
-   var formaction = function (value) {
-      return A2(stringProperty,
-      "formaction",
-      value);
-   };
-   var list = function (value) {
-      return A2(stringProperty,
-      "list",
-      value);
-   };
-   var minlength = function (n) {
-      return A2(stringProperty,
-      "minLength",
-      $Basics.toString(n));
-   };
-   var maxlength = function (n) {
-      return A2(stringProperty,
-      "maxLength",
-      $Basics.toString(n));
-   };
-   var method = function (value) {
-      return A2(stringProperty,
-      "method",
-      value);
-   };
-   var name = function (value) {
-      return A2(stringProperty,
-      "name",
-      value);
-   };
-   var pattern = function (value) {
-      return A2(stringProperty,
-      "pattern",
-      value);
-   };
-   var size = function (n) {
-      return A2(stringProperty,
-      "size",
-      $Basics.toString(n));
-   };
-   var $for = function (value) {
-      return A2(stringProperty,
-      "htmlFor",
-      value);
-   };
-   var form = function (value) {
-      return A2(stringProperty,
-      "form",
-      value);
-   };
-   var max = function (value) {
-      return A2(stringProperty,
-      "max",
-      value);
-   };
-   var min = function (value) {
-      return A2(stringProperty,
-      "min",
-      value);
-   };
-   var step = function (n) {
-      return A2(stringProperty,
-      "step",
-      n);
-   };
-   var cols = function (n) {
-      return A2(stringProperty,
-      "cols",
-      $Basics.toString(n));
-   };
-   var rows = function (n) {
-      return A2(stringProperty,
-      "rows",
-      $Basics.toString(n));
-   };
-   var wrap = function (value) {
-      return A2(stringProperty,
-      "wrap",
-      value);
-   };
-   var usemap = function (value) {
-      return A2(stringProperty,
-      "useMap",
-      value);
-   };
-   var shape = function (value) {
-      return A2(stringProperty,
-      "shape",
-      value);
-   };
-   var coords = function (value) {
-      return A2(stringProperty,
-      "coords",
-      value);
-   };
-   var challenge = function (value) {
-      return A2(stringProperty,
-      "challenge",
-      value);
-   };
-   var keytype = function (value) {
-      return A2(stringProperty,
-      "keytype",
-      value);
-   };
-   var align = function (value) {
-      return A2(stringProperty,
-      "align",
-      value);
-   };
-   var cite = function (value) {
-      return A2(stringProperty,
-      "cite",
-      value);
-   };
-   var href = function (value) {
-      return A2(stringProperty,
-      "href",
-      value);
-   };
-   var target = function (value) {
-      return A2(stringProperty,
-      "target",
-      value);
-   };
-   var downloadAs = function (value) {
-      return A2(stringProperty,
-      "download",
-      value);
-   };
-   var hreflang = function (value) {
-      return A2(stringProperty,
-      "hreflang",
-      value);
-   };
-   var media = function (value) {
-      return A2(stringProperty,
-      "media",
-      value);
-   };
-   var ping = function (value) {
-      return A2(stringProperty,
-      "ping",
-      value);
-   };
-   var rel = function (value) {
-      return A2(stringProperty,
-      "rel",
-      value);
-   };
-   var datetime = function (value) {
-      return A2(stringProperty,
-      "datetime",
-      value);
-   };
-   var pubdate = function (value) {
-      return A2(stringProperty,
-      "pubdate",
-      value);
-   };
-   var start = function (n) {
-      return A2(stringProperty,
-      "start",
-      $Basics.toString(n));
-   };
-   var colspan = function (n) {
-      return A2(stringProperty,
-      "colSpan",
-      $Basics.toString(n));
-   };
-   var headers = function (value) {
-      return A2(stringProperty,
-      "headers",
-      value);
-   };
-   var rowspan = function (n) {
-      return A2(stringProperty,
-      "rowSpan",
-      $Basics.toString(n));
-   };
-   var scope = function (value) {
-      return A2(stringProperty,
-      "scope",
-      value);
-   };
-   var manifest = function (value) {
-      return A2(stringProperty,
-      "manifest",
-      value);
-   };
-   var boolProperty = F2(function (name,
-   bool) {
-      return A2(property,
-      name,
-      $Json$Encode.bool(bool));
-   });
-   var hidden = function (bool) {
-      return A2(boolProperty,
-      "hidden",
-      bool);
-   };
-   var contenteditable = function (bool) {
-      return A2(boolProperty,
-      "contentEditable",
-      bool);
-   };
-   var spellcheck = function (bool) {
-      return A2(boolProperty,
-      "spellcheck",
-      bool);
-   };
-   var async = function (bool) {
-      return A2(boolProperty,
-      "async",
-      bool);
-   };
-   var defer = function (bool) {
-      return A2(boolProperty,
-      "defer",
-      bool);
-   };
-   var scoped = function (bool) {
-      return A2(boolProperty,
-      "scoped",
-      bool);
-   };
-   var autoplay = function (bool) {
-      return A2(boolProperty,
-      "autoplay",
-      bool);
-   };
-   var controls = function (bool) {
-      return A2(boolProperty,
-      "controls",
-      bool);
-   };
-   var loop = function (bool) {
-      return A2(boolProperty,
-      "loop",
-      bool);
-   };
-   var $default = function (bool) {
-      return A2(boolProperty,
-      "default",
-      bool);
-   };
-   var seamless = function (bool) {
-      return A2(boolProperty,
-      "seamless",
-      bool);
-   };
-   var checked = function (bool) {
-      return A2(boolProperty,
-      "checked",
-      bool);
-   };
-   var selected = function (bool) {
-      return A2(boolProperty,
-      "selected",
-      bool);
-   };
-   var autofocus = function (bool) {
-      return A2(boolProperty,
-      "autofocus",
-      bool);
-   };
-   var disabled = function (bool) {
-      return A2(boolProperty,
-      "disabled",
-      bool);
-   };
-   var multiple = function (bool) {
-      return A2(boolProperty,
-      "multiple",
-      bool);
-   };
-   var novalidate = function (bool) {
-      return A2(boolProperty,
-      "noValidate",
-      bool);
-   };
-   var readonly = function (bool) {
-      return A2(boolProperty,
-      "readOnly",
-      bool);
-   };
-   var required = function (bool) {
-      return A2(boolProperty,
-      "required",
-      bool);
-   };
-   var ismap = function (value) {
-      return A2(boolProperty,
-      "isMap",
-      value);
-   };
-   var download = function (bool) {
-      return A2(boolProperty,
-      "download",
-      bool);
-   };
-   var reversed = function (bool) {
-      return A2(boolProperty,
-      "reversed",
-      bool);
-   };
-   var classList = function (list) {
-      return $class($String.join(" ")($List.map($Basics.fst)($List.filter($Basics.snd)(list))));
-   };
-   var style = function (props) {
-      return property("style")($Json$Encode.object($List.map(function (_v0) {
-         return function () {
-            switch (_v0.ctor)
-            {case "_Tuple2":
-               return {ctor: "_Tuple2"
-                      ,_0: _v0._0
-                      ,_1: $Json$Encode.string(_v0._1)};}
-            _U.badCase($moduleName,
-            "on line 156, column 35 to 57");
-         }();
-      })(props)));
-   };
-   var key = function (k) {
-      return A2(stringProperty,
-      "key",
-      k);
-   };
-   _elm.Html.Attributes.values = {_op: _op
-                                 ,key: key
-                                 ,style: style
-                                 ,$class: $class
-                                 ,classList: classList
-                                 ,id: id
-                                 ,title: title
-                                 ,hidden: hidden
-                                 ,type$: type$
-                                 ,value: value
-                                 ,checked: checked
-                                 ,placeholder: placeholder
-                                 ,selected: selected
-                                 ,accept: accept
-                                 ,acceptCharset: acceptCharset
-                                 ,action: action
-                                 ,autocomplete: autocomplete
-                                 ,autofocus: autofocus
-                                 ,autosave: autosave
-                                 ,disabled: disabled
-                                 ,enctype: enctype
-                                 ,formaction: formaction
-                                 ,list: list
-                                 ,maxlength: maxlength
-                                 ,minlength: minlength
-                                 ,method: method
-                                 ,multiple: multiple
-                                 ,name: name
-                                 ,novalidate: novalidate
-                                 ,pattern: pattern
-                                 ,readonly: readonly
-                                 ,required: required
-                                 ,size: size
-                                 ,$for: $for
-                                 ,form: form
-                                 ,max: max
-                                 ,min: min
-                                 ,step: step
-                                 ,cols: cols
-                                 ,rows: rows
-                                 ,wrap: wrap
-                                 ,href: href
-                                 ,target: target
-                                 ,download: download
-                                 ,downloadAs: downloadAs
-                                 ,hreflang: hreflang
-                                 ,media: media
-                                 ,ping: ping
-                                 ,rel: rel
-                                 ,ismap: ismap
-                                 ,usemap: usemap
-                                 ,shape: shape
-                                 ,coords: coords
-                                 ,src: src
-                                 ,height: height
-                                 ,width: width
-                                 ,alt: alt
-                                 ,autoplay: autoplay
-                                 ,controls: controls
-                                 ,loop: loop
-                                 ,preload: preload
-                                 ,poster: poster
-                                 ,$default: $default
-                                 ,kind: kind
-                                 ,srclang: srclang
-                                 ,sandbox: sandbox
-                                 ,seamless: seamless
-                                 ,srcdoc: srcdoc
-                                 ,reversed: reversed
-                                 ,start: start
-                                 ,align: align
-                                 ,colspan: colspan
-                                 ,rowspan: rowspan
-                                 ,headers: headers
-                                 ,scope: scope
-                                 ,async: async
-                                 ,charset: charset
-                                 ,content: content
-                                 ,defer: defer
-                                 ,httpEquiv: httpEquiv
-                                 ,language: language
-                                 ,scoped: scoped
-                                 ,accesskey: accesskey
-                                 ,contenteditable: contenteditable
-                                 ,contextmenu: contextmenu
-                                 ,dir: dir
-                                 ,draggable: draggable
-                                 ,dropzone: dropzone
-                                 ,itemprop: itemprop
-                                 ,lang: lang
-                                 ,spellcheck: spellcheck
-                                 ,tabindex: tabindex
-                                 ,challenge: challenge
-                                 ,keytype: keytype
-                                 ,cite: cite
-                                 ,datetime: datetime
-                                 ,pubdate: pubdate
-                                 ,manifest: manifest
-                                 ,property: property
-                                 ,attribute: attribute};
-   return _elm.Html.Attributes.values;
-};
-Elm.Html = Elm.Html || {};
-Elm.Html.Events = Elm.Html.Events || {};
-Elm.Html.Events.make = function (_elm) {
-   "use strict";
-   _elm.Html = _elm.Html || {};
-   _elm.Html.Events = _elm.Html.Events || {};
-   if (_elm.Html.Events.values)
-   return _elm.Html.Events.values;
-   var _op = {},
-   _N = Elm.Native,
-   _U = _N.Utils.make(_elm),
-   _L = _N.List.make(_elm),
-   $moduleName = "Html.Events",
-   $Basics = Elm.Basics.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $Json$Decode = Elm.Json.Decode.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $VirtualDom = Elm.VirtualDom.make(_elm);
-   var keyCode = A2($Json$Decode._op[":="],
-   "keyCode",
-   $Json$Decode.$int);
-   var targetChecked = A2($Json$Decode.at,
-   _L.fromArray(["target"
-                ,"checked"]),
-   $Json$Decode.bool);
-   var targetValue = A2($Json$Decode.at,
-   _L.fromArray(["target"
-                ,"value"]),
-   $Json$Decode.string);
-   var defaultOptions = $VirtualDom.defaultOptions;
-   var Options = F2(function (a,
-   b) {
-      return {_: {}
-             ,preventDefault: b
-             ,stopPropagation: a};
-   });
-   var onWithOptions = $VirtualDom.onWithOptions;
-   var on = $VirtualDom.on;
-   var messageOn = F3(function (name,
-   addr,
-   msg) {
-      return A3(on,
-      name,
-      $Json$Decode.value,
-      function (_v0) {
-         return function () {
-            return A2($Signal.message,
-            addr,
-            msg);
-         }();
-      });
-   });
-   var onClick = messageOn("click");
-   var onDoubleClick = messageOn("dblclick");
-   var onMouseMove = messageOn("mousemove");
-   var onMouseDown = messageOn("mousedown");
-   var onMouseUp = messageOn("mouseup");
-   var onMouseEnter = messageOn("mouseenter");
-   var onMouseLeave = messageOn("mouseleave");
-   var onMouseOver = messageOn("mouseover");
-   var onMouseOut = messageOn("mouseout");
-   var onBlur = messageOn("blur");
-   var onFocus = messageOn("focus");
-   var onSubmit = messageOn("submit");
-   var onKey = F3(function (name,
-   addr,
-   handler) {
-      return A3(on,
-      name,
-      keyCode,
-      function (code) {
-         return A2($Signal.message,
-         addr,
-         handler(code));
-      });
-   });
-   var onKeyUp = onKey("keyup");
-   var onKeyDown = onKey("keydown");
-   var onKeyPress = onKey("keypress");
-   _elm.Html.Events.values = {_op: _op
-                             ,onBlur: onBlur
-                             ,onFocus: onFocus
-                             ,onSubmit: onSubmit
-                             ,onKeyUp: onKeyUp
-                             ,onKeyDown: onKeyDown
-                             ,onKeyPress: onKeyPress
-                             ,onClick: onClick
-                             ,onDoubleClick: onDoubleClick
-                             ,onMouseMove: onMouseMove
-                             ,onMouseDown: onMouseDown
-                             ,onMouseUp: onMouseUp
-                             ,onMouseEnter: onMouseEnter
-                             ,onMouseLeave: onMouseLeave
-                             ,onMouseOver: onMouseOver
-                             ,onMouseOut: onMouseOut
-                             ,on: on
-                             ,onWithOptions: onWithOptions
-                             ,defaultOptions: defaultOptions
-                             ,targetValue: targetValue
-                             ,targetChecked: targetChecked
-                             ,keyCode: keyCode
-                             ,Options: Options};
-   return _elm.Html.Events.values;
-};
 Elm.Json = Elm.Json || {};
 Elm.Json.Decode = Elm.Json.Decode || {};
 Elm.Json.Decode.make = function (_elm) {
@@ -5434,16 +4951,26 @@ Elm.Model.make = function (_elm) {
    i) {
       return {_: {}
              ,counter: a
-             ,debug: g
-             ,doc: f
-             ,pool: e
+             ,debug: f
+             ,doc: e
+             ,pool: h
              ,processedPool: i
              ,site: b
              ,start: d
-             ,wSeen: h
+             ,wSeen: g
              ,wString: c};
    });
    var NoTUpdate = {ctor: "NoTUpdate"};
+   var DS = F2(function (a,b) {
+      return {ctor: "DS"
+             ,_0: a
+             ,_1: b};
+   });
+   var IS = F2(function (a,b) {
+      return {ctor: "IS"
+             ,_0: a
+             ,_1: b};
+   });
    var D = F2(function (a,b) {
       return {ctor: "D"
              ,_0: a
@@ -5460,14 +4987,11 @@ Elm.Model.make = function (_elm) {
    var W = function (a) {
       return {ctor: "W",_0: a};
    };
-   var Caret = function (a) {
-      return {ctor: "Caret",_0: a};
-   };
+   var NoUpdate = {ctor: "NoUpdate"};
    var SiteId = function (a) {
       return {ctor: "SiteId"
              ,_0: a};
    };
-   var NoUpdate = {ctor: "NoUpdate"};
    var Delete = function (a) {
       return {ctor: "Delete"
              ,_0: a};
@@ -5499,13 +5023,14 @@ Elm.Model.make = function (_elm) {
                        ,WChar: WChar
                        ,Insert: Insert
                        ,Delete: Delete
-                       ,NoUpdate: NoUpdate
                        ,SiteId: SiteId
-                       ,Caret: Caret
+                       ,NoUpdate: NoUpdate
                        ,W: W
                        ,T: T
                        ,I: I
                        ,D: D
+                       ,IS: IS
+                       ,DS: DS
                        ,NoTUpdate: NoTUpdate
                        ,Model: Model};
    return _elm.Model.values;
@@ -12338,1601 +11863,6 @@ Elm.Native.Utils.make = function(localRuntime) {
 	};
 };
 
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
-(function (global){
-var topLevel = typeof global !== 'undefined' ? global :
-    typeof window !== 'undefined' ? window : {}
-var minDoc = require('min-document');
-
-if (typeof document !== 'undefined') {
-    module.exports = document;
-} else {
-    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
-
-    if (!doccy) {
-        doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
-    }
-
-    module.exports = doccy;
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":1}],3:[function(require,module,exports){
-"use strict";
-
-module.exports = function isObject(x) {
-	return typeof x === "object" && x !== null;
-};
-
-},{}],4:[function(require,module,exports){
-var nativeIsArray = Array.isArray
-var toString = Object.prototype.toString
-
-module.exports = nativeIsArray || isArray
-
-function isArray(obj) {
-    return toString.call(obj) === "[object Array]"
-}
-
-},{}],5:[function(require,module,exports){
-var isObject = require("is-object")
-var isHook = require("../vnode/is-vhook.js")
-
-module.exports = applyProperties
-
-function applyProperties(node, props, previous) {
-    for (var propName in props) {
-        var propValue = props[propName]
-
-        if (propValue === undefined) {
-            removeProperty(node, propName, propValue, previous);
-        } else if (isHook(propValue)) {
-            removeProperty(node, propName, propValue, previous)
-            if (propValue.hook) {
-                propValue.hook(node,
-                    propName,
-                    previous ? previous[propName] : undefined)
-            }
-        } else {
-            if (isObject(propValue)) {
-                patchObject(node, props, previous, propName, propValue);
-            } else {
-                node[propName] = propValue
-            }
-        }
-    }
-}
-
-function removeProperty(node, propName, propValue, previous) {
-    if (previous) {
-        var previousValue = previous[propName]
-
-        if (!isHook(previousValue)) {
-            if (propName === "attributes") {
-                for (var attrName in previousValue) {
-                    node.removeAttribute(attrName)
-                }
-            } else if (propName === "style") {
-                for (var i in previousValue) {
-                    node.style[i] = ""
-                }
-            } else if (typeof previousValue === "string") {
-                node[propName] = ""
-            } else {
-                node[propName] = null
-            }
-        } else if (previousValue.unhook) {
-            previousValue.unhook(node, propName, propValue)
-        }
-    }
-}
-
-function patchObject(node, props, previous, propName, propValue) {
-    var previousValue = previous ? previous[propName] : undefined
-
-    // Set attributes
-    if (propName === "attributes") {
-        for (var attrName in propValue) {
-            var attrValue = propValue[attrName]
-
-            if (attrValue === undefined) {
-                node.removeAttribute(attrName)
-            } else {
-                node.setAttribute(attrName, attrValue)
-            }
-        }
-
-        return
-    }
-
-    if(previousValue && isObject(previousValue) &&
-        getPrototype(previousValue) !== getPrototype(propValue)) {
-        node[propName] = propValue
-        return
-    }
-
-    if (!isObject(node[propName])) {
-        node[propName] = {}
-    }
-
-    var replacer = propName === "style" ? "" : undefined
-
-    for (var k in propValue) {
-        var value = propValue[k]
-        node[propName][k] = (value === undefined) ? replacer : value
-    }
-}
-
-function getPrototype(value) {
-    if (Object.getPrototypeOf) {
-        return Object.getPrototypeOf(value)
-    } else if (value.__proto__) {
-        return value.__proto__
-    } else if (value.constructor) {
-        return value.constructor.prototype
-    }
-}
-
-},{"../vnode/is-vhook.js":13,"is-object":3}],6:[function(require,module,exports){
-var document = require("global/document")
-
-var applyProperties = require("./apply-properties")
-
-var isVNode = require("../vnode/is-vnode.js")
-var isVText = require("../vnode/is-vtext.js")
-var isWidget = require("../vnode/is-widget.js")
-var handleThunk = require("../vnode/handle-thunk.js")
-
-module.exports = createElement
-
-function createElement(vnode, opts) {
-    var doc = opts ? opts.document || document : document
-    var warn = opts ? opts.warn : null
-
-    vnode = handleThunk(vnode).a
-
-    if (isWidget(vnode)) {
-        return vnode.init()
-    } else if (isVText(vnode)) {
-        return doc.createTextNode(vnode.text)
-    } else if (!isVNode(vnode)) {
-        if (warn) {
-            warn("Item is not a valid virtual dom node", vnode)
-        }
-        return null
-    }
-
-    var node = (vnode.namespace === null) ?
-        doc.createElement(vnode.tagName) :
-        doc.createElementNS(vnode.namespace, vnode.tagName)
-
-    var props = vnode.properties
-    applyProperties(node, props)
-
-    var children = vnode.children
-
-    for (var i = 0; i < children.length; i++) {
-        var childNode = createElement(children[i], opts)
-        if (childNode) {
-            node.appendChild(childNode)
-        }
-    }
-
-    return node
-}
-
-},{"../vnode/handle-thunk.js":11,"../vnode/is-vnode.js":14,"../vnode/is-vtext.js":15,"../vnode/is-widget.js":16,"./apply-properties":5,"global/document":2}],7:[function(require,module,exports){
-// Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
-// We don't want to read all of the DOM nodes in the tree so we use
-// the in-order tree indexing to eliminate recursion down certain branches.
-// We only recurse into a DOM node if we know that it contains a child of
-// interest.
-
-var noChild = {}
-
-module.exports = domIndex
-
-function domIndex(rootNode, tree, indices, nodes) {
-    if (!indices || indices.length === 0) {
-        return {}
-    } else {
-        indices.sort(ascending)
-        return recurse(rootNode, tree, indices, nodes, 0)
-    }
-}
-
-function recurse(rootNode, tree, indices, nodes, rootIndex) {
-    nodes = nodes || {}
-
-
-    if (rootNode) {
-        if (indexInRange(indices, rootIndex, rootIndex)) {
-            nodes[rootIndex] = rootNode
-        }
-
-        var vChildren = tree.children
-
-        if (vChildren) {
-
-            var childNodes = rootNode.childNodes
-
-            for (var i = 0; i < tree.children.length; i++) {
-                rootIndex += 1
-
-                var vChild = vChildren[i] || noChild
-                var nextIndex = rootIndex + (vChild.count || 0)
-
-                // skip recursion down the tree if there are no nodes down here
-                if (indexInRange(indices, rootIndex, nextIndex)) {
-                    recurse(childNodes[i], vChild, indices, nodes, rootIndex)
-                }
-
-                rootIndex = nextIndex
-            }
-        }
-    }
-
-    return nodes
-}
-
-// Binary search for an index in the interval [left, right]
-function indexInRange(indices, left, right) {
-    if (indices.length === 0) {
-        return false
-    }
-
-    var minIndex = 0
-    var maxIndex = indices.length - 1
-    var currentIndex
-    var currentItem
-
-    while (minIndex <= maxIndex) {
-        currentIndex = ((maxIndex + minIndex) / 2) >> 0
-        currentItem = indices[currentIndex]
-
-        if (minIndex === maxIndex) {
-            return currentItem >= left && currentItem <= right
-        } else if (currentItem < left) {
-            minIndex = currentIndex + 1
-        } else  if (currentItem > right) {
-            maxIndex = currentIndex - 1
-        } else {
-            return true
-        }
-    }
-
-    return false;
-}
-
-function ascending(a, b) {
-    return a > b ? 1 : -1
-}
-
-},{}],8:[function(require,module,exports){
-var applyProperties = require("./apply-properties")
-
-var isWidget = require("../vnode/is-widget.js")
-var VPatch = require("../vnode/vpatch.js")
-
-var render = require("./create-element")
-var updateWidget = require("./update-widget")
-
-module.exports = applyPatch
-
-function applyPatch(vpatch, domNode, renderOptions) {
-    var type = vpatch.type
-    var vNode = vpatch.vNode
-    var patch = vpatch.patch
-
-    switch (type) {
-        case VPatch.REMOVE:
-            return removeNode(domNode, vNode)
-        case VPatch.INSERT:
-            return insertNode(domNode, patch, renderOptions)
-        case VPatch.VTEXT:
-            return stringPatch(domNode, vNode, patch, renderOptions)
-        case VPatch.WIDGET:
-            return widgetPatch(domNode, vNode, patch, renderOptions)
-        case VPatch.VNODE:
-            return vNodePatch(domNode, vNode, patch, renderOptions)
-        case VPatch.ORDER:
-            reorderChildren(domNode, patch)
-            return domNode
-        case VPatch.PROPS:
-            applyProperties(domNode, patch, vNode.properties)
-            return domNode
-        case VPatch.THUNK:
-            return replaceRoot(domNode,
-                renderOptions.patch(domNode, patch, renderOptions))
-        default:
-            return domNode
-    }
-}
-
-function removeNode(domNode, vNode) {
-    var parentNode = domNode.parentNode
-
-    if (parentNode) {
-        parentNode.removeChild(domNode)
-    }
-
-    destroyWidget(domNode, vNode);
-
-    return null
-}
-
-function insertNode(parentNode, vNode, renderOptions) {
-    var newNode = render(vNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.appendChild(newNode)
-    }
-
-    return parentNode
-}
-
-function stringPatch(domNode, leftVNode, vText, renderOptions) {
-    var newNode
-
-    if (domNode.nodeType === 3) {
-        domNode.replaceData(0, domNode.length, vText.text)
-        newNode = domNode
-    } else {
-        var parentNode = domNode.parentNode
-        newNode = render(vText, renderOptions)
-
-        if (parentNode && newNode !== domNode) {
-            parentNode.replaceChild(newNode, domNode)
-        }
-    }
-
-    return newNode
-}
-
-function widgetPatch(domNode, leftVNode, widget, renderOptions) {
-    var updating = updateWidget(leftVNode, widget)
-    var newNode
-
-    if (updating) {
-        newNode = widget.update(leftVNode, domNode) || domNode
-    } else {
-        newNode = render(widget, renderOptions)
-    }
-
-    var parentNode = domNode.parentNode
-
-    if (parentNode && newNode !== domNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    if (!updating) {
-        destroyWidget(domNode, leftVNode)
-    }
-
-    return newNode
-}
-
-function vNodePatch(domNode, leftVNode, vNode, renderOptions) {
-    var parentNode = domNode.parentNode
-    var newNode = render(vNode, renderOptions)
-
-    if (parentNode && newNode !== domNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    return newNode
-}
-
-function destroyWidget(domNode, w) {
-    if (typeof w.destroy === "function" && isWidget(w)) {
-        w.destroy(domNode)
-    }
-}
-
-function reorderChildren(domNode, moves) {
-    var childNodes = domNode.childNodes
-    var keyMap = {}
-    var node
-    var remove
-    var insert
-
-    for (var i = 0; i < moves.removes.length; i++) {
-        remove = moves.removes[i]
-        node = childNodes[remove.from]
-        if (remove.key) {
-            keyMap[remove.key] = node
-        }
-        domNode.removeChild(node)
-    }
-
-    var length = childNodes.length
-    for (var j = 0; j < moves.inserts.length; j++) {
-        insert = moves.inserts[j]
-        node = keyMap[insert.key]
-        // this is the weirdest bug i've ever seen in webkit
-        domNode.insertBefore(node, insert.to >= length++ ? null : childNodes[insert.to])
-    }
-}
-
-function replaceRoot(oldRoot, newRoot) {
-    if (oldRoot && newRoot && oldRoot !== newRoot && oldRoot.parentNode) {
-        oldRoot.parentNode.replaceChild(newRoot, oldRoot)
-    }
-
-    return newRoot;
-}
-
-},{"../vnode/is-widget.js":16,"../vnode/vpatch.js":19,"./apply-properties":5,"./create-element":6,"./update-widget":10}],9:[function(require,module,exports){
-var document = require("global/document")
-var isArray = require("x-is-array")
-
-var domIndex = require("./dom-index")
-var patchOp = require("./patch-op")
-module.exports = patch
-
-function patch(rootNode, patches) {
-    return patchRecursive(rootNode, patches)
-}
-
-function patchRecursive(rootNode, patches, renderOptions) {
-    var indices = patchIndices(patches)
-
-    if (indices.length === 0) {
-        return rootNode
-    }
-
-    var index = domIndex(rootNode, patches.a, indices)
-    var ownerDocument = rootNode.ownerDocument
-
-    if (!renderOptions) {
-        renderOptions = { patch: patchRecursive }
-        if (ownerDocument !== document) {
-            renderOptions.document = ownerDocument
-        }
-    }
-
-    for (var i = 0; i < indices.length; i++) {
-        var nodeIndex = indices[i]
-        rootNode = applyPatch(rootNode,
-            index[nodeIndex],
-            patches[nodeIndex],
-            renderOptions)
-    }
-
-    return rootNode
-}
-
-function applyPatch(rootNode, domNode, patchList, renderOptions) {
-    if (!domNode) {
-        return rootNode
-    }
-
-    var newNode
-
-    if (isArray(patchList)) {
-        for (var i = 0; i < patchList.length; i++) {
-            newNode = patchOp(patchList[i], domNode, renderOptions)
-
-            if (domNode === rootNode) {
-                rootNode = newNode
-            }
-        }
-    } else {
-        newNode = patchOp(patchList, domNode, renderOptions)
-
-        if (domNode === rootNode) {
-            rootNode = newNode
-        }
-    }
-
-    return rootNode
-}
-
-function patchIndices(patches) {
-    var indices = []
-
-    for (var key in patches) {
-        if (key !== "a") {
-            indices.push(Number(key))
-        }
-    }
-
-    return indices
-}
-
-},{"./dom-index":7,"./patch-op":8,"global/document":2,"x-is-array":4}],10:[function(require,module,exports){
-var isWidget = require("../vnode/is-widget.js")
-
-module.exports = updateWidget
-
-function updateWidget(a, b) {
-    if (isWidget(a) && isWidget(b)) {
-        if ("name" in a && "name" in b) {
-            return a.id === b.id
-        } else {
-            return a.init === b.init
-        }
-    }
-
-    return false
-}
-
-},{"../vnode/is-widget.js":16}],11:[function(require,module,exports){
-var isVNode = require("./is-vnode")
-var isVText = require("./is-vtext")
-var isWidget = require("./is-widget")
-var isThunk = require("./is-thunk")
-
-module.exports = handleThunk
-
-function handleThunk(a, b) {
-    var renderedA = a
-    var renderedB = b
-
-    if (isThunk(b)) {
-        renderedB = renderThunk(b, a)
-    }
-
-    if (isThunk(a)) {
-        renderedA = renderThunk(a, null)
-    }
-
-    return {
-        a: renderedA,
-        b: renderedB
-    }
-}
-
-function renderThunk(thunk, previous) {
-    var renderedThunk = thunk.vnode
-
-    if (!renderedThunk) {
-        renderedThunk = thunk.vnode = thunk.render(previous)
-    }
-
-    if (!(isVNode(renderedThunk) ||
-            isVText(renderedThunk) ||
-            isWidget(renderedThunk))) {
-        throw new Error("thunk did not return a valid node");
-    }
-
-    return renderedThunk
-}
-
-},{"./is-thunk":12,"./is-vnode":14,"./is-vtext":15,"./is-widget":16}],12:[function(require,module,exports){
-module.exports = isThunk
-
-function isThunk(t) {
-    return t && t.type === "Thunk"
-}
-
-},{}],13:[function(require,module,exports){
-module.exports = isHook
-
-function isHook(hook) {
-    return hook &&
-      (typeof hook.hook === "function" && !hook.hasOwnProperty("hook") ||
-       typeof hook.unhook === "function" && !hook.hasOwnProperty("unhook"))
-}
-
-},{}],14:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = isVirtualNode
-
-function isVirtualNode(x) {
-    return x && x.type === "VirtualNode" && x.version === version
-}
-
-},{"./version":17}],15:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = isVirtualText
-
-function isVirtualText(x) {
-    return x && x.type === "VirtualText" && x.version === version
-}
-
-},{"./version":17}],16:[function(require,module,exports){
-module.exports = isWidget
-
-function isWidget(w) {
-    return w && w.type === "Widget"
-}
-
-},{}],17:[function(require,module,exports){
-module.exports = "2"
-
-},{}],18:[function(require,module,exports){
-var version = require("./version")
-var isVNode = require("./is-vnode")
-var isWidget = require("./is-widget")
-var isThunk = require("./is-thunk")
-var isVHook = require("./is-vhook")
-
-module.exports = VirtualNode
-
-var noProperties = {}
-var noChildren = []
-
-function VirtualNode(tagName, properties, children, key, namespace) {
-    this.tagName = tagName
-    this.properties = properties || noProperties
-    this.children = children || noChildren
-    this.key = key != null ? String(key) : undefined
-    this.namespace = (typeof namespace === "string") ? namespace : null
-
-    var count = (children && children.length) || 0
-    var descendants = 0
-    var hasWidgets = false
-    var hasThunks = false
-    var descendantHooks = false
-    var hooks
-
-    for (var propName in properties) {
-        if (properties.hasOwnProperty(propName)) {
-            var property = properties[propName]
-            if (isVHook(property) && property.unhook) {
-                if (!hooks) {
-                    hooks = {}
-                }
-
-                hooks[propName] = property
-            }
-        }
-    }
-
-    for (var i = 0; i < count; i++) {
-        var child = children[i]
-        if (isVNode(child)) {
-            descendants += child.count || 0
-
-            if (!hasWidgets && child.hasWidgets) {
-                hasWidgets = true
-            }
-
-            if (!hasThunks && child.hasThunks) {
-                hasThunks = true
-            }
-
-            if (!descendantHooks && (child.hooks || child.descendantHooks)) {
-                descendantHooks = true
-            }
-        } else if (!hasWidgets && isWidget(child)) {
-            if (typeof child.destroy === "function") {
-                hasWidgets = true
-            }
-        } else if (!hasThunks && isThunk(child)) {
-            hasThunks = true;
-        }
-    }
-
-    this.count = count + descendants
-    this.hasWidgets = hasWidgets
-    this.hasThunks = hasThunks
-    this.hooks = hooks
-    this.descendantHooks = descendantHooks
-}
-
-VirtualNode.prototype.version = version
-VirtualNode.prototype.type = "VirtualNode"
-
-},{"./is-thunk":12,"./is-vhook":13,"./is-vnode":14,"./is-widget":16,"./version":17}],19:[function(require,module,exports){
-var version = require("./version")
-
-VirtualPatch.NONE = 0
-VirtualPatch.VTEXT = 1
-VirtualPatch.VNODE = 2
-VirtualPatch.WIDGET = 3
-VirtualPatch.PROPS = 4
-VirtualPatch.ORDER = 5
-VirtualPatch.INSERT = 6
-VirtualPatch.REMOVE = 7
-VirtualPatch.THUNK = 8
-
-module.exports = VirtualPatch
-
-function VirtualPatch(type, vNode, patch) {
-    this.type = Number(type)
-    this.vNode = vNode
-    this.patch = patch
-}
-
-VirtualPatch.prototype.version = version
-VirtualPatch.prototype.type = "VirtualPatch"
-
-},{"./version":17}],20:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = VirtualText
-
-function VirtualText(text) {
-    this.text = String(text)
-}
-
-VirtualText.prototype.version = version
-VirtualText.prototype.type = "VirtualText"
-
-},{"./version":17}],21:[function(require,module,exports){
-var isObject = require("is-object")
-var isHook = require("../vnode/is-vhook")
-
-module.exports = diffProps
-
-function diffProps(a, b) {
-    var diff
-
-    for (var aKey in a) {
-        if (!(aKey in b)) {
-            diff = diff || {}
-            diff[aKey] = undefined
-        }
-
-        var aValue = a[aKey]
-        var bValue = b[aKey]
-
-        if (aValue === bValue) {
-            continue
-        } else if (isObject(aValue) && isObject(bValue)) {
-            if (getPrototype(bValue) !== getPrototype(aValue)) {
-                diff = diff || {}
-                diff[aKey] = bValue
-            } else if (isHook(bValue)) {
-                 diff = diff || {}
-                 diff[aKey] = bValue
-            } else {
-                var objectDiff = diffProps(aValue, bValue)
-                if (objectDiff) {
-                    diff = diff || {}
-                    diff[aKey] = objectDiff
-                }
-            }
-        } else {
-            diff = diff || {}
-            diff[aKey] = bValue
-        }
-    }
-
-    for (var bKey in b) {
-        if (!(bKey in a)) {
-            diff = diff || {}
-            diff[bKey] = b[bKey]
-        }
-    }
-
-    return diff
-}
-
-function getPrototype(value) {
-  if (Object.getPrototypeOf) {
-    return Object.getPrototypeOf(value)
-  } else if (value.__proto__) {
-    return value.__proto__
-  } else if (value.constructor) {
-    return value.constructor.prototype
-  }
-}
-
-},{"../vnode/is-vhook":13,"is-object":3}],22:[function(require,module,exports){
-var isArray = require("x-is-array")
-
-var VPatch = require("../vnode/vpatch")
-var isVNode = require("../vnode/is-vnode")
-var isVText = require("../vnode/is-vtext")
-var isWidget = require("../vnode/is-widget")
-var isThunk = require("../vnode/is-thunk")
-var handleThunk = require("../vnode/handle-thunk")
-
-var diffProps = require("./diff-props")
-
-module.exports = diff
-
-function diff(a, b) {
-    var patch = { a: a }
-    walk(a, b, patch, 0)
-    return patch
-}
-
-function walk(a, b, patch, index) {
-    if (a === b) {
-        return
-    }
-
-    var apply = patch[index]
-    var applyClear = false
-
-    if (isThunk(a) || isThunk(b)) {
-        thunks(a, b, patch, index)
-    } else if (b == null) {
-
-        // If a is a widget we will add a remove patch for it
-        // Otherwise any child widgets/hooks must be destroyed.
-        // This prevents adding two remove patches for a widget.
-        if (!isWidget(a)) {
-            clearState(a, patch, index)
-            apply = patch[index]
-        }
-
-        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
-    } else if (isVNode(b)) {
-        if (isVNode(a)) {
-            if (a.tagName === b.tagName &&
-                a.namespace === b.namespace &&
-                a.key === b.key) {
-                var propsPatch = diffProps(a.properties, b.properties)
-                if (propsPatch) {
-                    apply = appendPatch(apply,
-                        new VPatch(VPatch.PROPS, a, propsPatch))
-                }
-                apply = diffChildren(a, b, patch, apply, index)
-            } else {
-                apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-                applyClear = true
-            }
-        } else {
-            apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-            applyClear = true
-        }
-    } else if (isVText(b)) {
-        if (!isVText(a)) {
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-            applyClear = true
-        } else if (a.text !== b.text) {
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-        }
-    } else if (isWidget(b)) {
-        if (!isWidget(a)) {
-            applyClear = true
-        }
-
-        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
-    }
-
-    if (apply) {
-        patch[index] = apply
-    }
-
-    if (applyClear) {
-        clearState(a, patch, index)
-    }
-}
-
-function diffChildren(a, b, patch, apply, index) {
-    var aChildren = a.children
-    var orderedSet = reorder(aChildren, b.children)
-    var bChildren = orderedSet.children
-
-    var aLen = aChildren.length
-    var bLen = bChildren.length
-    var len = aLen > bLen ? aLen : bLen
-
-    for (var i = 0; i < len; i++) {
-        var leftNode = aChildren[i]
-        var rightNode = bChildren[i]
-        index += 1
-
-        if (!leftNode) {
-            if (rightNode) {
-                // Excess nodes in b need to be added
-                apply = appendPatch(apply,
-                    new VPatch(VPatch.INSERT, null, rightNode))
-            }
-        } else {
-            walk(leftNode, rightNode, patch, index)
-        }
-
-        if (isVNode(leftNode) && leftNode.count) {
-            index += leftNode.count
-        }
-    }
-
-    if (orderedSet.moves) {
-        // Reorder nodes last
-        apply = appendPatch(apply, new VPatch(
-            VPatch.ORDER,
-            a,
-            orderedSet.moves
-        ))
-    }
-
-    return apply
-}
-
-function clearState(vNode, patch, index) {
-    // TODO: Make this a single walk, not two
-    unhook(vNode, patch, index)
-    destroyWidgets(vNode, patch, index)
-}
-
-// Patch records for all destroyed widgets must be added because we need
-// a DOM node reference for the destroy function
-function destroyWidgets(vNode, patch, index) {
-    if (isWidget(vNode)) {
-        if (typeof vNode.destroy === "function") {
-            patch[index] = appendPatch(
-                patch[index],
-                new VPatch(VPatch.REMOVE, vNode, null)
-            )
-        }
-    } else if (isVNode(vNode) && (vNode.hasWidgets || vNode.hasThunks)) {
-        var children = vNode.children
-        var len = children.length
-        for (var i = 0; i < len; i++) {
-            var child = children[i]
-            index += 1
-
-            destroyWidgets(child, patch, index)
-
-            if (isVNode(child) && child.count) {
-                index += child.count
-            }
-        }
-    } else if (isThunk(vNode)) {
-        thunks(vNode, null, patch, index)
-    }
-}
-
-// Create a sub-patch for thunks
-function thunks(a, b, patch, index) {
-    var nodes = handleThunk(a, b)
-    var thunkPatch = diff(nodes.a, nodes.b)
-    if (hasPatches(thunkPatch)) {
-        patch[index] = new VPatch(VPatch.THUNK, null, thunkPatch)
-    }
-}
-
-function hasPatches(patch) {
-    for (var index in patch) {
-        if (index !== "a") {
-            return true
-        }
-    }
-
-    return false
-}
-
-// Execute hooks when two nodes are identical
-function unhook(vNode, patch, index) {
-    if (isVNode(vNode)) {
-        if (vNode.hooks) {
-            patch[index] = appendPatch(
-                patch[index],
-                new VPatch(
-                    VPatch.PROPS,
-                    vNode,
-                    undefinedKeys(vNode.hooks)
-                )
-            )
-        }
-
-        if (vNode.descendantHooks || vNode.hasThunks) {
-            var children = vNode.children
-            var len = children.length
-            for (var i = 0; i < len; i++) {
-                var child = children[i]
-                index += 1
-
-                unhook(child, patch, index)
-
-                if (isVNode(child) && child.count) {
-                    index += child.count
-                }
-            }
-        }
-    } else if (isThunk(vNode)) {
-        thunks(vNode, null, patch, index)
-    }
-}
-
-function undefinedKeys(obj) {
-    var result = {}
-
-    for (var key in obj) {
-        result[key] = undefined
-    }
-
-    return result
-}
-
-// List diff, naive left to right reordering
-function reorder(aChildren, bChildren) {
-    // O(M) time, O(M) memory
-    var bChildIndex = keyIndex(bChildren)
-    var bKeys = bChildIndex.keys
-    var bFree = bChildIndex.free
-
-    if (bFree.length === bChildren.length) {
-        return {
-            children: bChildren,
-            moves: null
-        }
-    }
-
-    // O(N) time, O(N) memory
-    var aChildIndex = keyIndex(aChildren)
-    var aKeys = aChildIndex.keys
-    var aFree = aChildIndex.free
-
-    if (aFree.length === aChildren.length) {
-        return {
-            children: bChildren,
-            moves: null
-        }
-    }
-
-    // O(MAX(N, M)) memory
-    var newChildren = []
-
-    var freeIndex = 0
-    var freeCount = bFree.length
-    var deletedItems = 0
-
-    // Iterate through a and match a node in b
-    // O(N) time,
-    for (var i = 0 ; i < aChildren.length; i++) {
-        var aItem = aChildren[i]
-        var itemIndex
-
-        if (aItem.key) {
-            if (bKeys.hasOwnProperty(aItem.key)) {
-                // Match up the old keys
-                itemIndex = bKeys[aItem.key]
-                newChildren.push(bChildren[itemIndex])
-
-            } else {
-                // Remove old keyed items
-                itemIndex = i - deletedItems++
-                newChildren.push(null)
-            }
-        } else {
-            // Match the item in a with the next free item in b
-            if (freeIndex < freeCount) {
-                itemIndex = bFree[freeIndex++]
-                newChildren.push(bChildren[itemIndex])
-            } else {
-                // There are no free items in b to match with
-                // the free items in a, so the extra free nodes
-                // are deleted.
-                itemIndex = i - deletedItems++
-                newChildren.push(null)
-            }
-        }
-    }
-
-    var lastFreeIndex = freeIndex >= bFree.length ?
-        bChildren.length :
-        bFree[freeIndex]
-
-    // Iterate through b and append any new keys
-    // O(M) time
-    for (var j = 0; j < bChildren.length; j++) {
-        var newItem = bChildren[j]
-
-        if (newItem.key) {
-            if (!aKeys.hasOwnProperty(newItem.key)) {
-                // Add any new keyed items
-                // We are adding new items to the end and then sorting them
-                // in place. In future we should insert new items in place.
-                newChildren.push(newItem)
-            }
-        } else if (j >= lastFreeIndex) {
-            // Add any leftover non-keyed items
-            newChildren.push(newItem)
-        }
-    }
-
-    var simulate = newChildren.slice()
-    var simulateIndex = 0
-    var removes = []
-    var inserts = []
-    var simulateItem
-
-    for (var k = 0; k < bChildren.length;) {
-        var wantedItem = bChildren[k]
-        simulateItem = simulate[simulateIndex]
-
-        // remove items
-        while (simulateItem === null && simulate.length) {
-            removes.push(remove(simulate, simulateIndex, null))
-            simulateItem = simulate[simulateIndex]
-        }
-
-        if (!simulateItem || simulateItem.key !== wantedItem.key) {
-            // if we need a key in this position...
-            if (wantedItem.key) {
-                if (simulateItem && simulateItem.key) {
-                    // if an insert doesn't put this key in place, it needs to move
-                    if (bKeys[simulateItem.key] !== k + 1) {
-                        removes.push(remove(simulate, simulateIndex, simulateItem.key))
-                        simulateItem = simulate[simulateIndex]
-                        // if the remove didn't put the wanted item in place, we need to insert it
-                        if (!simulateItem || simulateItem.key !== wantedItem.key) {
-                            inserts.push({key: wantedItem.key, to: k})
-                        }
-                        // items are matching, so skip ahead
-                        else {
-                            simulateIndex++
-                        }
-                    }
-                    else {
-                        inserts.push({key: wantedItem.key, to: k})
-                    }
-                }
-                else {
-                    inserts.push({key: wantedItem.key, to: k})
-                }
-                k++
-            }
-            // a key in simulate has no matching wanted key, remove it
-            else if (simulateItem && simulateItem.key) {
-                removes.push(remove(simulate, simulateIndex, simulateItem.key))
-            }
-        }
-        else {
-            simulateIndex++
-            k++
-        }
-    }
-
-    // remove all the remaining nodes from simulate
-    while(simulateIndex < simulate.length) {
-        simulateItem = simulate[simulateIndex]
-        removes.push(remove(simulate, simulateIndex, simulateItem && simulateItem.key))
-    }
-
-    // If the only moves we have are deletes then we can just
-    // let the delete patch remove these items.
-    if (removes.length === deletedItems && !inserts.length) {
-        return {
-            children: newChildren,
-            moves: null
-        }
-    }
-
-    return {
-        children: newChildren,
-        moves: {
-            removes: removes,
-            inserts: inserts
-        }
-    }
-}
-
-function remove(arr, index, key) {
-    arr.splice(index, 1)
-
-    return {
-        from: index,
-        key: key
-    }
-}
-
-function keyIndex(children) {
-    var keys = {}
-    var free = []
-    var length = children.length
-
-    for (var i = 0; i < length; i++) {
-        var child = children[i]
-
-        if (child.key) {
-            keys[child.key] = i
-        } else {
-            free.push(i)
-        }
-    }
-
-    return {
-        keys: keys,     // A hash of key name to index
-        free: free,     // An array of unkeyed item indices
-    }
-}
-
-function appendPatch(apply, patch) {
-    if (apply) {
-        if (isArray(apply)) {
-            apply.push(patch)
-        } else {
-            apply = [apply, patch]
-        }
-
-        return apply
-    } else {
-        return patch
-    }
-}
-
-},{"../vnode/handle-thunk":11,"../vnode/is-thunk":12,"../vnode/is-vnode":14,"../vnode/is-vtext":15,"../vnode/is-widget":16,"../vnode/vpatch":19,"./diff-props":21,"x-is-array":4}],23:[function(require,module,exports){
-var VNode = require('virtual-dom/vnode/vnode');
-var VText = require('virtual-dom/vnode/vtext');
-var diff = require('virtual-dom/vtree/diff');
-var patch = require('virtual-dom/vdom/patch');
-var createElement = require('virtual-dom/vdom/create-element');
-var isHook = require("virtual-dom/vnode/is-vhook");
-
-
-Elm.Native.VirtualDom = {};
-Elm.Native.VirtualDom.make = function(elm)
-{
-	elm.Native = elm.Native || {};
-	elm.Native.VirtualDom = elm.Native.VirtualDom || {};
-	if (elm.Native.VirtualDom.values)
-	{
-		return elm.Native.VirtualDom.values;
-	}
-
-	var Element = Elm.Native.Graphics.Element.make(elm);
-	var Json = Elm.Native.Json.make(elm);
-	var List = Elm.Native.List.make(elm);
-	var Signal = Elm.Native.Signal.make(elm);
-	var Utils = Elm.Native.Utils.make(elm);
-
-	var ATTRIBUTE_KEY = 'UniqueNameThatOthersAreVeryUnlikelyToUse';
-
-
-
-	// VIRTUAL DOM NODES
-
-
-	function text(string)
-	{
-		return new VText(string);
-	}
-
-	function node(name)
-	{
-		return F2(function(propertyList, contents) {
-			return makeNode(name, propertyList, contents);
-		});
-	}
-
-
-	// BUILD VIRTUAL DOME NODES
-
-
-	function makeNode(name, propertyList, contents)
-	{
-		var props = listToProperties(propertyList);
-
-		var key, namespace;
-		// support keys
-		if (props.key !== undefined)
-		{
-			key = props.key;
-			props.key = undefined;
-		}
-
-		// support namespace
-		if (props.namespace !== undefined)
-		{
-			namespace = props.namespace;
-			props.namespace = undefined;
-		}
-
-		// ensure that setting text of an input does not move the cursor
-		var useSoftSet =
-			(name === 'input' || name === 'textarea')
-			&& props.value !== undefined
-			&& !isHook(props.value);
-
-		if (useSoftSet)
-		{
-			props.value = SoftSetHook(props.value);
-		}
-
-		return new VNode(name, props, List.toArray(contents), key, namespace);
-	}
-
-	function listToProperties(list)
-	{
-		var object = {};
-		while (list.ctor !== '[]')
-		{
-			var entry = list._0;
-			if (entry.key === ATTRIBUTE_KEY)
-			{
-				object.attributes = object.attributes || {};
-				object.attributes[entry.value.attrKey] = entry.value.attrValue;
-			}
-			else
-			{
-				object[entry.key] = entry.value;
-			}
-			list = list._1;
-		}
-		return object;
-	}
-
-
-
-	// PROPERTIES AND ATTRIBUTES
-
-
-	function property(key, value)
-	{
-		return {
-			key: key,
-			value: value
-		};
-	}
-
-	function attribute(key, value)
-	{
-		return {
-			key: ATTRIBUTE_KEY,
-			value: {
-				attrKey: key,
-				attrValue: value
-			}
-		};
-	}
-
-
-
-	// NAMESPACED ATTRIBUTES
-
-
-	function attributeNS(namespace, key, value)
-	{
-		return {
-			key: key,
-			value: new AttributeHook(namespace, key, value)
-		};
-	}
-
-	function AttributeHook(namespace, key, value)
-	{
-		if (!(this instanceof AttributeHook))
-		{
-			return new AttributeHook(namespace, key, value);
-		}
-
-		this.namespace = namespace;
-		this.key = key;
-		this.value = value;
-	}
-
-	AttributeHook.prototype.hook = function (node, prop, prev)
-	{
-		if (prev
-			&& prev.type === 'AttributeHook'
-			&& prev.value === this.value
-			&& prev.namespace === this.namespace)
-		{
-			return;
-		}
-
-		node.setAttributeNS(this.namespace, prop, this.value);
-	};
-
-	AttributeHook.prototype.unhook = function (node, prop, next)
-	{
-		if (next
-			&& next.type === 'AttributeHook'
-			&& next.namespace === this.namespace)
-		{
-			return;
-		}
-
-		node.removeAttributeNS(this.namespace, this.key);
-	};
-
-	AttributeHook.prototype.type = 'AttributeHook';
-
-
-
-	// EVENTS
-
-
-	function on(name, options, decoder, createMessage)
-	{
-		function eventHandler(event)
-		{
-			var value = A2(Json.runDecoderValue, decoder, event);
-			if (value.ctor === 'Ok')
-			{
-				if (options.stopPropagation)
-				{
-					event.stopPropagation();
-				}
-				if (options.preventDefault)
-				{
-					event.preventDefault();
-				}
-				Signal.sendMessage(createMessage(value._0));
-			}
-		}
-		return property('on' + name, eventHandler);
-	}
-
-	function SoftSetHook(value)
-	{
-		if (!(this instanceof SoftSetHook))
-		{
-			return new SoftSetHook(value);
-		}
-
-		this.value = value;
-	}
-
-	SoftSetHook.prototype.hook = function (node, propertyName)
-	{
-		if (node[propertyName] !== this.value)
-		{
-			node[propertyName] = this.value;
-		}
-	};
-
-
-
-	// INTEGRATION WITH ELEMENTS
-
-
-	function ElementWidget(element)
-	{
-		this.element = element;
-	}
-
-	ElementWidget.prototype.type = "Widget";
-
-	ElementWidget.prototype.init = function init()
-	{
-		return Element.render(this.element);
-	};
-
-	ElementWidget.prototype.update = function update(previous, node)
-	{
-		return Element.update(node, previous.element, this.element);
-	};
-
-	function fromElement(element)
-	{
-		return new ElementWidget(element);
-	}
-
-	function toElement(width, height, html)
-	{
-		return A3(Element.newElement, width, height, {
-			ctor: 'Custom',
-			type: 'evancz/elm-html',
-			render: render,
-			update: update,
-			model: html
-		});
-	}
-
-
-
-	// RENDER AND UPDATE
-
-
-	function render(model)
-	{
-		var element = Element.createNode('div');
-		element.appendChild(createElement(model));
-		return element;
-	}
-
-	function update(node, oldModel, newModel)
-	{
-		updateAndReplace(node.firstChild, oldModel, newModel);
-		return node;
-	}
-
-	function updateAndReplace(node, oldModel, newModel)
-	{
-		var patches = diff(oldModel, newModel);
-		var newNode = patch(node, patches);
-		return newNode;
-	}
-
-
-
-	// LAZINESS
-
-
-	function lazyRef(fn, a)
-	{
-		function thunk()
-		{
-			return fn(a);
-		}
-		return new Thunk(fn, [a], thunk);
-	}
-
-	function lazyRef2(fn, a, b)
-	{
-		function thunk()
-		{
-			return A2(fn, a, b);
-		}
-		return new Thunk(fn, [a,b], thunk);
-	}
-
-	function lazyRef3(fn, a, b, c)
-	{
-		function thunk()
-		{
-			return A3(fn, a, b, c);
-		}
-		return new Thunk(fn, [a,b,c], thunk);
-	}
-
-	function Thunk(fn, args, thunk)
-	{
-		/* public (used by VirtualDom.js) */
-		this.vnode = null;
-		this.key = undefined;
-
-		/* private */
-		this.fn = fn;
-		this.args = args;
-		this.thunk = thunk;
-	}
-
-	Thunk.prototype.type = "Thunk";
-	Thunk.prototype.render = renderThunk;
-
-	function shouldUpdate(current, previous)
-	{
-		if (current.fn !== previous.fn)
-		{
-			return true;
-		}
-
-		// if it's the same function, we know the number of args must match
-		var cargs = current.args;
-		var pargs = previous.args;
-
-		for (var i = cargs.length; i--; )
-		{
-			if (cargs[i] !== pargs[i])
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	function renderThunk(previous)
-	{
-		if (previous == null || shouldUpdate(this, previous))
-		{
-			return this.thunk();
-		}
-		else
-		{
-			return previous.vnode;
-		}
-	}
-
-
-	return elm.Native.VirtualDom.values = Elm.Native.VirtualDom.values = {
-		node: node,
-		text: text,
-		on: F4(on),
-
-		property: F2(property),
-		attribute: F2(attribute),
-		attributeNS: F3(attributeNS),
-
-		lazy: F2(lazyRef),
-		lazy2: F3(lazyRef2),
-		lazy3: F4(lazyRef3),
-
-		toElement: F3(toElement),
-		fromElement: fromElement,
-
-		render: createElement,
-		updateAndReplace: updateAndReplace
-	};
-};
-
-},{"virtual-dom/vdom/create-element":6,"virtual-dom/vdom/patch":9,"virtual-dom/vnode/is-vhook":13,"virtual-dom/vnode/vnode":18,"virtual-dom/vnode/vtext":20,"virtual-dom/vtree/diff":22}]},{},[23]);
-
 Elm.Native = Elm.Native || {};
 Elm.Native.Window = {};
 Elm.Native.Window.make = function(localRuntime) {
@@ -14647,6 +12577,214 @@ Elm.String.make = function (_elm) {
                         ,all: all};
    return _elm.String.values;
 };
+Elm.TUpdate = Elm.TUpdate || {};
+Elm.TUpdate.make = function (_elm) {
+   "use strict";
+   _elm.TUpdate = _elm.TUpdate || {};
+   if (_elm.TUpdate.values)
+   return _elm.TUpdate.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   $moduleName = "TUpdate",
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $ConvertJson = Elm.ConvertJson.make(_elm),
+   $Editor = Elm.Editor.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $SocketIO = Elm.SocketIO.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var main = $Graphics$Element.show("");
+   var tUpdatePort = Elm.Native.Port.make(_elm).inboundSignal("tUpdatePort",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+      v);
+   });
+   var tUpdate = A2($Signal._op["<~"],
+   $ConvertJson.jsonToTUpdate,
+   tUpdatePort);
+   var windowLocPort = Elm.Native.Port.make(_elm).inbound("windowLocPort",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+      v);
+   });
+   var socket = A2($SocketIO.io,
+   windowLocPort,
+   $SocketIO.defaultOptions);
+   var initializePort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
+   socket,
+   A2($SocketIO.emit,
+   "example",
+   "whaddup")));
+   var incoming = $Signal.mailbox("null");
+   var incomingPort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
+   socket,
+   A2($SocketIO.on,
+   "serverWUpdates",
+   incoming.address)));
+   var serverUpdates = A2($Signal._op["<~"],
+   function (u) {
+      return $ConvertJson.jsonToWUpdates(u);
+   },
+   incoming.signal);
+   var sockConnected = $Signal.mailbox(false);
+   var handleServerUpdate = function (wUpdate) {
+      return $Model.W(wUpdate);
+   };
+   var serverUpdateToEdit = A2($Signal._op["<~"],
+   $List.map(handleServerUpdate),
+   serverUpdates);
+   var handleTUpdate = function (tUpdate) {
+      return $Model.T(tUpdate);
+   };
+   var tUpdateToEdit = A2($Signal._op["<~"],
+   function (t) {
+      return _L.fromArray([handleTUpdate(t)]);
+   },
+   tUpdate);
+   var edits = A2($Signal.merge,
+   tUpdateToEdit,
+   serverUpdateToEdit);
+   var modelFold = A3($Signal.foldp,
+   F2(function (e,_v0) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return A2($Editor.processEdits,
+              e,
+              _v0._0);}
+         _U.badCase($moduleName,
+         "on line 143, column 40 to 56");
+      }();
+   }),
+   {ctor: "_Tuple2"
+   ,_0: $Constants.emptyModel
+   ,_1: _L.fromArray([])},
+   edits);
+   var sendNewString = A2($Signal.map,
+   function (_v4) {
+      return function () {
+         switch (_v4.ctor)
+         {case "_Tuple2":
+            return $ConvertJson.stringUpdateToJson(_v4._0.doc.str);}
+         _U.badCase($moduleName,
+         "on line 127, column 44 to 74");
+      }();
+   },
+   modelFold);
+   var sendNewStringUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("sendNewStringUpdatesPort",
+   function (v) {
+      return v;
+   },
+   sendNewString);
+   var editToTUpdate = function (e) {
+      return function () {
+         switch (e.ctor)
+         {case "T": return e._0;
+            case "W":
+            return $Model.NoTUpdate;}
+         _U.badCase($moduleName,
+         "between lines 58 and 60");
+      }();
+   };
+   var docUpdatesToSend = A2($Signal._op["<~"],
+   function (edits) {
+      return A2($List.map,
+      editToTUpdate,
+      edits);
+   },
+   A2($Signal._op["<~"],
+   $Basics.snd,
+   modelFold));
+   var docUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("docUpdatesPort",
+   function (v) {
+      return v;
+   },
+   A2($Signal._op["<~"],
+   function (updates) {
+      return $ConvertJson.tUpdatesToJson(updates);
+   },
+   docUpdatesToSend));
+   var editToWUpdate = function (e) {
+      return function () {
+         switch (e.ctor)
+         {case "T":
+            return $Model.NoUpdate;
+            case "W": return e._0;}
+         _U.badCase($moduleName,
+         "between lines 52 and 54");
+      }();
+   };
+   var cleanedUpdatesToSend = A2($Signal._op["<~"],
+   function (edits) {
+      return A2($List.map,
+      editToWUpdate,
+      edits);
+   },
+   A2($Signal._op["<~"],
+   $Basics.snd,
+   modelFold));
+   var localUpdatesAsJsonToSend = A2($Signal._op["<~"],
+   function (updates) {
+      return $ConvertJson.wUpdatesToJson(updates);
+   },
+   cleanedUpdatesToSend);
+   var sendUpdatesPort = Elm.Native.Task.make(_elm).performSignal("sendUpdatesPort",
+   A2($Signal._op["<~"],
+   function (i) {
+      return A2($Task.andThen,
+      socket,
+      A2($SocketIO.emit,
+      "localEdits",
+      i));
+   },
+   localUpdatesAsJsonToSend));
+   var throwOutNoUpdatesAndCaret = function (wUp) {
+      return function () {
+         switch (wUp.ctor)
+         {case "NoUpdate": return false;}
+         return true;
+      }();
+   };
+   var throwOutNoTUpdates = function (tUp) {
+      return function () {
+         switch (tUp.ctor)
+         {case "NoTUpdate":
+            return false;}
+         return true;
+      }();
+   };
+   _elm.TUpdate.values = {_op: _op
+                         ,throwOutNoTUpdates: throwOutNoTUpdates
+                         ,throwOutNoUpdatesAndCaret: throwOutNoUpdatesAndCaret
+                         ,editToWUpdate: editToWUpdate
+                         ,editToTUpdate: editToTUpdate
+                         ,handleTUpdate: handleTUpdate
+                         ,handleServerUpdate: handleServerUpdate
+                         ,sockConnected: sockConnected
+                         ,incoming: incoming
+                         ,socket: socket
+                         ,tUpdate: tUpdate
+                         ,serverUpdates: serverUpdates
+                         ,localUpdatesAsJsonToSend: localUpdatesAsJsonToSend
+                         ,cleanedUpdatesToSend: cleanedUpdatesToSend
+                         ,docUpdatesToSend: docUpdatesToSend
+                         ,sendNewString: sendNewString
+                         ,serverUpdateToEdit: serverUpdateToEdit
+                         ,tUpdateToEdit: tUpdateToEdit
+                         ,edits: edits
+                         ,modelFold: modelFold
+                         ,main: main};
+   return _elm.TUpdate.values;
+};
 Elm.Task = Elm.Task || {};
 Elm.Task.make = function (_elm) {
    "use strict";
@@ -15102,494 +13240,6 @@ Elm.Transform2D.make = function (_elm) {
                              ,scaleY: scaleY};
    return _elm.Transform2D.values;
 };
-Elm.Typing = Elm.Typing || {};
-Elm.Typing.make = function (_elm) {
-   "use strict";
-   _elm.Typing = _elm.Typing || {};
-   if (_elm.Typing.values)
-   return _elm.Typing.values;
-   var _op = {},
-   _N = Elm.Native,
-   _U = _N.Utils.make(_elm),
-   _L = _N.List.make(_elm),
-   $moduleName = "Typing",
-   $Basics = Elm.Basics.make(_elm),
-   $Constants = Elm.Constants.make(_elm),
-   $ConvertJson = Elm.ConvertJson.make(_elm),
-   $Graph = Elm.Graph.make(_elm),
-   $Graphics$Element = Elm.Graphics.Element.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $Html$Attributes = Elm.Html.Attributes.make(_elm),
-   $Json$Encode = Elm.Json.Encode.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Model = Elm.Model.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $SocketIO = Elm.SocketIO.make(_elm),
-   $Task = Elm.Task.make(_elm),
-   $Woot = Elm.Woot.make(_elm);
-   var sendDebug = F2(function (model,
-   str) {
-      return {ctor: "_Tuple2"
-             ,_0: _U.replace([["debug"
-                              ,A2($Basics._op["++"],
-                              str,
-                              model.debug)]],
-             model)
-             ,_1: $Model.NoUpdate};
-   });
-   var processTyping = F2(function (typ,
-   _v0) {
-      return function () {
-         switch (_v0.ctor)
-         {case "_Tuple2":
-            return function () {
-                 switch (typ.ctor)
-                 {case "D":
-                    return A3($Graph.generateDelete,
-                      typ._0,
-                      typ._1,
-                      _v0._0);
-                    case "I":
-                    return A3($Graph.generateInsert,
-                      typ._0,
-                      typ._1,
-                      _v0._0);
-                    case "NoTUpdate":
-                    return {ctor: "_Tuple2"
-                           ,_0: _U.replace([["debug"
-                                            ,"not T UPDST CASE"]],
-                           _v0._0)
-                           ,_1: $Model.NoUpdate};}
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.replace([["debug"
-                                         ,"wtf case"]],
-                        _v0._0)
-                        ,_1: $Model.NoUpdate};
-              }();}
-         _U.badCase($moduleName,
-         "between lines 213 and 217");
-      }();
-   });
-   var processServerUpdate = F2(function (wUpd,
-   _v9) {
-      return function () {
-         switch (_v9.ctor)
-         {case "_Tuple2":
-            return function () {
-                 var poolUpdate = {ctor: "_Tuple2"
-                                  ,_0: _U.replace([["pool"
-                                                   ,A2($List._op["::"],
-                                                   wUpd,
-                                                   _v9._0.pool)]],
-                                  _v9._0)
-                                  ,_1: _v9._1};
-                 return function () {
-                    switch (wUpd.ctor)
-                    {case "Delete":
-                       return A2($Woot.canIntegrate,
-                         wUpd,
-                         _v9._0.wSeen) ? A2($Graph.integrateRemoteDelete,
-                         wUpd._0,
-                         _v9._0) : poolUpdate;
-                       case "Insert":
-                       return A2($Woot.canIntegrate,
-                         wUpd,
-                         _v9._0.wSeen) ? A2($Graph.integrateRemoteInsert,
-                         wUpd._0,
-                         _v9._0) : poolUpdate;
-                       case "SiteId":
-                       return {ctor: "_Tuple2"
-                              ,_0: _U.replace([["site"
-                                               ,wUpd._0]],
-                              _v9._0)
-                              ,_1: _v9._1};}
-                    _U.badCase($moduleName,
-                    "between lines 197 and 206");
-                 }();
-              }();}
-         _U.badCase($moduleName,
-         "between lines 194 and 206");
-      }();
-   });
-   var processEdit = F2(function (edit,
-   _v17) {
-      return function () {
-         switch (_v17.ctor)
-         {case "_Tuple2":
-            return function () {
-                 switch (edit.ctor)
-                 {case "T":
-                    return A2(processTyping,
-                      edit._0,
-                      {ctor: "_Tuple2"
-                      ,_0: _v17._0
-                      ,_1: _v17._1});
-                    case "W":
-                    return A2(processServerUpdate,
-                      edit._0,
-                      {ctor: "_Tuple2"
-                      ,_0: _v17._0
-                      ,_1: _v17._1});}
-                 _U.badCase($moduleName,
-                 "between lines 187 and 189");
-              }();}
-         _U.badCase($moduleName,
-         "between lines 187 and 189");
-      }();
-   });
-   var integrateRemoteUpdate = F2(function (wUpd,
-   _v24) {
-      return function () {
-         switch (_v24.ctor)
-         {case "_Tuple2":
-            return function () {
-                 var moveToProcessed = F2(function (x,
-                 m) {
-                    return _U.replace([["processedPool"
-                                       ,A2($List._op["::"],
-                                       x,
-                                       m.processedPool)]],
-                    m);
-                 });
-                 return function () {
-                    switch (wUpd.ctor)
-                    {case "Delete":
-                       return A2($Woot.canIntegrate,
-                         wUpd,
-                         _v24._0.wSeen) ? A2($Graph.integrateRemoteDelete,
-                         wUpd._0,
-                         _v24._0) : integratePool({ctor: "_Tuple2"
-                                                  ,_0: A2(moveToProcessed,
-                                                  wUpd,
-                                                  _v24._0)
-                                                  ,_1: _v24._1});
-                       case "Insert":
-                       return A2($Woot.canIntegrate,
-                         wUpd,
-                         _v24._0.wSeen) ? A2($Graph.integrateRemoteInsert,
-                         wUpd._0,
-                         _v24._0) : integratePool({ctor: "_Tuple2"
-                                                  ,_0: A2(moveToProcessed,
-                                                  wUpd,
-                                                  _v24._0)
-                                                  ,_1: _v24._1});}
-                    return integratePool({ctor: "_Tuple2"
-                                         ,_0: A2(moveToProcessed,
-                                         wUpd,
-                                         _v24._0)
-                                         ,_1: _v24._1});
-                 }();
-              }();}
-         _U.badCase($moduleName,
-         "between lines 158 and 171");
-      }();
-   });
-   var integratePool = function (_v31) {
-      return function () {
-         switch (_v31.ctor)
-         {case "_Tuple2":
-            return function () {
-                 var _v35 = _v31._0.pool;
-                 switch (_v35.ctor)
-                 {case "::":
-                    return A2(integrateRemoteUpdate,
-                      _v35._0,
-                      {ctor: "_Tuple2"
-                      ,_0: _U.replace([["pool"
-                                       ,_v35._1]],
-                      _v31._0)
-                      ,_1: _v31._1});
-                    case "[]":
-                    return {ctor: "_Tuple2"
-                           ,_0: _U.replace([["pool"
-                                            ,_v31._0.processedPool]
-                                           ,["processedPool"
-                                            ,_L.fromArray([])]],
-                           _v31._0)
-                           ,_1: _v31._1};}
-                 _U.badCase($moduleName,
-                 "between lines 175 and 180");
-              }();}
-         _U.badCase($moduleName,
-         "between lines 175 and 180");
-      }();
-   };
-   var handleServerUpdate = function (wUpdate) {
-      return $Model.W(wUpdate);
-   };
-   var handleTyping = function (typing) {
-      return $Model.T(typing);
-   };
-   var view = F2(function (m,upd) {
-      return function () {
-         var debugHtml = $Constants.debug ? A2($Html.div,
-         _L.fromArray([]),
-         _L.fromArray([$Html.text(A2($Basics._op["++"],
-                      "             \nDOc ------",
-                      $Basics.toString(m.doc)))
-                      ,$Html.text(A2($Basics._op["++"],
-                      "                SITE ID",
-                      A2($Basics._op["++"],
-                      $Basics.toString(m.site),
-                      "    ")))
-                      ,$Html.text(A2($Basics._op["++"],
-                      "                          ",
-                      $Basics.toString(upd)))
-                      ,$Html.text(A2($Basics._op["++"],
-                      "                                      DEBUG: ....",
-                      m.debug))])) : A2($Html.div,
-         _L.fromArray([]),
-         _L.fromArray([]));
-         return A2($Html.div,
-         _L.fromArray([]),
-         _L.fromArray([A2($Html.textarea,
-                      _L.fromArray([$Html$Attributes.id("typingZone")
-                                   ,$Html$Attributes.cols(40)
-                                   ,$Html$Attributes.rows(20)
-                                   ,A2($Html$Attributes.property,
-                                   "value",
-                                   $Json$Encode.string($Woot.wToString(m.wString)))]),
-                      _L.fromArray([]))
-                      ,debugHtml]));
-      }();
-   });
-   var typingPort = Elm.Native.Port.make(_elm).inboundSignal("typingPort",
-   "String",
-   function (v) {
-      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
-      v);
-   });
-   var typing = A2($Signal._op["<~"],
-   $ConvertJson.jsonToTypingUpdate,
-   typingPort);
-   var typingToEdit = A2($Signal._op["<~"],
-   handleTyping,
-   typing);
-   var throwOutNoUpdatesAndCaret = function (wUp) {
-      return function () {
-         switch (wUp.ctor)
-         {case "NoUpdate": return false;}
-         return true;
-      }();
-   };
-   var onlyCarets = function (wUp) {
-      return function () {
-         switch (wUp.ctor)
-         {case "Caret": return true;}
-         return false;
-      }();
-   };
-   var windowLocPort = Elm.Native.Port.make(_elm).inbound("windowLocPort",
-   "String",
-   function (v) {
-      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
-      v);
-   });
-   var socket = A2($SocketIO.io,
-   windowLocPort,
-   $SocketIO.defaultOptions);
-   var initializePort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
-   socket,
-   A2($SocketIO.emit,
-   "example",
-   "whaddup")));
-   var incoming = $Signal.mailbox("null");
-   var incomingPort = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
-   socket,
-   A2($SocketIO.on,
-   "serverWUpdates",
-   incoming.address)));
-   var serverUpdates = A3($Signal.filter,
-   throwOutNoUpdatesAndCaret,
-   $Model.NoUpdate,
-   A2($Signal._op["<~"],
-   function (u) {
-      return $ConvertJson.jsonToWUpdate(u);
-   },
-   incoming.signal));
-   var serverUpdateToEdit = A2($Signal._op["<~"],
-   handleServerUpdate,
-   serverUpdates);
-   var edits = A2($Signal.merge,
-   typingToEdit,
-   serverUpdateToEdit);
-   var modelFold = A3($Signal.foldp,
-   processEdit,
-   {ctor: "_Tuple2"
-   ,_0: $Constants.emptyModel
-   ,_1: $Model.NoUpdate},
-   edits);
-   var cleanedUpdatesToSend = A3($Signal.filter,
-   throwOutNoUpdatesAndCaret,
-   $Model.NoUpdate,
-   A2($Signal._op["<~"],
-   $Basics.snd,
-   modelFold));
-   var localUpdatesAsJsonToSend = A2($Signal._op["<~"],
-   $ConvertJson.wUpdateToJson,
-   cleanedUpdatesToSend);
-   var sendUpdatesPort = Elm.Native.Task.make(_elm).performSignal("sendUpdatesPort",
-   A2($Signal._op["<~"],
-   function (i) {
-      return A2($Task.andThen,
-      socket,
-      A2($SocketIO.emit,
-      "localEdits",
-      i));
-   },
-   localUpdatesAsJsonToSend));
-   var updateCaretPos = A3($Signal.filter,
-   onlyCarets,
-   $Model.NoUpdate,
-   A2($Signal._op["<~"],
-   $Basics.snd,
-   modelFold));
-   var caretUpdatesToSend = A2($Signal._op["<~"],
-   $ConvertJson.wUpdateToJson,
-   updateCaretPos);
-   var sendCaretUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("sendCaretUpdatesPort",
-   function (v) {
-      return v;
-   },
-   caretUpdatesToSend);
-   var sendNewString = A2($Signal.map,
-   function (_v41) {
-      return function () {
-         switch (_v41.ctor)
-         {case "_Tuple2":
-            return $ConvertJson.stringUpdateToJson(_v41._0.doc.str);}
-         _U.badCase($moduleName,
-         "on line 104, column 44 to 74");
-      }();
-   },
-   modelFold);
-   var sendNewStringUpdatesPort = Elm.Native.Port.make(_elm).outboundSignal("sendNewStringUpdatesPort",
-   function (v) {
-      return v;
-   },
-   sendNewString);
-   var main = A2($Signal._op["~"],
-   A2($Signal._op["<~"],
-   F2(function (t,_v45) {
-      return function () {
-         switch (_v45.ctor)
-         {case "_Tuple2":
-            return $Graphics$Element.show(A2($Basics._op["++"],
-              $Basics.toString(t),
-              A2($Basics._op["++"],
-              "    ",
-              A2($Basics._op["++"],
-              $Woot.wToString(_v45._0.wString),
-              A2($Basics._op["++"],
-              "   ",
-              A2($Basics._op["++"],
-              $Basics.toString(_v45._0.debug),
-              $Basics.toString(_v45._0.wString)))))));}
-         _U.badCase($moduleName,
-         "on line 224, column 21 to 123");
-      }();
-   }),
-   typing),
-   modelFold);
-   var sockConnected = $Signal.mailbox(false);
-   _elm.Typing.values = {_op: _op
-                        ,sockConnected: sockConnected
-                        ,incoming: incoming
-                        ,socket: socket
-                        ,onlyCarets: onlyCarets
-                        ,throwOutNoUpdatesAndCaret: throwOutNoUpdatesAndCaret
-                        ,serverUpdates: serverUpdates
-                        ,localUpdatesAsJsonToSend: localUpdatesAsJsonToSend
-                        ,caretUpdatesToSend: caretUpdatesToSend
-                        ,cleanedUpdatesToSend: cleanedUpdatesToSend
-                        ,updateCaretPos: updateCaretPos
-                        ,typing: typing
-                        ,sendNewString: sendNewString
-                        ,view: view
-                        ,handleTyping: handleTyping
-                        ,typingToEdit: typingToEdit
-                        ,handleServerUpdate: handleServerUpdate
-                        ,serverUpdateToEdit: serverUpdateToEdit
-                        ,edits: edits
-                        ,modelFold: modelFold
-                        ,integrateRemoteUpdate: integrateRemoteUpdate
-                        ,integratePool: integratePool
-                        ,processEdit: processEdit
-                        ,processServerUpdate: processServerUpdate
-                        ,processTyping: processTyping
-                        ,sendDebug: sendDebug
-                        ,main: main};
-   return _elm.Typing.values;
-};
-Elm.VirtualDom = Elm.VirtualDom || {};
-Elm.VirtualDom.make = function (_elm) {
-   "use strict";
-   _elm.VirtualDom = _elm.VirtualDom || {};
-   if (_elm.VirtualDom.values)
-   return _elm.VirtualDom.values;
-   var _op = {},
-   _N = Elm.Native,
-   _U = _N.Utils.make(_elm),
-   _L = _N.List.make(_elm),
-   $moduleName = "VirtualDom",
-   $Basics = Elm.Basics.make(_elm),
-   $Graphics$Element = Elm.Graphics.Element.make(_elm),
-   $Json$Decode = Elm.Json.Decode.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Native$VirtualDom = Elm.Native.VirtualDom.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var lazy3 = $Native$VirtualDom.lazy3;
-   var lazy2 = $Native$VirtualDom.lazy2;
-   var lazy = $Native$VirtualDom.lazy;
-   var defaultOptions = {_: {}
-                        ,preventDefault: false
-                        ,stopPropagation: false};
-   var Options = F2(function (a,
-   b) {
-      return {_: {}
-             ,preventDefault: b
-             ,stopPropagation: a};
-   });
-   var onWithOptions = $Native$VirtualDom.on;
-   var on = F3(function (eventName,
-   decoder,
-   toMessage) {
-      return A4($Native$VirtualDom.on,
-      eventName,
-      defaultOptions,
-      decoder,
-      toMessage);
-   });
-   var attributeNS = $Native$VirtualDom.attributeNS;
-   var attribute = $Native$VirtualDom.attribute;
-   var property = $Native$VirtualDom.property;
-   var Property = {ctor: "Property"};
-   var fromElement = $Native$VirtualDom.fromElement;
-   var toElement = $Native$VirtualDom.toElement;
-   var text = $Native$VirtualDom.text;
-   var node = $Native$VirtualDom.node;
-   var Node = {ctor: "Node"};
-   _elm.VirtualDom.values = {_op: _op
-                            ,text: text
-                            ,node: node
-                            ,toElement: toElement
-                            ,fromElement: fromElement
-                            ,property: property
-                            ,attribute: attribute
-                            ,attributeNS: attributeNS
-                            ,on: on
-                            ,onWithOptions: onWithOptions
-                            ,defaultOptions: defaultOptions
-                            ,lazy: lazy
-                            ,lazy2: lazy2
-                            ,lazy3: lazy3
-                            ,Options: Options};
-   return _elm.VirtualDom.values;
-};
 Elm.Window = Elm.Window || {};
 Elm.Window.make = function (_elm) {
    "use strict";
@@ -15663,12 +13313,9 @@ Elm.Woot.make = function (_elm) {
               wUpdate._0,
               dict);}
          _U.badCase($moduleName,
-         "between lines 113 and 115");
+         "between lines 115 and 117");
       }();
    });
-   var integratePool = function (model) {
-      return model;
-   };
    var grabNext = F2(function (wCh,
    wStr) {
       return function () {
@@ -15681,7 +13328,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return $Constants.endChar;}
          _U.badCase($moduleName,
-         "between lines 90 and 92");
+         "between lines 94 and 96");
       }();
    });
    var grabPrev = F2(function (wCh,
@@ -15696,7 +13343,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return $Constants.startChar;}
          _U.badCase($moduleName,
-         "between lines 96 and 98");
+         "between lines 100 and 102");
       }();
    });
    var isVisible = function (wCh) {
@@ -15710,13 +13357,16 @@ Elm.Woot.make = function (_elm) {
       return function () {
          switch (wStr.ctor)
          {case "::":
-            return _U.eq(wStr._0.id,
+            return isVisible(wStr._0) ? _U.eq(wStr._0.id,
               wCh.id) ? 0 : 1 + A2(pos,
+              wStr._1,
+              wCh) : _U.eq(wStr._0.id,
+              wCh.id) ? 0 : A2(pos,
               wStr._1,
               wCh);
             case "[]": return 0;}
          _U.badCase($moduleName,
-         "between lines 73 and 78");
+         "between lines 74 and 82");
       }();
    });
    var setInvisible = F2(function (wStr,
@@ -15734,7 +13384,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 65 and 69");
+         "between lines 66 and 70");
       }();
    });
    var ithVisible = F2(function (wStr,
@@ -15751,7 +13401,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return $Constants.endChar;}
          _U.badCase($moduleName,
-         "between lines 54 and 60");
+         "between lines 55 and 61");
       }();
    });
    var subSeqGrab = F2(function (wStr,
@@ -15766,7 +13416,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 44 and 48");
+         "between lines 45 and 49");
       }();
    });
    var subSeq = F3(function (wStr,
@@ -15785,7 +13435,7 @@ Elm.Woot.make = function (_elm) {
             case "[]":
             return _L.fromArray([]);}
          _U.badCase($moduleName,
-         "between lines 35 and 39");
+         "between lines 36 and 40");
       }();
    });
    var wToString = function (wStr) {
@@ -15798,7 +13448,7 @@ Elm.Woot.make = function (_elm) {
               wToString(wStr._1)) : wToString(wStr._1);
             case "[]": return "";}
          _U.badCase($moduleName,
-         "between lines 26 and 30");
+         "between lines 27 and 31");
       }();
    };
    var wIdOrder = F2(function (wA,
@@ -15827,7 +13477,6 @@ Elm.Woot.make = function (_elm) {
                       ,isVisible: isVisible
                       ,grabNext: grabNext
                       ,grabPrev: grabPrev
-                      ,integratePool: integratePool
                       ,canIns: canIns
                       ,canDel: canDel
                       ,canIntegrate: canIntegrate};
