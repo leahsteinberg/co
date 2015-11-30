@@ -147,4 +147,5 @@ modelFold = Signal.foldp (\ e (m,w) -> processEdits e m) (emptyModel, []) edits
 
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
-main =  (\ (m, w) raw s  -> show  ("this wStrings: " ++ toString m.wString ++ "  other client:  " ++ toString  s ++ "                  this client: " ++ toString w ++ "             debug: " ++ m.debug)) <~ modelFold ~ incoming.signal ~ serverUpdates
+main =  show ""
+--  (\ (m, w) raw s  -> show  ("this wStrings: " ++ toString m.wString ++ "  other client:  " ++ toString  s ++ "                  this client: " ++ toString w ++ "             debug: " ++ m.debug)) <~ modelFold ~ incoming.signal ~ serverUpdates

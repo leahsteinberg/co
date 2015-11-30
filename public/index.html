@@ -31,6 +31,7 @@ textArea.on("change", function (i, c){
   if (c.origin === "paste") {
     toSend["type"] = "InsertString";
     toSend["str"] = c.text[0];
+    cp = textArea.indexFromPos(c.from) + 1;
   }
   else if (c.removed[0] != ""){
     toSend["type"] = "Delete";
