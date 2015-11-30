@@ -18,7 +18,7 @@ import Editor exposing (..)
 
 
 
-import DraftTests exposing (..)
+--import DraftTests exposing (..)
 import ConvertJson exposing (jsonToWUpdates, wUpdatesToJson, stringUpdateToJson, jsonToTUpdate, tUpdatesToJson)
 import Model exposing (..)
 import Constants exposing (..)
@@ -147,6 +147,4 @@ modelFold = Signal.foldp (\ e (m,w) -> processEdits e m) (emptyModel, []) edits
 
 
 -- - - - - - - - - V I E W - - - - - - - - - - - -
-main = show runTests
-  
---  (\ (m, w) raw s  -> show  ("siteID: " ++ toString m.site ++ " raw other client: " ++ toString raw ++ "  other client:  " ++toString  s ++ "                  this client: " ++ toString w ++ "             debug: " ++ m.debug)) <~ modelFold ~ incoming.signal ~ serverUpdates
+main =  (\ (m, w) raw s  -> show  ("siteID: " ++ toString m.site ++ "  other client:  " ++toString  s ++ "                  this client: " ++ toString w ++ "             debug: " ++ m.debug)) <~ modelFold ~ incoming.signal ~ serverUpdates

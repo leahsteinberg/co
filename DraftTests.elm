@@ -28,12 +28,19 @@ simpleCase =
   in
       wToString model.wString == "a"
 
+simpleCaseLonger = 
+  let
+      empty = makeEmptySite 1
+      (model, edit) = insertString "hello" 0 empty
+  in
+      wToString model.wString == "hello"
+
 -- - - - - - - - - - - - - - S I M P L E - C A S E S - - - - - -
 
 
 
 
-runTests = [simpleCase]
+runTests = []
 
 
 

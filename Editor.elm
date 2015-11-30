@@ -74,6 +74,7 @@ processTUpdate typ model =
         I ch index -> toEditList (generateInsert ch index model)
         D ch index -> toEditList (generateDelete ch index model)
         IS str index -> insertString str index model
+        _ -> (model, [W NoUpdate])
 
 
 insertString : String -> Int -> Model -> (Model, List Edit)
