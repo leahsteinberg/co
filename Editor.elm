@@ -8,31 +8,32 @@ import String
 integrateRemoteUpdate : WUpdate -> Model -> (Model, List Edit)
 integrateRemoteUpdate wUpd m =
     let
-        moveToProcessed x m = ({m | processedPool <- x :: m.processedPool}, [])
+        integrate intFunction wCh = 
+            let
+                (newModel, newEdits) = toEditList (intFunction wCh m)
+                (newIntModel, newIntEdits) = integratePool newModel
+            in
+                (newIntModel, newIntEdits ++ newEdits)
     in
-
-        case wUpd of
-            Insert wCh -> if canIntegrate wUpd m.wSeen 
-                        then toEditList  (integrateRemoteInsert wCh m)
-                        else  moveToProcessed wUpd m
-
-            Delete wCh -> if canIntegrate wUpd m.wSeen
-                                then toEditList (integrateRemoteDelete wCh m)
-                                else moveToProcessed wUpd m
-
+      case wUpd of
+          Insert wCh -> integrate integrateRemoteInsert wCh
+          Delete wCh -> integrate integrateRemoteDelete wCh
 --            _ -> integratePool (moveToProcessed wUpd m, prevUpd)
+
 integratePool : Model -> (Model, List Edit)
 integratePool model =
     case model.pool of
         [] -> ({model | pool <- model.processedPool, processedPool <- []}, [])
         wUpdate :: wUpdates -> 
             if canIntegrate wUpdate model.wSeen then
--- first we move all updates to pool
--- then we integrate the update
-                integrateRemoteUpdate wUpdate {model | pool <- wUpdate :: model.processedPool, processedPool <- []}
+                        -- first we move all updates to pool, so that we'll have to start over
+                        -- then we integrate the update
+                integrateRemoteUpdate wUpdate {model | pool <- model.processedPool ++ wUpdates, processedPool <- []}
             else 
--- move this update to the processedPool, and keep integrating pool
+                        -- move this update to the processedPool, and keep integrating pool
                 integratePool {model | pool <- wUpdates, processedPool <- wUpdate :: model.processedPool}
+
+
 
 processEdits : List Edit -> Model -> (Model, List Edit)
 processEdits edits model = processEditsAccum edits model []
@@ -55,22 +56,34 @@ processEdit edit model =
           T tUpdate -> processTUpdate tUpdate model
           W wUpdate -> processServerUpdate wUpdate model
 
+
+integrateNew : (WChar -> Model -> (Model, Edit)) -> WUpdate -> Model -> (Model, List Edit)
+integrateNew integrateFunction wUpd model =
+    let
+        wCh = case wUpd of 
+              Insert wCh -> wCh
+              Delete wCh -> wCh 
+    in
+        if canIntegrate wUpd model.wSeen then
+              let 
+                  (newModel, newEdits) = toEditList (integrateFunction wCh model)
+                  (intNewModel, intNewEdits) = integratePool newModel
+              in
+                  (intNewModel, intNewEdits ++ newEdits)
+        else
+            ({model | pool <- wUpd :: model.pool}, [])
+
+
 processServerUpdate : WUpdate -> Model-> (Model, List Edit)
 processServerUpdate wUpd model =
-    let
-        poolUpdate = ({model | pool <- wUpd :: model.pool}, [])
-    in
-        case wUpd of
-            SiteId id -> ({model | site <- id}, [])
+  case wUpd of
+        SiteId id -> ({model | site <- id}, [])
 
-            Insert wCh -> if canIntegrate wUpd model.wSeen
-                            then toEditList (integrateRemoteInsert wCh model)
-                            else poolUpdate
+        Insert wCh -> integrateNew integrateRemoteInsert wUpd model
 
-            Delete wCh -> if canIntegrate wUpd model.wSeen
-                            then toEditList ( integrateRemoteDelete wCh model)
-                            else poolUpdate
-            NoUpdate ->  (model, [])
+        Delete wCh -> integrateNew integrateRemoteDelete wUpd model
+        
+        NoUpdate ->  (model, [])
 
 
 processTUpdate : TUpdate -> Model -> (Model, List Edit)
