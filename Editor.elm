@@ -4,6 +4,7 @@ import Constants exposing (..)
 import Woot exposing (canIntegrate)
 import Graph exposing (generateInsert, generateDelete, integrateRemoteDelete,  integrateRemoteInsert)
 import String
+import Set exposing (..)
 
 integrateRemoteUpdate : WUpdate -> Model -> (Model, List Edit)
 integrateRemoteUpdate wUpd m =
@@ -64,7 +65,9 @@ integrateNew integrateFunction wUpd model =
               Insert wCh -> wCh
               Delete wCh -> wCh 
     in
-        if canIntegrate wUpd model.wSeen then
+        if Set.member wCh.id model.wSeen then
+          (model, []) else if
+        canIntegrate wUpd model.wSeen then
               let 
                   (newModel, newEdits) = toEditList (integrateFunction wCh model)
                   (intNewModel, intNewEdits) = integratePool newModel

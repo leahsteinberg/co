@@ -158,7 +158,7 @@ tester =
 
 
 
-main = show runTestsStrings
+main = show runTests
 --(\ (m, r, l) -> show (wToString m.wString)) tester
 --++ "   pool ----   " ++ toString m.pool ++ " ----processed -----" ++ toString m.processedPool)) tester   
 --  (\ (m, w) t s  -> show  ("this wStrings: " ++ toString m.wString ++ "  other client:  " ++ toString  s ++ "                  this client: " ++ toString t ++ "             debug: " ++ m.debug)) <~ modelFold ~ tUpdate ~ serverUpdates

@@ -29,11 +29,18 @@ generateInsert ch place model =
 --- todod!!! this is an 
 integrateRemoteInsert : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert wChar model =
+        if Set.member wChar.id model.wSeen then
+          (model, W NoUpdate) else
+        integrateRemoteInsert' wChar model
+
+
+integrateRemoteInsert' : WChar -> Model -> (Model, Edit)
+integrateRemoteInsert' wChar model =
     let
         wPrev = grabPrev wChar model.wString
         wNext = grabNext wChar model.wString
         insertPos = pos model.wString wNext
---- should prev line have wprev or wNext
+          --- should prev line have wprev or wNext
         currCP = model.doc.cp
         newCP = if currCP > insertPos then currCP + 1 else currCP
         newCPModel =  {model | doc <- updateCP model.doc newCP}

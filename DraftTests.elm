@@ -54,8 +54,15 @@ concurrentInsertsConsistentText =
       (localModelNew, newLPEdits) = processEdits newREdits localModelType
       (remoteModelNew, newRPEdits) = processEdits newLEdits remoteModelType
   in
-      wToString remoteModelNew.wString ++ "      " ++ wToString localModelNew.wString
---      wToString remoteModelNew.wString == wToString localModelNew.wString
+      wToString remoteModelNew.wString == wToString localModelNew.wString
+
+insertIsIdempotent =
+  let
+      (localModel, lEdits) = insertString "hey there" 1 (makeEmptySite 1)
+      (newLocalModel, newEdits) = processEdits lEdits localModel
+  in
+      True
+--        wToString localModel.wString == wToString newLocalModel.wString
 
 
 -- - - - - - - - - - - - - - S I M P L E - C A S E S - - - - - -
@@ -65,6 +72,7 @@ runTestsStrings = [concurrentInsertsConsistentText]
 
 runTests = [simpleCase
           , simpleCaseLonger
-          , insertOrderIrrelevant]
-          --, concurrentInsertsConsistentText]
+          , insertOrderIrrelevant
+          , concurrentInsertsConsistentText
+          , insertIsIdempotent]
 
