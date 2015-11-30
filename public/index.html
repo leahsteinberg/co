@@ -10,7 +10,6 @@
 }
 </style>
 <div id="anchor"> </div>
-<textarea id="TUpdateZone"></textarea>
 
 <script src="public/elm.js"></script>
 <script>
@@ -18,31 +17,33 @@ var div = document.getElementById('anchor');
 var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
                     , windowLocPort: window.location.origin});
 var textAreaOld = document.getElementById('TUpdateZone');
-var textArea = CodeMirror.fromTextArea(textAreaOld);
+var textArea = CodeMirror(document.body)
 var colors = ["#80ff00", "#7f00ff", "#ff8000"];
 var userColors = {};
 textArea.on("change", function (i, c){
   console.log("omg! ", c);
-      console.log("omg!!", c);
-  if (c.origin != "+input" && c.origin != "+delete"){
+  if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
   var toSend = {};
   var cursor = textArea.getCursor();
   var cp = textArea.indexFromPos(cursor);
-  if (c.removed[0] != ""){
+  if (c.origin === "paste") {
+    toSend["type"] = "InsertString";
+    toSend["str"] = c.text[0];
+  }
+  else if (c.removed[0] != ""){
     toSend["type"] = "Delete";
     currString = textArea.getValue();
     toSend["ch"] = c.removed[0]
   }
-  if (c['text'][0] != ""){
-          toSend["type"] = "Insert";
+  else if (c['text'][0] != ""){
+      toSend["type"] = "Insert";
       console.log("letter", c.text[0]);
       toSend["ch"] = c.text[0]
   }
   else if (c['text'].length === 2){
-        toSend["type"] = "Insert";
-      console.log("ENTER!!!");
+      toSend["type"] = "Insert";
       toSend["ch"] = "\n";
   }
   toSend.cp = cp;
@@ -56,11 +57,12 @@ textArea.on("change", function (i, c){
 woot.ports.docUpdatesPort.subscribe(docUpdate);
 function docUpdate(str){
   var docUpdates = JSON.parse(str);
-  console.log("REGISTERING server Update", docUpdate);
+  console.log("REGISTERING server Update", docUpdates);
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
-  var docUpdate = docUpdates[0];
+  for (var i = 0; i< docUpdates.length; i++ ) {
+    var docUpdate = docUpdates[i];
   
   if (docUpdate["type"] === "typingInsert" ){
     if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
@@ -85,6 +87,7 @@ function docUpdate(str){
     textArea.replaceRange("", from, to, "server!!!");
     updateCaret("delete");
   }
+}
 }
 function updateCaret(action){
   var update;

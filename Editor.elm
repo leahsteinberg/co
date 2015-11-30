@@ -35,10 +35,18 @@ integratePool model =
                 integratePool {model | pool <- wUpdates, processedPool <- wUpdate :: model.processedPool}
 
 processEdits : List Edit -> Model -> (Model, List Edit)
-processEdits edits model = 
-  case List.head edits of
-    Just edit -> processEdit edit model
-    _ -> (model, [])
+processEdits edits model = processEditsAccum edits model []
+
+
+processEditsAccum : List Edit -> Model -> List Edit -> (Model, List Edit)
+processEditsAccum edits model oldEdits =
+  case edits of
+    [] -> (model, oldEdits)
+    x :: xs -> 
+      let 
+          (newModel, accEdits) = processEdit x model
+      in
+          processEditsAccum xs newModel (oldEdits ++ accEdits)
 
 
 processEdit : Edit -> Model -> (Model, List Edit)
@@ -63,9 +71,6 @@ processServerUpdate wUpd model =
                             then toEditList ( integrateRemoteDelete wCh model)
                             else poolUpdate
             NoUpdate ->  (model, [])
-            
-
-
 
 
 processTUpdate : TUpdate -> Model -> (Model, List Edit)
@@ -73,7 +78,11 @@ processTUpdate typ model =
     case typ of
         I ch index -> toEditList (generateInsert ch index model)
         D ch index -> toEditList (generateDelete ch index model)
-        IS str index -> insertString str index model
+        IS str index -> 
+          let
+              (newModel, newEdits) = insertString str index model
+          in
+              (newModel, List.reverse newEdits)
         _ -> (model, [W NoUpdate])
 
 
@@ -83,8 +92,7 @@ insertString string index model =
       strIndexList = List.map2 (,) (String.toList string) [index..(index + String.length string)]
       tUpdates = List.foldr createInsertTUpdate [] strIndexList
     in
-        List.foldr insertCharOfString (model, []) tUpdates
-
+        List.foldl insertCharOfString (model, []) tUpdates
 
     
 

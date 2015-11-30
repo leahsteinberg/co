@@ -39,7 +39,7 @@ io.sockets.on('connection', function(socket){
     socket.on("localEdits", function (msg){
     	parsedMsg = JSON.parse(msg);
     	if (parsedMsg === undefined || parsedMsg.length === 0){
-    		console.log("bad message!!!");
+    		console.log("bad message!!!", parsedMsg);
     		return;
     	}
 
