@@ -6,6 +6,7 @@ import Editor exposing (insertString, processEdits)
 import Model exposing (..)
 import Constants exposing (..)
 
+
 -- - - - - -   H E L P E R - F U N C T I O N S  - - - - - - -
 makeEmptySite : Int -> Model
 makeEmptySite id = { counter = 1
@@ -80,12 +81,16 @@ remoteDeleteProducesConsistentResults =
       wToString remoteModel.wString == "what re you doing there?!?"
 
 
+
+
+
 -- - - - - - - - - - - - - - S I M P L E - C A S E S - - - - - -
 
 
 runTestsStrings = [remoteDeleteProducesConsistentResults]  
 
-runTests = [simpleCase
+
+runTests1 = [simpleCase
           , simpleCaseLonger
           , insertOrderIrrelevant
           , concurrentInsertsConsistentText
