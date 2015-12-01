@@ -16,10 +16,10 @@ wIdOrder wA wB =
         (wASite, wAClock) = wA.id
         (wBSite, wBClock) = wB.id
     in
-        if 
-            |wASite > wBSite -> GT
-            |wASite < wBSite -> LT 
-            |otherwise -> if wAClock > wBClock then GT else LT
+        if wASite > wBSite then GT
+        else if wASite < wBSite then LT 
+        else if wAClock > wBClock then GT 
+        else LT
 
 
 wToString : WString -> String
@@ -66,7 +66,7 @@ setInvisible wStr id =
     case wStr of
         [] -> []
         x :: xs -> if x.id == id 
-                    then {x | vis <- -1} :: xs 
+                    then {x | vis = -1} :: xs 
                     else x :: (setInvisible xs id)
 
 pos : WString -> WChar -> Int
@@ -74,19 +74,19 @@ pos wStr wCh =
     case wStr of 
         [] -> 0
         x :: xs -> 
-            if
-                | isVisible x -> if x.id == wCh.id then 0 else 1 + (pos xs wCh)
-                | otherwise -> if x.id == wCh.id then 0 else pos xs wCh
+            if isVisible x then if x.id == wCh.id then 
+                0 
+                else 1 + (pos xs wCh)
+            else (if x.id == wCh.id then 0 else pos xs wCh)
 
 
     
 isVisible : WChar -> Bool
 isVisible wCh = 
-    if 
-        | wCh.id == startId -> True
-        | wCh.id == endId -> True
-        | wCh.vis > 0 -> True
-        | otherwise -> False
+    if  wCh.id == startId then True
+    else if wCh.id == endId then True
+    else if  wCh.vis > 0 then True
+    else False
 
 
 grabNext : WChar -> WString  -> WChar
@@ -115,6 +115,7 @@ canIntegrate wUpdate dict =
     case wUpdate of
         Insert wCh -> canIns wCh dict
         Delete wCh -> canDel wCh dict
+        _ -> False
 
 
 

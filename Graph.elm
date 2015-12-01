@@ -19,9 +19,9 @@ import Graphics.Input.Field exposing (..)
 generateInsert : Char -> Int -> Model -> (Model, Edit)
 generateInsert ch place model = 
     let
-         debugModel = {model | debug <- "ch is  " ++ fromChar ch ++ "   place is   " ++ toString place}
+         debugModel = {model | debug = "ch is  " ++ fromChar ch ++ "   place is   " ++ toString place}
     in
-        generateInsChar ch (place - 2) (place - 1) {debugModel | doc <- updateCP model.doc place }
+        generateInsChar ch (place - 2) (place - 1) {debugModel | doc = updateCP model.doc place }
 -- error case!
 
 
@@ -43,7 +43,7 @@ integrateRemoteInsert' wChar model =
           --- should prev line have wprev or wNext
         currCP = model.doc.cp
         newCP = if currCP > insertPos then currCP + 1 else currCP
-        newCPModel =  {model | doc <- updateCP model.doc newCP}
+        newCPModel =  {model | doc = updateCP model.doc newCP}
         newModel = integrateInsert' wChar wPrev wNext insertPos newCPModel
     in
         (newModel, T (I wChar.ch insertPos))
@@ -69,11 +69,11 @@ intInsertChar wCh pos model =
         newStr = wToString newWStr
         newLen = String.length newStr
     in 
-        {model | wString <- newWStr
-                , wSeen <- Set.insert wCh.id model.wSeen
+        {model | wString = newWStr
+                , wSeen = Set.insert wCh.id model.wSeen
 --                , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
 --                    ++ "   pos is   " ++ toString pos
-                , doc <- updateStrAndLen model.doc newStr newLen
+                , doc = updateStrAndLen model.doc newStr newLen
         }
 
 
@@ -100,8 +100,8 @@ generateInsChar char predIndex nextIndex model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newModel = {model | counter <- model.counter + 1}  
-        debugModel = {newModel | debug <- "newWchar" ++ toString newWChar
+        newModel = {model | counter = model.counter + 1}  
+        debugModel = {newModel | debug = "newWchar" ++ toString newWChar
                                            ++ "   pred" ++ toString pred
                                            ++ "succ    " ++ toString succ
                                             ++ "   pred index:   " ++ toString predIndex
@@ -146,12 +146,11 @@ generateDelete ch place model =
 
         currWChar = ithVisible model.wString (place)
 
-        deletedWChar = {currWChar | vis <- -1}
+        deletedWChar = {currWChar | vis = -1}
 
         newModel = {model |
-                doc <- updateCP model.doc place
-                , debug <- "CHAR deleteing is -- " ++ fromChar ch
-
+                doc = updateCP model.doc place
+                , debug = "CHAR deleteing is -- " ++ fromChar ch
                 ++ "    DELETING: "
                 ++ String.fromChar currWChar.ch ++ "/thisIndex: " 
                 ++ toString place ++ "/pred :" ++ String.fromChar predecessor.ch 
@@ -168,8 +167,8 @@ integrateRemoteDelete wChar model =
         currCP = model.doc.cp
         deletePos = pos model.wString wChar
         newCP = if currCP > deletePos then currCP - 1 else currCP
-        newDocModel =  {model | doc <- (updateCP model.doc newCP)
-                    , debug <- "deleting" ++ fromChar wChar.ch ++ " at " ++ toString deletePos}
+        newDocModel =  {model | doc = (updateCP model.doc newCP)
+                    , debug = "deleting" ++ fromChar wChar.ch ++ " at " ++ toString deletePos}
         newModel = integrateDelete wChar newDocModel
 
     in 
@@ -183,8 +182,7 @@ integrateDelete wChar model =
         newStr = wToString newWString
         newLen = String.length newStr
     in 
-        {model | wString <- newWString
-                }
+        {model | wString = newWString}
 
 
 -- - -- -  - - - - - - - - - - - - - - - - - - - - 
@@ -192,9 +190,9 @@ integrateDelete wChar model =
 
 updateCP : Doc -> Int -> Doc
 updateCP doc cp =
-    {doc | cp <- cp}    
+    {doc | cp = cp}    
 
 
 updateStrAndLen : Doc -> String -> Int -> Doc
 updateStrAndLen doc str len =
-    {doc | str <- str, len <- len}
+    {doc | str = str, len = len}

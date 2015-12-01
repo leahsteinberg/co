@@ -61,18 +61,35 @@ insertIsIdempotent =
       (localModel, lEdits) = insertString "hey there" 1 (makeEmptySite 1)
       (newLocalModel, newEdits) = processEdits lEdits localModel
   in
-      True
---        wToString localModel.wString == wToString newLocalModel.wString
+        wToString localModel.wString == wToString newLocalModel.wString
+
+localDeleteRemovesCharacter =
+  let
+      (localModel, lEdits) = insertString "hi how are you?" 1 (makeEmptySite 1)
+      (newModel, newEdits) = processEdits [T (D 'h' 3)] localModel
+  in
+      wToString newModel.wString == "hi ow are you?"
+
+
+remoteDeleteProducesConsistentResults =
+  let
+      (localModel, lEdits) =  insertString "what are you doing there?!?" 1 (makeEmptySite 1)
+      (newLocalModel, newLEdits) = processEdits [T (D 'a' 5)] localModel
+      (remoteModel, remoteEdits) = processEdits (newLEdits ++ lEdits) (makeEmptySite 2)
+  in
+      wToString remoteModel.wString == "what re you doing there?!?"
 
 
 -- - - - - - - - - - - - - - S I M P L E - C A S E S - - - - - -
 
 
-runTestsStrings = [concurrentInsertsConsistentText]
+runTestsStrings = [remoteDeleteProducesConsistentResults]  
 
 runTests = [simpleCase
           , simpleCaseLonger
           , insertOrderIrrelevant
           , concurrentInsertsConsistentText
-          , insertIsIdempotent]
+          , insertIsIdempotent
+          , localDeleteRemovesCharacter
+          , remoteDeleteProducesConsistentResults]
 

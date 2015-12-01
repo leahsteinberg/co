@@ -76,7 +76,7 @@ highlightStyle = {color = green, width = 4}
 
 fieldStyle : Style
 fieldStyle = {defaultStyle | 
-                         highlight <- highlightStyle
+                         highlight = highlightStyle
 
                             }
 

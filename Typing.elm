@@ -87,7 +87,7 @@ port incomingPort = socket `andThen` SocketIO.on "serverWUpdates" incoming.addre
 
 port tUpdatePort: Signal String
 
-tUpdate = jsonToTUpdate <~ tUpdatePort
+tUpdate = Signal.map jsonToTUpdate tUpdatePort
 
 -- - - - - - - - - O U T G O I N G - - - - - - - - -
 
@@ -98,25 +98,25 @@ port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
 -- - - - - - S E N D - S E R V E R - U P D A T E S - - - - - - - 
 
 port sendUpdatesPort : Signal (Task x ())
-port sendUpdatesPort = (\i -> socket `andThen` SocketIO.emit "localEdits" i) <~ localUpdatesAsJsonToSend
+port sendUpdatesPort = Signal.map (\i -> socket `andThen` SocketIO.emit "localEdits" i) localUpdatesAsJsonToSend
 
 
-serverUpdates = (\u -> jsonToWUpdates u) <~ incoming.signal
+serverUpdates = Signal.map (\u -> jsonToWUpdates u) incoming.signal
 
 localUpdatesAsJsonToSend : Signal String
-localUpdatesAsJsonToSend = (\updates -> wUpdatesToJson updates) <~ cleanedUpdatesToSend
+localUpdatesAsJsonToSend = Signal.map (\updates -> wUpdatesToJson updates) cleanedUpdatesToSend
 
 cleanedUpdatesToSend : Signal (List WUpdate)
-cleanedUpdatesToSend =  (\edits -> List.map editToWUpdate edits) <~ (snd <~ modelFold)
+cleanedUpdatesToSend = Signal.map (\ (model, edits) -> List.map editToWUpdate edits) modelFold
 
 
 -- - - - - - - S E N D - L O C A L - D O C - U P D A T E S - - - - - - - -
 
 port docUpdatesPort : Signal String
-port docUpdatesPort = (\updates -> tUpdatesToJson updates) <~ docUpdatesToSend
+port docUpdatesPort = Signal.map (\updates -> tUpdatesToJson updates) docUpdatesToSend
 
 docUpdatesToSend : Signal (List TUpdate)
-docUpdatesToSend = (\edits -> List.map editToTUpdate edits) <~ (snd <~ modelFold)
+docUpdatesToSend = Signal.map (\ (model, edits) -> List.map editToTUpdate edits) modelFold
 
 
 
@@ -134,10 +134,10 @@ sendNewString = Signal.map (\(mod, upd) -> stringUpdateToJson mod.doc.str) model
 -- - - - - - P R O C E S S - I N C O M I N G - - - - - 
 
 serverUpdateToEdit : Signal (List Edit)
-serverUpdateToEdit = (List.map handleServerUpdate) <~ serverUpdates
+serverUpdateToEdit = Signal.map (List.map handleServerUpdate) serverUpdates
 
 tUpdateToEdit : Signal (List Edit)
-tUpdateToEdit = (\t -> [handleTUpdate t]) <~ tUpdate
+tUpdateToEdit = Signal.map (\t -> [handleTUpdate t]) tUpdate
 
 edits : Signal (List Edit)
 edits = Signal.merge tUpdateToEdit serverUpdateToEdit

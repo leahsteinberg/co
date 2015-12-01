@@ -93,23 +93,23 @@ toChar str =
 
 decodeTUpdate : String -> String -> TUpdate
 decodeTUpdate typeStr str =
-    if
-        | typeStr == "Insert" ->
+    if typeStr == "Insert" then
             case Dec.decodeString tInsertDecoder str of
                 Ok x -> x
                 Err error -> NoTUpdate
-        | typeStr == "Delete" ->
+    else if typeStr == "Delete" then
                 case Dec.decodeString tDeleteDecoder str of
                     Ok x -> x
                     Err error -> NoTUpdate
-        | typeStr == "InsertString" ->
+    else if typeStr == "InsertString" then
             case Dec.decodeString tInsertStringDecoder str of
               Ok x -> x
               Err error -> NoTUpdate
-        | typeStr == "DeleteString" ->
+    else if typeStr == "DeleteString" then
           case Dec.decodeString tDeleteStringDecoder str of
             Ok x -> x
             Err error -> NoTUpdate
+    else NoTUpdate
 
 tInsertStringDecoder : Decoder TUpdate
 tInsertStringDecoder =
@@ -141,11 +141,10 @@ decCP = ("cp" := Dec.int)
 
 decodeWUpdate : String -> String -> WUpdate
 decodeWUpdate typeStr str =
-    if
-        | typeStr == "Insert" -> decodeWInsert str
-        | typeStr == "Delete" -> decodeWDelete str
-        | typeStr == "SiteId" -> decodeWSiteId str
-        | otherwise -> NoUpdate
+    if typeStr == "Insert" then decodeWInsert str
+    else if typeStr == "Delete" then decodeWDelete str
+    else if typeStr == "SiteId" then decodeWSiteId str
+    else NoUpdate
 
 
 
@@ -239,7 +238,7 @@ encodeWUpdate wUp =
     case wUp of
         Insert wCh -> object (("type", Enc.string "Insert") :: wCharToJsonList wCh)
         Delete wCh -> object (("type", Enc.string "Delete") :: wCharToJsonList wCh)
-        NoUpdate -> object [("type", Enc.string "NoUpdatelol")]
+        _ -> object [("type", Enc.string "NoUpdate")]
 
 
 wCharToJsonList : WChar -> List (String, Value)
