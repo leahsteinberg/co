@@ -97,23 +97,27 @@ processTUpdate typ model =
               (newModel, List.reverse newEdits)
         _ -> (model, [W NoUpdate])
 
+insertString2 string index model = List.map2 (,) (String.toList string) [index..(index + String.length string - 1)]
+                                          |> List.foldr createInsertTUpdate []
+
+
+
 
 insertString : String -> Int -> Model -> (Model, List Edit)
 insertString string index model =
     let
-      strIndexList = List.map2 (,) (String.toList string) [index..(index + String.length string)]
+      strIndexList = List.map2 (,) (String.toList string) [index..(index + String.length string - 1)]
       tUpdates = List.foldr createInsertTUpdate [] strIndexList
     in
         List.foldl insertCharOfString (model, []) tUpdates
 
-    
 
 insertCharOfString : TUpdate -> (Model, List Edit) -> (Model, List Edit)
 insertCharOfString tUpdate (model, edits) =
     let
         (newModel, newEdits) = processTUpdate tUpdate model
     in
-        (newModel, newEdits ++ edits)
+        (newModel, edits ++ newEdits)
 
 toEditList : (Model, Edit) -> (Model, List Edit)
 toEditList (model, edit) = (model, [edit])

@@ -9,7 +9,7 @@ import String exposing (toList, length)
 import Char exposing (toCode)
 import Html exposing (Html, Attribute, div, text, ul, ol, li)
 
-first_index = 1
+first_index = 0 
 generatePseudoRandomIndex : String -> String -> Int
 generatePseudoRandomIndex origStr insertStr =
   case toList insertStr of
@@ -135,7 +135,7 @@ concurrent_insert_consistent' = (\ origStr localStr remoteStr  ->
           (localModel3, lEdits3) = processEdits rEdits2 localModel2
           (remoteModel3, rEdits3) = processEdits lEdits2 remoteModel2
         in
-          (wToString remoteModel3.wString, wToString localModel3.wString)
+          ((wToString remoteModel3.wString, wToString localModel3.wString), (rIndex, lIndex))
           )
 
 
@@ -146,11 +146,11 @@ concurrent_insert_consistent =
     "two people write at same time, same result"
     `that`
         (\ (origStr, (localStr, remoteStr)) ->
-            fst (concurrent_insert_consistent' origStr "hi" "there")
+            fst (fst (concurrent_insert_consistent' origStr "hi" "there"))
           )
       `is`
         (\ (origStr, (localStr, remoteStr)) ->
-            snd (concurrent_insert_consistent' origStr "hi" "there")
+            snd (fst (concurrent_insert_consistent' origStr "hi" "there"))
           )
         `for`
           tuple (string, (tuple (string, string)))
@@ -165,18 +165,12 @@ suite_co =
 
 
 
-tripleStrings = [("butters", "how", "are")]
-
+tripleStrings = [("footbol", "how", "are")]
 
 
 runTests = List.map (\ (origStr, localStr, remoteStr) -> 
-          let (a, b)= concurrent_insert_consistent' origStr localStr remoteStr
+          let (a, b) = concurrent_insert_consistent' origStr localStr remoteStr
           in (a, b)) tripleStrings
-
-
-
-
-
 
 
 result = quickCheck suite_co

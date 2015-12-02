@@ -41,7 +41,8 @@ textArea.on("change", function (i, c){
   else if (c['text'][0] != ""){
       toSend["type"] = "Insert";
       console.log("letter", c.text[0]);
-      toSend["ch"] = c.text[0]
+      toSend["ch"] = c.text[0];
+      cp = cp - 1;
   }
   else if (c['text'].length === 2){
       toSend["type"] = "Insert";
@@ -71,8 +72,7 @@ function docUpdate(str){
     }
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
-    textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");//////*****
-    
+    textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
     var to = textArea.posFromIndex(location + 1);
     console.log("from", from, "to", to);
     textArea.markText(from, to, {css: "color: blue"});

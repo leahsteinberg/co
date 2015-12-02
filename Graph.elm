@@ -19,9 +19,9 @@ import Graphics.Input.Field exposing (..)
 generateInsert : Char -> Int -> Model -> (Model, Edit)
 generateInsert ch place model = 
     let
-         debugModel = {model | debug = "ch is  " ++ fromChar ch ++ "   place is   " ++ toString place}
+         debugModel = {model | debug = model.debug ++ "~~~" ++ toString place ++ "~~~~" ++ "||||" ++ wToString model.wString ++ "|||"}
     in
-        generateInsChar ch (place - 2) (place - 1) {debugModel | doc = updateCP model.doc place }
+        generateInsChar ch (place - 1) (place ) {debugModel | doc = updateCP model.doc place }
 -- error case!
 
 
@@ -101,11 +101,11 @@ generateInsChar char predIndex nextIndex model =
                     , next = succ.id
                     , vis = 1}
         newModel = {model | counter = model.counter + 1}  
-        debugModel = {newModel | debug = "newWchar" ++ toString newWChar
+        debugModel = {newModel | debug = model.debug ++ "((((((newWchar" ++ toString newWChar
                                            ++ "   pred" ++ toString pred
                                            ++ "succ    " ++ toString succ
                                             ++ "   pred index:   " ++ toString predIndex
-                                            ++ "    next Index   " ++ toString nextIndex} 
+                                            ++ "    next Index   " ++ toString nextIndex ++ "))))))"} 
 
     in 
         (integrateInsert' newWChar pred succ nextIndex debugModel , W (Insert newWChar))

@@ -17,7 +17,7 @@ import Task exposing (..)
 import Editor exposing (..)
 
 
-
+import Checks exposing (..)
 import DraftTests exposing (..)
 import ConvertJson exposing (jsonToWUpdates, wUpdatesToJson, stringUpdateToJson, jsonToTUpdate, tUpdatesToJson)
 import Model exposing (..)
@@ -29,6 +29,7 @@ import Graph exposing (generateInsert
                         , generateDelete
                         , integrateRemoteInsert
                         , integrateRemoteDelete)
+
 
 
 -- - - - - - - U T I L I T I E S - - - - - 
@@ -151,14 +152,21 @@ tester =
   let
       local = makeEmptySite 1
       remote = makeEmptySite 2
-      (localModel, lEdits) = insertString "hello" 1 local
+      (localModel, lEdits) = insertString "hey" 0 local
       (remoteModel, rEdits) = processEdits (lEdits) remote
   in
-      (remoteModel, rEdits, lEdits)
+      (wToString remoteModel.wString, wToString localModel.wString)
+--      (localModel, lEdits)
 
 
+-- show  (insertString "hey" 0 (makeEmptySite 1))
 
-main = show runTests
+main =   show runTests
+  
+--  (\(m, e) -> show ((toString (m, e)  ++ "                                                                                   " ++ (wToString m.wString))   )) tester 
+  
+  
+--  show runTests
 --(\ (m, r, l) -> show (wToString m.wString)) tester
 --++ "   pool ----   " ++ toString m.pool ++ " ----processed -----" ++ toString m.processedPool)) tester   
 --  (\ (m, w) t s  -> show  ("this wStrings: " ++ toString m.wString ++ "  other client:  " ++ toString  s ++ "                  this client: " ++ toString t ++ "             debug: " ++ m.debug)) <~ modelFold ~ tUpdate ~ serverUpdates
