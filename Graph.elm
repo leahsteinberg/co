@@ -19,7 +19,7 @@ import Graphics.Input.Field exposing (..)
 generateInsert : Char -> Int -> Model -> (Model, Edit)
 generateInsert ch place model = 
     let
-         debugModel = {model | debug = model.debug ++ "~~~" ++ toString place ++ "~~~~" ++ "||||" ++ wToString model.wString ++ "|||"}
+         debugModel = {model| debug = model.debug}-- ++ "~~~" ++ toString place ++ "~~~~" ++ "||||" ++ wToString model.wString ++ "|||"}
     in
         generateInsChar ch (place - 1) (place ) {debugModel | doc = updateCP model.doc place }
 -- error case!
@@ -37,14 +37,13 @@ integrateRemoteInsert wChar model =
 integrateRemoteInsert' : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert' wChar model =
     let
-        wPrev = grabPrev wChar model.wString
-        wNext = grabNext wChar model.wString
-        insertPos = pos model.wString wNext
+
+        insertPos = pos model.wString (grabNext wChar model.wString)
           --- should prev line have wprev or wNext
         currCP = model.doc.cp
         newCP = if currCP > insertPos then currCP + 1 else currCP
         newCPModel =  {model | doc = updateCP model.doc newCP}
-        newModel = integrateInsert' wChar wPrev wNext insertPos newCPModel
+        newModel = integrateInsert' wChar (grabPrev wChar model.wString) (grabNext wChar model.wString) insertPos newCPModel
     in
         (newModel, T (I wChar.ch insertPos))
 
@@ -71,22 +70,31 @@ intInsertChar wCh pos model =
     in 
         {model | wString = newWStr
                 , wSeen = Set.insert wCh.id model.wSeen
---                , debug <- model.debug ++ "TO STRING OF THE LIST -> " ++ toString newWStr
---                    ++ "   pos is   " ++ toString pos
                 , doc = updateStrAndLen model.doc newStr newLen
         }
 
 
 integrateInsert' : WChar -> WChar -> WChar -> Int -> Model -> Model 
-integrateInsert' wCh pred succ pos model =
+integrateInsert' wCh pred succ posi model =
     let
         subStr = subSeq model.wString pred succ
         idOrderSubStr = pred :: (withoutPrecedenceOrdered subStr) ++ [succ]
         (newPred, newSucc) = findLaterWChar wCh idOrderSubStr
     in 
         case subStr of
-            [] -> intInsertChar wCh pos model
-            x :: xs -> integrateInsert' wCh newPred newSucc pos model
+            [] -> 
+              let 
+                    newModel = intInsertChar wCh (pos model.wString succ ) model
+
+              in 
+                  if pred == succ then 
+                  {newModel  | debug = model.debug ++ "****" ++ toString wCh.ch++ toString (List.map (\x -> toString (x.ch)) idOrderSubStr) ++ " ~~~~~" } 
+                  else 
+                    newModel
+            x :: xs -> 
+              let newModel =integrateInsert' wCh newPred newSucc posi model
+              in
+                  {newModel | debug = model.debug ++ "inserting: " ++ toString wCh.ch ++ "// " ++ "  newPred::  " ++ toString newPred.ch ++ "   NewSuc:: " ++ toString newSucc.ch}
 
 
 generateInsChar : Char -> Int -> Int -> Model -> (Model, Edit)
@@ -101,11 +109,11 @@ generateInsChar char predIndex nextIndex model =
                     , next = succ.id
                     , vis = 1}
         newModel = {model | counter = model.counter + 1}  
-        debugModel = {newModel | debug = model.debug ++ "((((((newWchar" ++ toString newWChar
-                                           ++ "   pred" ++ toString pred
-                                           ++ "succ    " ++ toString succ
-                                            ++ "   pred index:   " ++ toString predIndex
-                                            ++ "    next Index   " ++ toString nextIndex ++ "))))))"} 
+        debugModel = {newModel | debug = newModel.debug}-- ++ "((((((newWchar" ++ toString newWChar
+                                          -- ++ "   pred" ++ toString pred
+                                          -- ++ "succ    " ++ toString succ
+                                         --   ++ "   pred index:   " ++ toString predIndex
+                                         --   ++ "    next Index   " ++ toString nextIndex ++ "))))))"} 
 
     in 
         (integrateInsert' newWChar pred succ nextIndex debugModel , W (Insert newWChar))
@@ -123,7 +131,7 @@ withoutPrecedenceOrdered wStr =
         List.filter prevAndNextAbsent wStr
 
 
-
+-- the second in the pair is the thing that is a "greater" wChar..
 findLaterWChar : WChar -> WString -> (WChar, WChar)
 findLaterWChar insCh wStr =
     case wStr of
@@ -132,7 +140,11 @@ findLaterWChar insCh wStr =
         x :: [] -> (startChar, endChar)
 -- error case
         x :: y :: [] -> (x, y)
-        x :: xs -> findLaterWChar insCh xs
+        x :: y :: xs -> 
+          if y `isLaterWChar` insCh then
+              (x, y)
+          else
+              findLaterWChar insCh (y::xs)
 
 
 -- - - - - - D E L E T E   A P I - - - - - - - 

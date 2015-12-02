@@ -10,6 +10,11 @@ import Set exposing (..)
 -- - - - - - - - - - U T I L I T I E S - - - - - - - - - -
 
 
+isLaterWChar : WChar -> WChar -> Bool
+isLaterWChar wA wB = wIdOrder wA wB /= LT
+
+
+
 wIdOrder : WChar -> WChar -> Order
 wIdOrder wA wB =
     let
@@ -19,7 +24,7 @@ wIdOrder wA wB =
         if wASite > wBSite then GT
         else if wASite < wBSite then LT 
         else if wAClock > wBClock then GT 
-        else LT
+        else GT
 
 
 wToString : WString -> String
@@ -98,7 +103,7 @@ grabNext wCh wStr =
 grabPrev : WChar -> WString -> WChar
 grabPrev wCh wStr =
     case wStr of
-        x :: xs -> if x.id == wCh.prev then x else grabNext wCh xs
+        x :: xs -> if x.id == wCh.prev then x else grabPrev wCh xs
         [] -> startChar
 
 
