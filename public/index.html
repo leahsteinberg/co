@@ -2,8 +2,14 @@
   <head> 
   </head>
 <body>
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 <script src="public/lib/codemirror.js"></script>
+
 <link rel="stylesheet" href="public/lib/codemirror.css">
+
+
+
 <style>
 .other {
   color: "#7f00ff";
@@ -13,6 +19,29 @@
 
 <script src="public/elm.js"></script>
 <script>
+
+var url = window.location.href;
+var final_url = url.substr(url.lastIndexOf('/') + 1);
+console.log(final_url);
+
+$(document).ready(function(){
+  $.ajax({url: "/docs/" + final_url, 
+        success: function(result) {
+          console.log("success!! ", result);
+
+
+
+        } 
+  })
+
+});
+
+
+
+
+
+
+
 var div = document.getElementById('anchor');
 var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
                     , windowLocPort: window.location.origin});

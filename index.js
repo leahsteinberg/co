@@ -1,54 +1,117 @@
+
+/* set up regular http server*/
 var express = require('express');
 var app = express();
-
-// var ot = require('./ot.js');
-// console.log("ot is", ot);
-
 var path = require('path');
 
-
-var siteCounter  = 1; 
 var server = app.listen(4004, function(){
-	var host = server.address().address;
-	var port = server.address().port;
-	console.log("Collab App listening at http://%s:%s ~~~", host, port);
+        var host = server.address().address;
+        var port = server.address().port;
+        console.log("Collab App listening at http://%s:%s ~~~", host, port);
 });
 
-var thing = 1;
-var io = require('socket.io')(server);
-console.log("socket.io is working working: ", io!= undefined);
 app.use("/public", express.static(path.resolve('public')));
 
-app.get('/', function(req, res) {
+
+
+/* peer js server */
+
+var rooms = {names: {}, next_doc_id: 1, docs: {}};
+
+
+
+
+
+app.get('/:doc', function(req, res) {
+  console.log(req.params);
   res.sendFile(path.resolve('public/index.html'));
+  // need to some how return the doc id and site id in here. 
 });
+
+app.get('/docs/:doc', function(req, res){
+  //res.send(JSON.stringify({"hi": req.params.doc}));
+  //console.log("request is is:", req.params);
+  var doc_url = req.params.doc;
+  var toReturn = {};
+  if (rooms.names[doc_url] === undefined){
+    /* make a new document */
+
+
+    var curr_site_id = 1;
+    var curr_doc_id = rooms.next_doc_id;
+
+    var new_doc = {
+                    id: curr_doc_id, 
+                    name: doc_url, 
+                    members: [curr_site_id], 
+                    next_site_id: curr_site_id
+                  };
+
+    rooms.names[doc_url] = curr_doc_id;
+    rooms.docs[curr_doc_id] = new_doc;
+
+    toReturn = {"doc_id": curr_doc_id, "site_id": curr_site_id};
+
+    rooms.next_doc_id = curr_doc_id + 1;
+    new_doc.next_site_id = curr_site_id + 1;
+    console.log(rooms)
+
+  } else {
+    /* document already exists */
+    var curr_doc_id = rooms.names[doc_url];
+    var curr_doc = rooms.docs[curr_doc_id];
+    var curr_site_id = curr_doc.next_site_id;
+    curr_doc.next_site_id = curr_site_id + 1;
+
+  
+    toReturn = {"doc_id": curr_doc_id, "site_id": curr_site_id, "members": curr_doc.members}
+    curr_doc.members.push(curr_site_id);
+  }
+  res.send(JSON.stringify(toReturn))
+  // send back to user the doc id 
+
+});
+
+/* logic to handle clients*/
+var siteCounter  = 1; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* socket io server*/
+var io = require('socket.io')(server);
+console.log("socket.io is working: ", io!= undefined);
+
 
 
 io.sockets.on('connection', function(socket){
+    /* new client */
   
-
-
     var idUpdate = [{"siteId": siteCounter, "type": "SiteId"}]
-    var toSend = JSON.stringify(idUpdate);
-
-        socket.emit("serverWUpdates", JSON.stringify(idUpdate));
-      console.log('a user connected, siteId: ', siteCounter);
+    socket.emit("serverWUpdates", JSON.stringify(idUpdate));
+    console.log('a user connected, siteId: ', siteCounter);
 
     siteCounter = siteCounter + 1;
 
     socket.on("localEdits", function (msg){
-    	parsedMsg = JSON.parse(msg);
-    	if (parsedMsg === undefined || parsedMsg.length === 0){
-    		console.log("bad message!!!", parsedMsg);
+    	wootUpdate = JSON.parse(msg);
+    	if (wootUpdate === undefined || wootUpdate.length === 0){
     		return;
     	}
 
-        //var site = parsedMsg.slice(0, parsedMsg.id.indexOf("-"));
-       console.log("msg:", parsedMsg);
-      socket.broadcast.emit("serverWUpdates", parsedMsg);
+      console.log("msg:", wootUpdate);
+      socket.broadcast.emit("serverWUpdates", wootUpdate);
 
-
-    })
+    });
 });
 
 
