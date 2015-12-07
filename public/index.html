@@ -25,22 +25,49 @@ var url = window.location.href;
 var final_url = url.substr(url.lastIndexOf('/') + 1);
 console.log(final_url);
 var peer;
-var fellow_ids = [], connections = [];
+var peer_id;
+var fellow_ids = {}, connections = [];
 
 $(document).ready(function(e){
 
+
+handleData = function(data){
+  console.log("update from: ", data.peer_id);
+  if (data === undefined){
+    return;
+  }
+  if (data.data_type === "member_update") {
+    for (key in data.members) {
+      fellow_ids[key] = true;
+      console.log("adding", key);
+    }
+    console.log("members after update: ", fellow_ids);
+
+  }
+
+
+}
+
+
 handleConnection = function(conn) {
-  console.log("handle connect: ", conn);
+  //console.log("handle connect: ", conn);
   conn.on('open', function (){
-      console.log("connected with peer: ", conn);
 
-      conn.send("whaddup");
+      console.log("connected with peer: ", conn.peer);
+
+      initialData = {
+        peer_id: peer_id,
+        members: fellow_ids,
+        data_type: "member_update"
+
+      };
 
 
+      conn.send(initialData);
+      console.log("sending: ", initialData);
 
-
-      conn.on('whaddup', function(data){
-          console.log("got data", data);
+      conn.on('data', function(data){
+          handleData(data);
 
       });
 
@@ -50,27 +77,28 @@ handleConnection = function(conn) {
 
 
   //console.log("e is ", e);
-   // e.preventDefault();
+  // e.preventDefault();
 
   $.ajax({url: "/docs/" + final_url, success: function(result) {
 
-          console.log("success!! ", result);
+          //console.log("success!! ", result);
 
           var peer_info = JSON.parse(result);
-          var peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
+          peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
           peer = new Peer(peer_id, {host: 'localhost', port: 9000, path: '/myapp'});
 
-          console.log("peer is", peer);
+          console.log("peer is", peer_id);
 
-          var fellows = peer_info.members;
-          console.log("fellows is", fellows);
-          if (peer === undefined || fellows === undefined) {
+          //fellow_ids = peer_info.members;
+          //console.log("fellows is", fellow_ids);
+          if (peer === undefined || fellow_ids === undefined) {
             return;
           }
           var connections = [];
-          for (var i = 0; i < fellows.length; i++) {
+          for (var i = 0; i < peer_info.members.length; i++) {
             var fellow_id = peer_info.doc_id.toString() + "-" + peer_info.members[i].toString();
-            
+            //fellow_ids.push(fellow_id);
+            fellow_ids[fellow_id] = true;
             if (fellow_id === peer_id) {
               continue;
             }
@@ -80,14 +108,10 @@ handleConnection = function(conn) {
             handleConnection(conn);
 
           }
-          console.log("lollipop");
 
       peer.on('connection',function(conn){  
-        console.log("received connection!");
-        console.log("we received stuff from", conn);
          handleConnection(conn);  
         });
-      console.log("here peer is", peer);
 
           // now you want to message all your peers telling them that you have 
 
@@ -99,6 +123,7 @@ handleConnection = function(conn) {
 
 
 });
+
 
 
 
