@@ -1,7 +1,7 @@
 module TUpdate where
 
 
-
+import Graphics.Element
 import Graphics.Input.Field exposing (..)
 import Graphics.Element exposing (..)
 import Signal exposing (..)
@@ -79,6 +79,10 @@ sockConnected = Signal.mailbox False
 incoming : Signal.Mailbox String
 incoming = Signal.mailbox "null"
 
+
+port incomingPeer : Signal String
+
+
 port windowLocPort : String
 
 socket =  io windowLocPort defaultOptions
@@ -101,8 +105,11 @@ port initializePort = socket `andThen` SocketIO.emit "example" "whaddup"
 port sendUpdatesPort : Signal (Task x ())
 port sendUpdatesPort = Signal.map (\i -> socket `andThen` SocketIO.emit "localEdits" i) localUpdatesAsJsonToSend
 
+port sendUpdatesPortPeer : Signal String
+port sendUpdatesPortPeer = localUpdatesAsJsonToSend
 
-serverUpdates = Signal.map (\u -> jsonToWUpdates u) incoming.signal
+
+serverUpdates = Signal.map (\u -> jsonToWUpdates u) incomingPeer
 
 localUpdatesAsJsonToSend : Signal String
 localUpdatesAsJsonToSend = Signal.map (\updates -> wUpdatesToJson updates) cleanedUpdatesToSend
@@ -155,13 +162,16 @@ tester =
       (localModel, lEdits) = insertString "hey" 0 local
       (remoteModel, rEdits) = processEdits (lEdits) remote
   in
-      (wToString remoteModel.wString, wToString localModel.wString)
+      (remoteModel, localModel)
 --      (localModel, lEdits)
 
 
--- show  (insertString "hey" 0 (makeEmptySite 1))
+ --show  (insertString "hey" 0 (makeEmptySite 1))
 
-main =   show runTests
+main = Signal.map (\ p -> show p) incomingPeer
+--  Graphics.Element.empty
+  
+--  (List.map (\ (a, b) ->  (a++ "    "++ b)) runTests)
   
 --  (\(m, e) -> show ((toString (m, e)  ++ "                                                                                   " ++ (wToString m.wString))   )) tester 
   

@@ -26,28 +26,46 @@ var final_url = url.substr(url.lastIndexOf('/') + 1);
 console.log(final_url);
 var peer;
 var peer_id;
-var fellow_ids = {}, connections = [];
+var fellow_ids = {}, connections = {};
 
 $(document).ready(function(e){
 
 
 handleData = function(data){
-  console.log("update from: ", data.peer_id);
+  console.log("update: ", data);
   if (data === undefined){
     return;
   }
   if (data.data_type === "member_update") {
     for (key in data.members) {
+      if (fellow_ids[key] != true) {
+          var conn = peer.connect(fellow_ids[key]);
+          connections[fellow_ids[key]] = conn;
+          handleConnection(conn);
+      }
+
       fellow_ids[key] = true;
-      console.log("adding", key);
     }
-    console.log("members after update: ", fellow_ids);
-
   }
+  if (data.data_type === "woot_peer_update"){
+    if (data.woot_data){
+      woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
 
-
+    }
+  }
 }
 
+
+
+broadcast = function(msg){
+  for (key in fellow_ids) {
+    if (connections[key] === undefined) {
+      continue;
+    }
+    console.log("sending broadcast", key, "    ",  msg);
+    connections[key].send(msg);
+  }
+}
 
 handleConnection = function(conn) {
   //console.log("handle connect: ", conn);
@@ -64,7 +82,6 @@ handleConnection = function(conn) {
 
 
       conn.send(initialData);
-      console.log("sending: ", initialData);
 
       conn.on('data', function(data){
           handleData(data);
@@ -81,20 +98,19 @@ handleConnection = function(conn) {
 
   $.ajax({url: "/docs/" + final_url, success: function(result) {
 
-          //console.log("success!! ", result);
-
           var peer_info = JSON.parse(result);
           peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
           peer = new Peer(peer_id, {host: 'localhost', port: 9000, path: '/myapp'});
+          console.log(peer);
+          var siteIdUpdate = [{"type": "SiteId"
+                            , "siteId": peer_info.site_id}];
+          woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
 
-          console.log("peer is", peer_id);
 
-          //fellow_ids = peer_info.members;
-          //console.log("fellows is", fellow_ids);
+
           if (peer === undefined || fellow_ids === undefined) {
             return;
           }
-          var connections = [];
           for (var i = 0; i < peer_info.members.length; i++) {
             var fellow_id = peer_info.doc_id.toString() + "-" + peer_info.members[i].toString();
             //fellow_ids.push(fellow_id);
@@ -104,7 +120,7 @@ handleConnection = function(conn) {
             }
 
             var conn = peer.connect(fellow_id);
-            connections.push(conn);
+            connections[fellow_id] = conn;
             handleConnection(conn);
 
           }
@@ -119,11 +135,7 @@ handleConnection = function(conn) {
   });
 
 
-
-
-
 });
-
 
 
 
@@ -133,11 +145,19 @@ handleConnection = function(conn) {
 
 var div = document.getElementById('anchor');
 var woot = Elm.embed(Elm.TUpdate, div, {tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
-                    , windowLocPort: window.location.origin});
+                    , windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})});
 var textAreaOld = document.getElementById('TUpdateZone');
 var textArea = CodeMirror(document.body)
 var colors = ["#80ff00", "#7f00ff", "#ff8000"];
 var userColors = {};
+
+
+
+
+
+
+
+
 textArea.on("change", function (i, c){
   console.log("omg! ", c);
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
@@ -174,6 +194,21 @@ textArea.on("change", function (i, c){
  
 });
 /// to do !! figure out an easy way to get an event when the USER deletes something from the text area.. not if it's programmatically deleted
+
+woot.ports.sendUpdatesPortPeer.subscribe(sendPeerUpdates);
+
+function sendPeerUpdates(msg) {
+  console.log("send Peer Updates", msg);
+  var message = JSON.parse(msg);
+  var toSend = {data_type: "woot_peer_update", woot_data: message}
+  broadcast(toSend);
+
+}
+
+
+
+
+
 woot.ports.docUpdatesPort.subscribe(docUpdate);
 function docUpdate(str){
   var docUpdates = JSON.parse(str);
