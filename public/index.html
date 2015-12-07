@@ -1,5 +1,6 @@
 <!DOCTYPE html>
   <head> 
+
   </head>
 <body>
 <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -7,7 +8,7 @@
 <script src="public/lib/codemirror.js"></script>
 
 <link rel="stylesheet" href="public/lib/codemirror.css">
-
+<script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
 
 
 <style>
@@ -23,16 +24,79 @@
 var url = window.location.href;
 var final_url = url.substr(url.lastIndexOf('/') + 1);
 console.log(final_url);
+var peer;
+var fellow_ids = [], connections = [];
 
-$(document).ready(function(){
-  $.ajax({url: "/docs/" + final_url, 
-        success: function(result) {
+$(document).ready(function(e){
+
+handleConnection = function(conn) {
+  console.log("handle connect: ", conn);
+  conn.on('open', function (){
+      console.log("connected with peer: ", conn);
+
+      conn.send("whaddup");
+
+
+
+
+      conn.on('whaddup', function(data){
+          console.log("got data", data);
+
+      });
+
+  })
+
+}
+
+
+  //console.log("e is ", e);
+   // e.preventDefault();
+
+  $.ajax({url: "/docs/" + final_url, success: function(result) {
+
           console.log("success!! ", result);
 
+          var peer_info = JSON.parse(result);
+          var peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
+          peer = new Peer(peer_id, {host: 'localhost', port: 9000, path: '/myapp'});
 
+          console.log("peer is", peer);
+
+          var fellows = peer_info.members;
+          console.log("fellows is", fellows);
+          if (peer === undefined || fellows === undefined) {
+            return;
+          }
+          var connections = [];
+          for (var i = 0; i < fellows.length; i++) {
+            var fellow_id = peer_info.doc_id.toString() + "-" + peer_info.members[i].toString();
+            
+            if (fellow_id === peer_id) {
+              continue;
+            }
+
+            var conn = peer.connect(fellow_id);
+            connections.push(conn);
+            handleConnection(conn);
+
+          }
+          console.log("lollipop");
+
+      peer.on('connection',function(conn){  
+        console.log("received connection!");
+        console.log("we received stuff from", conn);
+         handleConnection(conn);  
+        });
+      console.log("here peer is", peer);
+
+          // now you want to message all your peers telling them that you have 
 
         } 
-  })
+  });
+
+
+
+
 
 });
 
@@ -88,7 +152,7 @@ textArea.on("change", function (i, c){
 woot.ports.docUpdatesPort.subscribe(docUpdate);
 function docUpdate(str){
   var docUpdates = JSON.parse(str);
-  console.log("REGISTERING server Update", docUpdates);
+  //console.log("REGISTERING server Update", docUpdates);
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
