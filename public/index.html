@@ -19,138 +19,16 @@
 <div id="anchor"> </div>
 
 <script src="public/elm.js"></script>
+<script src="public/peerserver.js"> </script>
+
 <script>
 
 var url = window.location.href;
-var final_url = url.substr(url.lastIndexOf('/') + 1);
-console.log(final_url);
-var peer;
-var peer_id;
-var connections = {};
+var doc_name_url = url.substr(url.lastIndexOf('/') + 1);
+
 
 $(document).ready(function(e){
-
-
-handleData = function(data){
-  console.log("curr fellows", connections);
-  if (data === undefined){
-    return;
-  }
-  if (data.data_type === "member_update") {
-    //console.log("members", data.members)
-    for (var i = 0; i < data.members.length; i++) {
-      var id = data.members[i]
-      if (id === peer_id) {
-        continue;
-      }
-      console.log("adding", id, connections[id]);
-      if (connections[id] === undefined) {
-          var conn = peer.connect(id);
-          handleConnection(conn);
-      }
-    }
-  }
-  if (data.data_type === "woot_peer_update"){
-    if (data.woot_data){
-      console.log("sending to elm", data.woot_data);
-      woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
-
-    }
-  }
-}
-
-
-
-broadcast = function(msg){
-  console.log("fellow ids",  connections);
-  for (key in connections) {
-    console.log("key", key, connections[key]);
-    if (connections[key] === undefined) {
-      continue;
-    }
-    console.log("sending broadcast", key, "    ",  msg);
-    connections[key].send(msg);
-  }
-}
-
-handleConnection = function(conn) {
-  var conn_id = conn.peer;
-  if (conn_id === peer_id) {
-    return;
-  }
-  if (connections[conn_id] === undefined){
-    connections[conn_id] = conn;
-  }
-
-
-  //console.log("handle connect: ", conn);
-  conn.on('open', function (){
-
-      console.log("connected with peer: ", conn.peer);
-      var members = Object.keys(connections).concat([peer_id])
-
-      console.log("members sending", members);
-
-      initialData = {
-        peer_id: peer_id,
-        members: members,
-        data_type: "member_update"
-
-      };
-
-
-      conn.send(initialData);
-
-      conn.on('data', function(data){
-          console.log("got data", data);
-          handleData(data);
-
-      });
-
-  })
-
-}
-
-
-  //console.log("e is ", e);
-  // e.preventDefault();
-
-  $.ajax({url: "/docs/" + final_url, success: function(result) {
-
-          var peer_info = JSON.parse(result);
-          peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
-          peer = new Peer(peer_id, {host: 'localhost', port: 9000, path: '/myapp'});
-          console.log(peer);
-          var siteIdUpdate = [{"type": "SiteId"
-                            , "siteId": peer_info.site_id}];
-          woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
-
-
-
-          if (peer === undefined ) {
-            return;
-          }
-          for (var i = 0; i < peer_info.members.length; i++) {
-            var fellow_id = peer_info.doc_id.toString() + "-" + peer_info.members[i].toString();
-
-            if (fellow_id === peer_id) {
-              continue;
-            }
-
-            var conn = peer.connect(fellow_id);
-            handleConnection(conn);
-
-          }
-
-      peer.on('connection',function(conn){  
-         handleConnection(conn);  
-        });
-
-          // now you want to message all your peers telling them that you have 
-
-        } 
-  });
-
+  setUpPeerServer(doc_name_url);
 
 });
 
