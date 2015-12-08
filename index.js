@@ -26,6 +26,15 @@ pserver.on('connection', function(id) {
 
  });
 
+pserver.on('disconnect', function(id) {
+
+  console.log("peer disconnected: ", id);
+
+
+
+});
+
+
 var rooms = {names: {}, next_doc_id: 1, docs: {}};
 
 
@@ -119,7 +128,7 @@ io.sockets.on('connection', function(socket){
     		return;
     	}
 
-      console.log("msg:", wootUpdate);
+      //console.log("msg:", wootUpdate);
       socket.broadcast.emit("serverWUpdates", wootUpdate);
 
     });

@@ -26,29 +26,33 @@ var final_url = url.substr(url.lastIndexOf('/') + 1);
 console.log(final_url);
 var peer;
 var peer_id;
-var fellow_ids = {}, connections = {};
+var connections = {};
 
 $(document).ready(function(e){
 
 
 handleData = function(data){
-  console.log("update: ", data);
+  console.log("curr fellows", connections);
   if (data === undefined){
     return;
   }
   if (data.data_type === "member_update") {
-    for (key in data.members) {
-      if (fellow_ids[key] != true) {
-          var conn = peer.connect(fellow_ids[key]);
-          connections[fellow_ids[key]] = conn;
+    //console.log("members", data.members)
+    for (var i = 0; i < data.members.length; i++) {
+      var id = data.members[i]
+      if (id === peer_id) {
+        continue;
+      }
+      console.log("adding", id, connections[id]);
+      if (connections[id] === undefined) {
+          var conn = peer.connect(id);
           handleConnection(conn);
       }
-
-      fellow_ids[key] = true;
     }
   }
   if (data.data_type === "woot_peer_update"){
     if (data.woot_data){
+      console.log("sending to elm", data.woot_data);
       woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
 
     }
@@ -58,7 +62,9 @@ handleData = function(data){
 
 
 broadcast = function(msg){
-  for (key in fellow_ids) {
+  console.log("fellow ids",  connections);
+  for (key in connections) {
+    console.log("key", key, connections[key]);
     if (connections[key] === undefined) {
       continue;
     }
@@ -68,14 +74,26 @@ broadcast = function(msg){
 }
 
 handleConnection = function(conn) {
+  var conn_id = conn.peer;
+  if (conn_id === peer_id) {
+    return;
+  }
+  if (connections[conn_id] === undefined){
+    connections[conn_id] = conn;
+  }
+
+
   //console.log("handle connect: ", conn);
   conn.on('open', function (){
 
       console.log("connected with peer: ", conn.peer);
+      var members = Object.keys(connections).concat([peer_id])
+
+      console.log("members sending", members);
 
       initialData = {
         peer_id: peer_id,
-        members: fellow_ids,
+        members: members,
         data_type: "member_update"
 
       };
@@ -84,6 +102,7 @@ handleConnection = function(conn) {
       conn.send(initialData);
 
       conn.on('data', function(data){
+          console.log("got data", data);
           handleData(data);
 
       });
@@ -108,19 +127,17 @@ handleConnection = function(conn) {
 
 
 
-          if (peer === undefined || fellow_ids === undefined) {
+          if (peer === undefined ) {
             return;
           }
           for (var i = 0; i < peer_info.members.length; i++) {
             var fellow_id = peer_info.doc_id.toString() + "-" + peer_info.members[i].toString();
-            //fellow_ids.push(fellow_id);
-            fellow_ids[fellow_id] = true;
+
             if (fellow_id === peer_id) {
               continue;
             }
 
             var conn = peer.connect(fellow_id);
-            connections[fellow_id] = conn;
             handleConnection(conn);
 
           }
@@ -159,7 +176,7 @@ var userColors = {};
 
 
 textArea.on("change", function (i, c){
-  console.log("omg! ", c);
+  //console.log("omg! ", c);
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
@@ -187,9 +204,7 @@ textArea.on("change", function (i, c){
       toSend["ch"] = "\n";
   }
   toSend.cp = cp;
-  console.log("tosend is", toSend);
-  //doc.markText(from: {line, ch}, to: {line, ch}, ?options: object) → TextMarker
-  textArea.markText
+
   woot.ports.tUpdatePort.send(JSON.stringify(toSend));
  
 });
@@ -199,7 +214,9 @@ woot.ports.sendUpdatesPortPeer.subscribe(sendPeerUpdates);
 
 function sendPeerUpdates(msg) {
   console.log("send Peer Updates", msg);
+
   var message = JSON.parse(msg);
+  if (message.length === 0) {return; }
   var toSend = {data_type: "woot_peer_update", woot_data: message}
   broadcast(toSend);
 
@@ -227,7 +244,7 @@ function docUpdate(str){
     var from = textArea.posFromIndex(location);
     textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
     var to = textArea.posFromIndex(location + 1);
-    console.log("from", from, "to", to);
+    //console.log("from", from, "to", to);
     textArea.markText(from, to, {css: "color: blue"});
     updateCaret("insert");
   }
@@ -261,9 +278,9 @@ woot.ports.sendNewStringUpdatesPort.subscribe(stringUpdate);
 function stringUpdate(str){
 
 }
-setInterval(function(){
-  console.log(textArea.indexFromPos(textArea.getCursor()))
-}, 500);
+// setInterval(function(){
+//   console.log(textArea.indexFromPos(textArea.getCursor()))
+// }, 500);
 var sendUpdate = function(){
     if (woot === undefined 
       || woot.ports === undefined 
