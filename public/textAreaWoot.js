@@ -2,7 +2,7 @@
 
 var textArea = CodeMirror(document.body);
 
-
+/* handle user typing */
 textArea.on("change", function (i, c){
     //console.log("omg! ", c);
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
@@ -44,48 +44,55 @@ textArea.on("change", function (i, c){
 });
 
 
+/* relay typing updates to peers through p2p connection */
 function sendPeerUpdates(msg) {
   var message = JSON.parse(msg);
   if (message.length === 0) { return; }
   var toSend = {data_type: "woot_peer_update", woot_data: message}
-  broadcast(toSend);
+  broadcast(toSend); /* in peerserver.js */
 
 }
 
 
+/* display changes from remote users in this  */
+
 function docUpdate(str){
+  
   var docUpdates = JSON.parse(str);
-  //console.log("REGISTERING server Update", docUpdates);
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
+  
   for (var i = 0; i< docUpdates.length; i++ ) {
     var docUpdate = docUpdates[i];
-  
-  if (docUpdate["type"] === "typingInsert" ){
-    if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
-      return;
-    }
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
-    textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
-    var to = textArea.posFromIndex(location + 1);
-    //console.log("from", from, "to", to);
-    textArea.markText(from, to, {css: "color: blue"});
-    updateCaret("insert");
-  }
-  else if (docUpdate["type"] === "typingDelete"){
-    if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
-      return;
+  
+    if (docUpdate["type"] === "typingInsert" ){
+      if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+        return;
+      }
+
+      textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
+      var to = textArea.posFromIndex(location + 1);
+      textArea.markText(from, to, {css: "color: blue"});
+      updateCaret("insert");
     }
-    var location = docUpdate["index"];
-    var from = textArea.posFromIndex(location)
-    var to = textArea.posFromIndex(location + 1)
-    textArea.replaceRange("", from, to, "server!!!");
-    updateCaret("delete");
+    else if (docUpdate["type"] === "typingDelete"){
+      if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
+        return;
+      }
+
+      var to = textArea.posFromIndex(location + 1)
+      textArea.replaceRange("", from, to, "server!!!");
+      updateCaret("delete");
+    }
   }
 }
-}
+
+
+/* make sure caret not affected by remote inserts and deletes */
+
 function updateCaret(action){
   var update;
   if (action === "insert"){
@@ -100,3 +107,7 @@ function updateCaret(action){
   }
   textArea.setCursor(textArea.posFromIndex(newCaret));
 }
+
+
+
+
