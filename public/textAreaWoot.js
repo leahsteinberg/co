@@ -2,6 +2,10 @@
 
 var textArea = CodeMirror(document.body);
 
+var coloredText = [];
+
+
+
 /* handle user typing */
 textArea.on("change", function (i, c){
     //console.log("omg! ", c);
@@ -12,6 +16,7 @@ textArea.on("change", function (i, c){
   var toSend = {};
   var cursor = textArea.getCursor();
   var cp = textArea.indexFromPos(cursor);
+  var siteIdInt = parseInt(peer_state.peer_id.substr(peer_state.peer_id.lastIndexOf('-') + 1));
 
   if (c.origin === "paste") {
     toSend["type"] = "InsertString";
@@ -29,15 +34,19 @@ textArea.on("change", function (i, c){
       toSend["type"] = "Insert";
       console.log("letter", c.text[0]);
       toSend["ch"] = c.text[0];
+      toSend["siteId"] = siteIdInt;
+
       cp = cp - 1;
   }
 
   else if (c['text'].length === 2){
       toSend["type"] = "Insert";
       toSend["ch"] = "\n";
+      toSend["siteId"] = siteIdInt;
   }
 
   toSend.cp = cp;
+  console.log(toSend);
 
   woot.ports.tUpdatePort.send(JSON.stringify(toSend));
  
@@ -65,6 +74,7 @@ function docUpdate(str){
   
   for (var i = 0; i< docUpdates.length; i++ ) {
     var docUpdate = docUpdates[i];
+    console.log('do remote change', docUpdate);
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
   

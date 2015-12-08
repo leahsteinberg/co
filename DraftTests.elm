@@ -32,7 +32,7 @@ simpleCase =
 simpleCaseLonger =
   let
       empty = makeEmptySite 1
-      (model, edit) = insertString "hello" 1 empty
+      (model, edit) = insertString "hello" 1  empty
   in
       wToString model.wString == "hello"
 

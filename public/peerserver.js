@@ -1,9 +1,11 @@
 
-// peer_state should contain: 
-//  - peer_id 
-//  - peer (peer.js object)
-//  - connections {peer_id -> peer connection}
-// 	- doc_id
+/* peer_state should contain: 
+  - peer_id 
+  - peer (peer.js object)
+  - connections {peer_id -> peer connection}
+ 	- doc_id
+*/
+
 var peer_state = {connections: {}};
 
 
@@ -23,10 +25,10 @@ function setUpPeerServer(doc_name_url){
         		return;
         	}
 
-        	// update peer state
+        	/* update peer state */
        		peer_state.peer = peer;
 
-       		// tell Woot its id.
+       		/* tell Woot its id */
 			var siteIdUpdate = [
 									{
 										"type": "SiteId"
@@ -76,7 +78,6 @@ function initializeConnection() {
     conn.send(initialData);
 
     conn.on('data', function(data){
-          console.log("got data", data);
           handleData(data);
 
     });

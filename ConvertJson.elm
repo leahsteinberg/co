@@ -50,7 +50,6 @@ siteIdDecoder = object1 (\id -> SiteId id) ("siteId" := int)
 
 
 
-
 wCharMaker : (Int, Int) -> String -> Int -> (Int, Int) -> (Int, Int) -> WChar
 wCharMaker id strCh vis next prev =
   {id = id, ch = toChar strCh, vis = vis, next = next, prev = prev}
@@ -114,21 +113,21 @@ decodeTUpdate typeStr str =
 tInsertStringDecoder : Decoder TUpdate
 tInsertStringDecoder =
   object2
-    (\str cp -> IS str cp)
-      ("str" := Dec.string) decCP
+    (\str cp -> IS str cp )
+      ("str" := Dec.string) decCP 
 
 tDeleteStringDecoder : Decoder TUpdate
 tDeleteStringDecoder =
   object2
-    (\str cp -> DS str cp)
+    (\str cp -> DS str cp )
       ("str" := Dec.string) decCP
 
 
 tInsertDecoder :  Decoder TUpdate
 tInsertDecoder  =
-    object2
-        (\ ch  cp -> I (toChar ch) cp)
-        decCh decCP
+    object3
+        (\ ch  cp siteId -> I (toChar ch) cp siteId)
+        decCh decCP ("siteId" := Dec.int)
 
 tDeleteDecoder : Decoder TUpdate
 tDeleteDecoder =
@@ -251,18 +250,28 @@ wCharToJsonList wCh =
                     ]
 
 
-tUpToJsonList : Char -> Int -> List (String, Value)
-tUpToJsonList ch index =
+tDelToJsonList : Char -> Int -> List (String, Value)
+tDelToJsonList ch index =
     [
         ("ch", Enc.string (String.fromChar ch))
         , ("index", Enc.int index)
 
     ]
 
+
+tInsertToJsonList : Char -> Int -> Int -> List (String, Value)
+tInsertToJsonList ch index siteId =
+    [
+        ("ch", Enc.string (String.fromChar ch))
+        , ("index", Enc.int index)
+        , ("siteId", Enc.int siteId)
+
+    ]
+
 encodeTUpdate : TUpdate -> Value
 encodeTUpdate tUp =
     case tUp of
-        I ch index -> object (("type", Enc.string "typingInsert") :: tUpToJsonList ch index)
-        D ch index -> object (("type", Enc.string "typingDelete") :: tUpToJsonList ch index)
+        I ch index siteId -> object (("type", Enc.string "typingInsert") :: tInsertToJsonList ch index siteId)
+        D ch index -> object (("type", Enc.string "typingDelete") :: tDelToJsonList ch index)
         _ -> object [("type", Enc.string "typingNoUpdate")]
 

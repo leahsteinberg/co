@@ -23,7 +23,7 @@ type WUpdate = Insert WChar | Delete WChar | SiteId Int | NoUpdate
 
 type Edit = W WUpdate | T TUpdate
 
-type TUpdate = I Char Int | D Char Int | IS String Int | DS String Int |  NoTUpdate
+type TUpdate = I Char Int Int | D Char Int | IS String Int | DS String Int |  NoTUpdate
 
 type alias WId = (Int, Int)
 

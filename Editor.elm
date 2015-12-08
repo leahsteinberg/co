@@ -20,6 +20,7 @@ integrateRemoteUpdate wUpd m =
           Insert wCh -> integrate integrateRemoteInsert wCh
           Delete wCh -> integrate integrateRemoteDelete wCh
           _ -> (m, [])
+          
 integratePool : Model -> (Model, List Edit)
 integratePool model =
     case model.pool of
@@ -88,7 +89,7 @@ processServerUpdate wUpd model =
 processTUpdate : TUpdate -> Model -> (Model, List Edit)
 processTUpdate typ model =
     case typ of
-        I ch index -> toEditList (generateInsert ch index model)
+        I ch index siteId -> toEditList (generateInsert ch index model)
         D ch index -> toEditList (generateDelete ch index model)
         IS str index -> 
           let
@@ -97,16 +98,12 @@ processTUpdate typ model =
               (newModel, List.reverse newEdits)
         _ -> (model, [W NoUpdate])
 
-insertString2 string index model = List.map2 (,) (String.toList string) [index..(index + String.length string - 1)]
-                                          |> List.foldr createInsertTUpdate []
-
-
 
 
 insertString : String -> Int -> Model -> (Model, List Edit)
 insertString string index model =
     let
-      strIndexList = List.map2 (,) (String.toList string) [index..(index + String.length string - 1)]
+      strIndexList = List.map2 (\ch index -> (ch, index, model.site)) (String.toList string) [index..(index + String.length string - 1)]
       tUpdates = List.foldr createInsertTUpdate [] strIndexList
     in
         List.foldl insertCharOfString (model, []) tUpdates
@@ -122,8 +119,8 @@ insertCharOfString tUpdate (model, edits) =
 toEditList : (Model, Edit) -> (Model, List Edit)
 toEditList (model, edit) = (model, [edit])
 
-createInsertTUpdate : (Char, Int) -> List TUpdate -> List TUpdate
-createInsertTUpdate (char, index) tUpdates = I char index :: tUpdates
+createInsertTUpdate : (Char, Int, Int) -> List TUpdate -> List TUpdate
+createInsertTUpdate (char, index, siteId) tUpdates = I char index siteId :: tUpdates
 
 
 

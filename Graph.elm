@@ -29,8 +29,8 @@ generateInsert ch place model =
 --- todod!!! this is an 
 integrateRemoteInsert : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert wChar model =
-        if Set.member wChar.id model.wSeen then
-          (model, W NoUpdate) else
+--        if Set.member wChar.id model.wSeen then
+--          (model, W NoUpdate) else
         integrateRemoteInsert' wChar model
 
 
@@ -45,7 +45,7 @@ integrateRemoteInsert' wChar model =
         newCPModel =  {model | doc = updateCP model.doc newCP}
         newModel = integrateInsert' wChar (grabPrev wChar model.wString) (grabNext wChar model.wString) insertPos newCPModel
     in
-        (newModel, T (I wChar.ch insertPos))
+        (newModel, T (I wChar.ch insertPos (fst wChar.id)))
 
 
 -- - - - - - I N S E R T   I M P L E M E N T A T I O N - - - - - - - 
