@@ -44,6 +44,9 @@ textArea.on("change", function (i, c){
       toSend["siteId"] = siteIdInt;
       cp = cp - 1;
   }
+  else {
+    toSend["type"] = "";
+  }
 
   toSend.cp = cp;
   console.log("sending!", toSend);
@@ -69,7 +72,7 @@ function updateDoc(str){
 
   
   var docUpdates = JSON.parse(str);
-  console.log("update doc", docUpdates);
+  //console.log("update doc", docUpdates);
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
