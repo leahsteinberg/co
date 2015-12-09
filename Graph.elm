@@ -169,7 +169,7 @@ generateDelete ch place model =
        
 
 integrateRemoteDelete : WChar -> Model -> (Model, Edit)
-integrateRemoteDelete wChar model =
+integrateRemoteDelete wChar model = 
     let 
         currCP = model.doc.cp
         deletePos = pos model.wString wChar
@@ -186,8 +186,6 @@ integrateDelete : WChar -> Model -> Model
 integrateDelete wChar model = 
     let
         newWString = setInvisible model.wString wChar.id
-        newStr = wToString newWString
-        newLen = String.length newStr
     in 
         {model | wString = newWString}
 

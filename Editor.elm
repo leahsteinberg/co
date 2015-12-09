@@ -18,7 +18,7 @@ integrateRemoteUpdate wUpd m =
     in
       case wUpd of
           Insert wCh -> integrate integrateRemoteInsert wCh
-          Delete wCh -> ({m| debug = "AAAAHHH"}, [])--integrate integrateRemoteDelete wCh
+          Delete wCh -> integrate integrateRemoteDelete wCh
           _ -> (m, [])
 
 integratePool : Model -> (Model, List Edit)
@@ -69,8 +69,8 @@ integrateNew integrateFunction wUpd wCh model =
 processServerUpdate : WUpdate -> Model-> (Model, List Edit)
 processServerUpdate wUpd model =
   let
-      handleIntegration wCh integrateFunction = 
-          if Set.member wCh.id model.wSeen then
+      handleIntegration wCh insert integrateFunction = 
+          if insert && Set.member wCh.id model.wSeen then
             (model, [])
           else if canIntegrate wUpd model.wSeen then
             integrateNew integrateFunction wUpd wCh model
@@ -79,9 +79,9 @@ processServerUpdate wUpd model =
       case wUpd of
         SiteId id -> ({model | site = id}, [])
 
-        Insert wCh -> handleIntegration wCh integrateRemoteInsert
+        Insert wCh -> handleIntegration wCh True integrateRemoteInsert
 
-        Delete wCh -> handleIntegration wCh integrateRemoteDelete
+        Delete wCh -> handleIntegration wCh False integrateRemoteDelete
 
         NoUpdate ->  (model, [])
 

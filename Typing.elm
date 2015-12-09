@@ -163,21 +163,7 @@ tester =
       (remoteModel, rEdits) = processEdits (lEdits) remote
   in
       (remoteModel, localModel)
---      (localModel, lEdits)
-
-
- --show  (insertString "hey" 0 (makeEmptySite 1))
 
 main = Graphics.Element.empty
-
---show (List.map (\ (a, b) ->  (a++ "    "++ b)) runTests)
-  
---  (\(m, e) -> show ((toString (m, e)  ++ "                                                                                   " ++ (wToString m.wString))   )) tester 
-  
-  
---  show runTests
---(\ (m, r, l) -> show (wToString m.wString)) tester
---++ "   pool ----   " ++ toString m.pool ++ " ----processed -----" ++ toString m.processedPool)) tester   
---  (\ (m, w) t s  -> show  ("this wStrings: " ++ toString m.wString ++ "  other client:  " ++ toString  s ++ "                  this client: " ++ toString t ++ "             debug: " ++ m.debug)) <~ modelFold ~ tUpdate ~ serverUpdates
-
+--  Signal.map2 (\ (m, w) s -> show (toString m.debug ++"WSTRING: " ++ wToString m.wString ++ "..."++ toString s)) modelFold serverUpdates
 
