@@ -42,6 +42,7 @@ textArea.on("change", function (i, c){
       toSend["type"] = "Insert";
       toSend["ch"] = "\n";
       toSend["siteId"] = siteIdInt;
+      cp = cp - 1;
   }
 
   toSend.cp = cp;
