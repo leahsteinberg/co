@@ -15,10 +15,22 @@ function setUpPeerServer(doc_name_url){
 		success: function(result) {
 			var peer_info = JSON.parse(result);
 
-			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
-			peer_state.doc_id = peer_info.doc_id;
 
-			peer = new Peer(peer_state.peer_id, {host: 'localhost', port: 9000, path: '/myapp'});
+			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
+      console.log("peer id", peer_state.peer_id);
+			peer_state.doc_id = peer_info.doc_id;
+      var peerhost;
+      
+      if (window.location.host != "localhost") {
+          peerhost = "52.70.229.110";
+
+      }
+      else {
+        peerhost = "localhost";
+      }
+
+
+			peer = new Peer(peer_state.peer_id, {host: peerhost, path: '/myapp', debug: 3});
 
 			if (peer === undefined) {
         		// TODO error handling
@@ -30,8 +42,8 @@ function setUpPeerServer(doc_name_url){
 
        		/* tell Woot its id */
 			var siteIdUpdate = [
-									{
-										"type": "SiteId"
+									           {
+										      "type": "SiteId"
                             			, "siteId": peer_info.site_id
                         			}
                             	];
@@ -49,6 +61,7 @@ function setUpPeerServer(doc_name_url){
 function handleConnection(conn) {
 
   var conn_id = conn.peer;
+  console.log("connected to : ", conn_id);
   
   if (conn_id === peer_state.peer_id) {
     return;
@@ -65,8 +78,8 @@ function handleConnection(conn) {
 
 function initializeConnection() { 
 
-	var conn = this;
-
+	 var conn = this;
+   console.log("initializing connection to: ", conn.peer); 
     var members = Object.keys(peer_state.connections).concat([peer_state.peer_id])
 
     var initialData = 
@@ -78,6 +91,7 @@ function initializeConnection() {
     conn.send(initialData);
 
     conn.on('data', function(data){
+      console.log("got data from: ", conn.peer);
           handleData(data);
 
     });
