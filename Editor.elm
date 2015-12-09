@@ -20,7 +20,7 @@ integrateRemoteUpdate wUpd m =
           Insert wCh -> integrate integrateRemoteInsert wCh
           Delete wCh -> integrate integrateRemoteDelete wCh
           _ -> (m, [])
-          
+
 integratePool : Model -> (Model, List Edit)
 integratePool model =
     case model.pool of
@@ -93,7 +93,7 @@ processTUpdate typ model =
         D ch index -> toEditList (generateDelete ch index model)
         IS str index -> 
           let
-              (newModel, newEdits) = insertString str index model
+              (newModel, newEdits) = insertString str (index - 1) model
           in
               (newModel, List.reverse newEdits)
         _ -> (model, [W NoUpdate])
@@ -120,8 +120,7 @@ toEditList : (Model, Edit) -> (Model, List Edit)
 toEditList (model, edit) = (model, [edit])
 
 createInsertTUpdate : (Char, Int, Int) -> List TUpdate -> List TUpdate
-createInsertTUpdate (char, index, siteId) tUpdates = I char index siteId :: tUpdates
-
+createInsertTUpdate (char, index, siteId) tUpdates =  I char index siteId :: tUpdates
 
 
 sendDebug model str = ({model | debug = str ++ model.debug}, W NoUpdate)

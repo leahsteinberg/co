@@ -24,26 +24,19 @@ generateInsert ch place model =
         generateInsChar ch (place - 1) (place ) {debugModel | doc = updateCP model.doc place }
 -- error case!
 
-
--- only called when TUpdate is remote
---- todod!!! this is an 
 integrateRemoteInsert : WChar -> Model -> (Model, Edit)
 integrateRemoteInsert wChar model =
---        if Set.member wChar.id model.wSeen then
---          (model, W NoUpdate) else
-        integrateRemoteInsert' wChar model
-
-
-integrateRemoteInsert' : WChar -> Model -> (Model, Edit)
-integrateRemoteInsert' wChar model =
     let
 
         insertPos = pos model.wString (grabNext wChar model.wString)
           --- should prev line have wprev or wNext
+        prev = grabPrev wChar model.wString
+        next = grabNext wChar model.wString
         currCP = model.doc.cp
         newCP = if currCP > insertPos then currCP + 1 else currCP
-        newCPModel =  {model | doc = updateCP model.doc newCP}
-        newModel = integrateInsert' wChar (grabPrev wChar model.wString) (grabNext wChar model.wString) insertPos newCPModel
+        newCPModel =  {model | doc = updateCP model.doc newCP
+                            , debug = model.debug ++ "prev: " ++ toString prev.ch}
+        newModel = integrateInsert' wChar prev next insertPos newCPModel
     in
         (newModel, T (I wChar.ch insertPos (fst wChar.id)))
 
@@ -88,13 +81,13 @@ integrateInsert' wCh pred succ posi model =
 
               in 
                   if pred == succ then 
-                  {newModel  | debug = model.debug ++ "****" ++ toString wCh.ch++ toString (List.map (\x -> toString (x.ch)) idOrderSubStr) ++ " ~~~~~" } 
+                  {newModel  | debug = newModel.debug ++ "****" ++ toString wCh.ch++ toString (List.map (\x -> toString (x.ch)) idOrderSubStr) ++ " ~~~~~" } 
                   else 
                     newModel
             x :: xs -> 
               let newModel =integrateInsert' wCh newPred newSucc posi model
               in
-                  {newModel | debug = model.debug ++ "inserting: " ++ toString wCh.ch ++ "// " ++ "  newPred::  " ++ toString newPred.ch ++ "   NewSuc:: " ++ toString newSucc.ch}
+                  {newModel | debug = newModel.debug ++ "inserting: " ++ toString wCh.ch ++ "// " ++ "  newPred::  " ++ toString newPred.ch ++ "   NewSuc:: " ++ toString newSucc.ch}
 
 
 generateInsChar : Char -> Int -> Int -> Model -> (Model, Edit)
@@ -108,12 +101,14 @@ generateInsChar char predIndex nextIndex model =
                     , prev = pred.id
                     , next = succ.id
                     , vis = 1}
-        newModel = {model | counter = model.counter + 1}  
-        debugModel = {newModel | debug = newModel.debug}-- ++ "((((((newWchar" ++ toString newWChar
-                                          -- ++ "   pred" ++ toString pred
+        newModel = {model | counter = model.counter + 1}  --- at this point ! we arlready have a problem witht he 
+        debugModel = {newModel | debug = newModel.debug ++ "PRED INDEX IS: " ++ toString predIndex ++"((((((newWchar" ++ toString newWChar
+                                           ++ "   pred" ++ toString pred.ch
+                                           ++ " w stirng is === " ++ toString model.wString
                                           -- ++ "succ    " ++ toString succ
                                          --   ++ "   pred index:   " ++ toString predIndex
-                                         --   ++ "    next Index   " ++ toString nextIndex ++ "))))))"} 
+                                         --   ++ "    next Index   " ++ toString nextIndex ++ "))))))"
+                                    } 
 
     in 
         (integrateInsert' newWChar pred succ nextIndex debugModel , W (Insert newWChar))

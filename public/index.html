@@ -5,7 +5,9 @@
 <body>
 <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
 <script src="public/lib/codemirror.js"></script>
+
 
 <link rel="stylesheet" href="public/lib/codemirror.css">
 <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
@@ -36,11 +38,13 @@ var doc_name_url = url.substr(url.lastIndexOf('/') + 1);
 
 var div = document.getElementById('anchor');
 
-var woot = Elm.embed(Elm.TUpdate, document.getElementById('anchor'), 
+var woot = Elm.embed(Elm.TUpdate
+					, document.getElementById('anchor'), 
                           {
-                            tUpdatePort: JSON.stringify({"type": "Insert", "cp": 1, "ch": "a"})
+                            tUpdatePort: JSON.stringify({"type": "NoUpdate"})
                             , windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})
                           });
+
 
 
 
@@ -50,9 +54,6 @@ woot.ports.docUpdatesPort.subscribe(docUpdate);
 $(document).ready(function(e){
   setUpPeerServer(doc_name_url);
 });
-
-var colors =  ["#7f00ff", "#80ff00", "#ff8000"];
-var userColors = {};
 
 </script>
 </body>

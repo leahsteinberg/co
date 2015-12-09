@@ -168,10 +168,9 @@ tester =
 
  --show  (insertString "hey" 0 (makeEmptySite 1))
 
-main = Signal.map (\ p -> show p) incomingPeer
---  Graphics.Element.empty
-  
---  (List.map (\ (a, b) ->  (a++ "    "++ b)) runTests)
+main = Graphics.Element.empty
+
+--show (List.map (\ (a, b) ->  (a++ "    "++ b)) runTests)
   
 --  (\(m, e) -> show ((toString (m, e)  ++ "                                                                                   " ++ (wToString m.wString))   )) tester 
   

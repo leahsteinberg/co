@@ -2,8 +2,8 @@
 
 var textArea = CodeMirror(document.body);
 
-var coloredText = [];
 
+var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf", "#ffbf00"];
 
 
 /* handle user typing */
@@ -32,7 +32,6 @@ textArea.on("change", function (i, c){
 
   else if (c['text'][0] != ""){
       toSend["type"] = "Insert";
-      console.log("letter", c.text[0]);
       toSend["ch"] = c.text[0];
       toSend["siteId"] = siteIdInt;
 
@@ -46,7 +45,7 @@ textArea.on("change", function (i, c){
   }
 
   toSend.cp = cp;
-  console.log(toSend);
+  console.log("sending!", toSend);
 
   woot.ports.tUpdatePort.send(JSON.stringify(toSend));
  
@@ -71,10 +70,12 @@ function docUpdate(str){
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
+  docUpdates = docUpdates.reverse();
   
   for (var i = 0; i< docUpdates.length; i++ ) {
     var docUpdate = docUpdates[i];
     console.log('do remote change', docUpdate);
+
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
   
@@ -85,7 +86,13 @@ function docUpdate(str){
 
       textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
       var to = textArea.posFromIndex(location + 1);
-      textArea.markText(from, to, {css: "color: blue"});
+      var markColor = colors[docUpdate.siteId % colors.length];
+
+
+      var markedText = textArea.markText(from, to, {css: "color:" + markColor});
+      setTimeout(clearMark.bind(markedText), 400);
+
+
       updateCaret("insert");
     }
     else if (docUpdate["type"] === "typingDelete"){
@@ -119,5 +126,9 @@ function updateCaret(action){
 }
 
 
+function clearMark() {
+  var markedText = this;
+  markedText.clear();
+}
 
 
