@@ -18,7 +18,7 @@ integrateRemoteUpdate wUpd m =
     in
       case wUpd of
           Insert wCh -> integrate integrateRemoteInsert wCh
-          Delete wCh -> integrate integrateRemoteDelete wCh
+          Delete wCh -> ({m| debug = "AAAAHHH"}, [])--integrate integrateRemoteDelete wCh
           _ -> (m, [])
 
 integratePool : Model -> (Model, List Edit)

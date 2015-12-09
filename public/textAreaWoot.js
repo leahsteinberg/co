@@ -8,7 +8,7 @@ var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf
 
 /* handle user typing */
 textArea.on("change", function (i, c){
-    //console.log("omg! ", c);
+
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
@@ -64,9 +64,11 @@ function sendPeerUpdates(msg) {
 
 /* display changes from remote users in this  */
 
-function docUpdate(str){
+function updateDoc(str){
+
   
   var docUpdates = JSON.parse(str);
+  console.log("update doc", docUpdates);
   if (docUpdates === undefined || docUpdates.length === 0){
     return;
   }
@@ -74,7 +76,6 @@ function docUpdate(str){
   
   for (var i = 0; i< docUpdates.length; i++ ) {
     var docUpdate = docUpdates[i];
-    console.log('do remote change', docUpdate);
 
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);

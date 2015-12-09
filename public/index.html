@@ -45,11 +45,8 @@ var woot = Elm.embed(Elm.TUpdate
                             , windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})
                           });
 
-
-
-
 woot.ports.sendUpdatesPortPeer.subscribe(sendPeerUpdates);
-woot.ports.docUpdatesPort.subscribe(docUpdate);
+woot.ports.docUpdatesPort.subscribe(updateDoc);
 
 $(document).ready(function(e){
   setUpPeerServer(doc_name_url);
