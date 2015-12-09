@@ -1,0 +1,93 @@
+Elm.Task = Elm.Task || {};
+Elm.Task.Extra = Elm.Task.Extra || {};
+Elm.Task.Extra.make = function (_elm) {
+   "use strict";
+   _elm.Task = _elm.Task || {};
+   _elm.Task.Extra = _elm.Task.Extra || {};
+   if (_elm.Task.Extra.values) return _elm.Task.Extra.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var computeLazyAsync = F2(function (address,lazy) {
+      return A2($Task.andThen,
+      $Task.spawn(A2($Task.andThen,
+      $Task.succeed(lazy),
+      function (f) {
+         return A2($Task.andThen,$Task.succeed(f({ctor: "_Tuple0"})),function (value) {    return A2($Signal.send,address,value);});
+      })),
+      function (_p0) {
+         return $Task.succeed({ctor: "_Tuple0"});
+      });
+   });
+   var interceptError = F2(function (failAddress,task) {
+      return A2($Task.onError,
+      task,
+      function (error) {
+         return A2($Task.andThen,A2($Signal.send,failAddress,error),function (_p1) {    return $Task.fail(error);});
+      });
+   });
+   var interceptSuccess = F2(function (successAddress,task) {
+      return A2($Task.andThen,
+      task,
+      function (value) {
+         return A2($Task.andThen,A2($Signal.send,successAddress,value),function (_p2) {    return $Task.succeed(value);});
+      });
+   });
+   var intercept = F2(function (address,task) {
+      return A2($Task.andThen,
+      A2($Task.onError,
+      task,
+      function (error) {
+         return A2($Task.andThen,A2($Signal.send,address,$Result.Err(error)),function (_p3) {    return $Task.fail(error);});
+      }),
+      function (value) {
+         return A2($Task.andThen,A2($Signal.send,address,$Result.Ok(value)),function (_p4) {    return $Task.succeed(value);});
+      });
+   });
+   var delay = F2(function (time,task) {    return A2($Task.andThen,$Task.sleep(time),function (_p5) {    return task;});});
+   var loop = F2(function (every,task) {
+      return A2($Task.andThen,task,function (_p6) {    return A2($Task.andThen,$Task.sleep(every),function (_p7) {    return A2(loop,every,task);});});
+   });
+   var optional = function (list) {
+      var _p8 = list;
+      if (_p8.ctor === "[]") {
+            return $Task.succeed(_U.list([]));
+         } else {
+            var _p10 = _p8._1;
+            return A2($Task.onError,
+            A2($Task.andThen,
+            _p8._0,
+            function (value) {
+               return A2($Task.map,F2(function (x,y) {    return A2($List._op["::"],x,y);})(value),optional(_p10));
+            }),
+            function (_p9) {
+               return optional(_p10);
+            });
+         }
+   };
+   var parallel = function (tasks) {    return $Task.sequence(A2($List.map,$Task.spawn,tasks));};
+   var broadcast = F2(function (addresses,value) {
+      return A2($Task.andThen,
+      parallel(A2($List.map,function (address) {    return A2($Signal.send,address,value);},addresses)),
+      function (_p11) {
+         return $Task.succeed({ctor: "_Tuple0"});
+      });
+   });
+   return _elm.Task.Extra.values = {_op: _op
+                                   ,parallel: parallel
+                                   ,broadcast: broadcast
+                                   ,optional: optional
+                                   ,loop: loop
+                                   ,delay: delay
+                                   ,intercept: intercept
+                                   ,interceptSuccess: interceptSuccess
+                                   ,interceptError: interceptError
+                                   ,computeLazyAsync: computeLazyAsync};
+};

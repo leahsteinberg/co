@@ -1,0 +1,474 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Char = Elm.Random.Char || {};
+Elm.Random.Char.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Char = _elm.Random.Char || {};
+   if (_elm.Random.Char.values) return _elm.Random.Char.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var $char = F2(function (start,end) {    return A2($Random$Extra.map,$Char.fromCode,A2($Random.$int,start,end));});
+   var upperCaseLatin = A2($char,65,90);
+   var lowerCaseLatin = A2($char,97,122);
+   var latin = A2($Random$Extra.merge,lowerCaseLatin,upperCaseLatin);
+   var english = latin;
+   var ascii = A2($char,0,127);
+   var unicode = A2($char,0,1114111);
+   var basicLatin = A2($char,0,127);
+   var latin1Supplement = A2($char,128,255);
+   var latinExtendedA = A2($char,256,383);
+   var latinExtendedB = A2($char,384,591);
+   var ipaExtensions = A2($char,592,687);
+   var spacingModifier = A2($char,688,767);
+   var combiningDiacriticalMarks = A2($char,768,879);
+   var greekAndCoptic = A2($char,880,1023);
+   var cyrillic = A2($char,1024,1279);
+   var cyrillicSupplement = A2($char,1280,1327);
+   var armenian = A2($char,1328,1423);
+   var hebrew = A2($char,1424,1535);
+   var arabic = A2($char,1536,1791);
+   var syriac = A2($char,1792,1871);
+   var arabicSupplement = A2($char,1872,1919);
+   var thaana = A2($char,1920,1983);
+   var nko = A2($char,1984,2047);
+   var samaritan = A2($char,2048,2111);
+   var mandaic = A2($char,2112,2143);
+   var arabicExtendedA = A2($char,2208,2303);
+   var devanagari = A2($char,2304,2431);
+   var bengali = A2($char,2432,2559);
+   var gurmukhi = A2($char,2560,2687);
+   var gujarati = A2($char,2688,2815);
+   var oriya = A2($char,2816,2943);
+   var tamil = A2($char,2944,3071);
+   var telugu = A2($char,3072,3199);
+   var kannada = A2($char,3200,3327);
+   var malayalam = A2($char,3328,3455);
+   var sinhala = A2($char,3456,3583);
+   var thai = A2($char,3584,3711);
+   var lao = A2($char,3712,3839);
+   var tibetan = A2($char,3840,4095);
+   var myanmar = A2($char,4096,4255);
+   var georgian = A2($char,4256,4351);
+   var hangulJamo = A2($char,4352,4607);
+   var ethiopic = A2($char,4608,4991);
+   var ethiopicSupplement = A2($char,4992,5023);
+   var cherokee = A2($char,5024,5119);
+   var unifiedCanadianAboriginalSyllabic = A2($char,5120,5759);
+   var ogham = A2($char,5760,5791);
+   var runic = A2($char,5792,5887);
+   var tagalog = A2($char,5888,5919);
+   var hanunoo = A2($char,5920,5951);
+   var buhid = A2($char,5952,5983);
+   var tagbanwa = A2($char,5984,6015);
+   var khmer = A2($char,6016,6143);
+   var mongolian = A2($char,6144,6319);
+   var unifiedCanadianAboriginalSyllabicExtended = A2($char,6320,6399);
+   var limbu = A2($char,6400,6479);
+   var taiLe = A2($char,6480,6527);
+   var newTaiLue = A2($char,6528,6623);
+   var khmerSymbol = A2($char,6624,6655);
+   var buginese = A2($char,6656,6687);
+   var taiTham = A2($char,6688,6831);
+   var balinese = A2($char,6912,7039);
+   var sundanese = A2($char,7040,7103);
+   var batak = A2($char,7104,7167);
+   var lepcha = A2($char,7168,7247);
+   var olChiki = A2($char,7248,7295);
+   var sundaneseSupplement = A2($char,7360,7375);
+   var vedicExtensions = A2($char,7376,7423);
+   var phoneticExtensions = A2($char,7424,7551);
+   var phoneticExtensionsSupplement = A2($char,7552,7615);
+   var combiningDiacriticalMarksSupplement = A2($char,7616,7679);
+   var latinExtendedAdditional = A2($char,7680,7935);
+   var greekExtended = A2($char,7936,8191);
+   var generalPunctuation = A2($char,8192,8303);
+   var superscriptOrSubscript = A2($char,8304,8351);
+   var currencySymbol = A2($char,8352,8399);
+   var combiningDiacriticalMarksForSymbols = A2($char,8400,8447);
+   var letterlikeSymbol = A2($char,8448,8527);
+   var numberForm = A2($char,8528,8591);
+   var arrow = A2($char,8592,8703);
+   var mathematicalOperator = A2($char,8704,8959);
+   var miscellaneousTechnical = A2($char,8960,9215);
+   var controlPicture = A2($char,9216,9279);
+   var opticalCharacterRecognition = A2($char,9280,9311);
+   var enclosedAlphanumeric = A2($char,9312,9471);
+   var boxDrawing = A2($char,9472,9599);
+   var blockElement = A2($char,9600,9631);
+   var geometricShape = A2($char,9632,9727);
+   var miscellaneousSymbol = A2($char,9728,9983);
+   var dingbat = A2($char,9984,10175);
+   var miscellaneousMathematicalSymbolA = A2($char,10176,10223);
+   var supplementalArrowA = A2($char,10224,10239);
+   var braillePattern = A2($char,10240,10495);
+   var supplementalArrowB = A2($char,10496,10623);
+   var miscellaneousMathematicalSymbolB = A2($char,10624,10751);
+   var supplementalMathematicalOperator = A2($char,10752,11007);
+   var miscellaneousSymbolOrArrow = A2($char,11008,11263);
+   var glagolitic = A2($char,11264,11359);
+   var latinExtendedC = A2($char,11360,11391);
+   var coptic = A2($char,11392,11519);
+   var georgianSupplement = A2($char,11520,11567);
+   var tifinagh = A2($char,11568,11647);
+   var ethiopicExtended = A2($char,11648,11743);
+   var cyrillicExtendedA = A2($char,11744,11775);
+   var supplementalPunctuation = A2($char,11776,11903);
+   var cjkRadicalSupplement = A2($char,11904,12031);
+   var kangxiRadical = A2($char,12032,12255);
+   var ideographicDescription = A2($char,12272,12287);
+   var cjkSymbolOrPunctuation = A2($char,12288,12351);
+   var hiragana = A2($char,12352,12447);
+   var katakana = A2($char,12448,12543);
+   var bopomofo = A2($char,12544,12591);
+   var hangulCompatibilityJamo = A2($char,12592,12687);
+   var kanbun = A2($char,12688,12703);
+   var bopomofoExtended = A2($char,12704,12735);
+   var cjkStroke = A2($char,12736,12783);
+   var katakanaPhoneticExtension = A2($char,12784,12799);
+   var enclosedCJKLetterOrMonth = A2($char,12800,13055);
+   var cjkCompatibility = A2($char,13056,13311);
+   var cjkUnifiedIdeographExtensionA = A2($char,13312,19903);
+   var yijingHexagramSymbol = A2($char,19904,19967);
+   var cjkUnifiedIdeograph = A2($char,19968,40959);
+   var yiSyllable = A2($char,40960,42127);
+   var yiRadical = A2($char,42128,42191);
+   var lisu = A2($char,42192,42239);
+   var vai = A2($char,42240,42559);
+   var cyrillicExtendedB = A2($char,42560,42655);
+   var bamum = A2($char,42656,42751);
+   var modifierToneLetter = A2($char,42752,42783);
+   var latinExtendedD = A2($char,42784,43007);
+   var sylotiNagri = A2($char,43008,43055);
+   var commonIndicNumberForm = A2($char,43056,43071);
+   var phagsPa = A2($char,43072,43135);
+   var saurashtra = A2($char,43136,43231);
+   var devanagariExtended = A2($char,43232,43263);
+   var kayahLi = A2($char,43264,43311);
+   var rejang = A2($char,43312,43359);
+   var hangulJamoExtendedA = A2($char,43360,43391);
+   var javanese = A2($char,43392,43487);
+   var cham = A2($char,43520,43615);
+   var myanmarExtendedA = A2($char,43616,43647);
+   var taiViet = A2($char,43648,43743);
+   var meeteiMayekExtension = A2($char,43744,43775);
+   var ethiopicExtendedA = A2($char,43776,43823);
+   var meeteiMayek = A2($char,43968,44031);
+   var hangulSyllable = A2($char,44032,55215);
+   var hangulJamoExtendedB = A2($char,55216,55295);
+   var highSurrogate = A2($char,55296,56191);
+   var highPrivateUseSurrogate = A2($char,56192,56319);
+   var lowSurrogate = A2($char,56320,57343);
+   var privateUseArea = A2($char,57344,63743);
+   var cjkCompatibilityIdeograph = A2($char,63744,64255);
+   var alphabeticPresentationForm = A2($char,64256,64335);
+   var arabicPresentationFormA = A2($char,64336,65023);
+   var variationSelector = A2($char,65024,65039);
+   var verticalForm = A2($char,65040,65055);
+   var combiningHalfMark = A2($char,65056,65071);
+   var cjkCompatibilityForm = A2($char,65072,65103);
+   var smallFormVariant = A2($char,65104,65135);
+   var arabicPresentationFormB = A2($char,65136,65279);
+   var halfwidthOrFullwidthForm = A2($char,65280,65519);
+   var special = A2($char,65520,65535);
+   var linearBSyllable = A2($char,65536,65663);
+   var linearBIdeogram = A2($char,65664,65791);
+   var aegeanNumber = A2($char,65792,65855);
+   var ancientGreekNumber = A2($char,65856,65935);
+   var ancientSymbol = A2($char,65936,65999);
+   var phaistosDisc = A2($char,66000,66047);
+   var lycian = A2($char,66176,66207);
+   var carian = A2($char,66208,66271);
+   var oldItalic = A2($char,66304,66351);
+   var gothic = A2($char,66352,66383);
+   var ugaritic = A2($char,66432,66463);
+   var oldPersian = A2($char,66464,66527);
+   var deseret = A2($char,66560,66639);
+   var shavian = A2($char,66640,66687);
+   var osmanya = A2($char,66688,66735);
+   var cypriotSyllable = A2($char,67584,67647);
+   var imperialAramaic = A2($char,67648,67679);
+   var phoenician = A2($char,67840,67871);
+   var lydian = A2($char,67872,67903);
+   var meroiticHieroglyph = A2($char,67968,67999);
+   var meroiticCursive = A2($char,68000,68095);
+   var kharoshthi = A2($char,68096,68191);
+   var oldSouthArabian = A2($char,68192,68223);
+   var avestan = A2($char,68352,68415);
+   var inscriptionalParthian = A2($char,68416,68447);
+   var inscriptionalPahlavi = A2($char,68448,68479);
+   var oldTurkic = A2($char,68608,68687);
+   var rumiNumericalSymbol = A2($char,69216,69247);
+   var brahmi = A2($char,69632,69759);
+   var kaithi = A2($char,69760,69839);
+   var soraSompeng = A2($char,69840,69887);
+   var chakma = A2($char,69888,69967);
+   var sharada = A2($char,70016,70111);
+   var takri = A2($char,71296,71375);
+   var cuneiform = A2($char,73728,74751);
+   var cuneiformNumberOrPunctuation = A2($char,74752,74879);
+   var egyptianHieroglyph = A2($char,77824,78895);
+   var bamumSupplement = A2($char,92160,92735);
+   var miao = A2($char,93952,94111);
+   var kanaSupplement = A2($char,110592,110847);
+   var byzantineMusicalSymbol = A2($char,118784,119039);
+   var musicalSymbol = A2($char,119040,119295);
+   var ancientGreekMusicalNotationSymbol = A2($char,119296,119375);
+   var taiXuanJingSymbol = A2($char,119552,119647);
+   var countingRodNumeral = A2($char,119648,119679);
+   var mathematicalAlphanumericSymbol = A2($char,119808,120831);
+   var arabicMathematicalAlphabeticSymbol = A2($char,126464,126719);
+   var mahjongTile = A2($char,126976,127023);
+   var dominoTile = A2($char,127024,127135);
+   var playingCard = A2($char,127136,127231);
+   var enclosedAlphanumericSupplement = A2($char,127232,127487);
+   var enclosedIdeographicSupplement = A2($char,127488,127743);
+   var miscellaneousSymbolOrPictograph = A2($char,127744,128511);
+   var emoticon = A2($char,128512,128591);
+   var transportOrMapSymbol = A2($char,128640,128767);
+   var alchemicalSymbol = A2($char,128768,128895);
+   var cjkUnifiedIdeographExtensionB = A2($char,131072,173791);
+   var cjkUnifiedIdeographExtensionC = A2($char,173824,177983);
+   var cjkUnifiedIdeographExtensionD = A2($char,177984,178207);
+   var cjkCompatibilityIdeographSupplement = A2($char,194560,195103);
+   var tag = A2($char,917504,917631);
+   var variationSelectorSupplement = A2($char,917760,917999);
+   var supplementaryPrivateUseAreaA = A2($char,983040,1048575);
+   var supplementaryPrivateUseAreaB = A2($char,1048576,1114111);
+   return _elm.Random.Char.values = {_op: _op
+                                    ,$char: $char
+                                    ,upperCaseLatin: upperCaseLatin
+                                    ,lowerCaseLatin: lowerCaseLatin
+                                    ,latin: latin
+                                    ,english: english
+                                    ,ascii: ascii
+                                    ,unicode: unicode
+                                    ,basicLatin: basicLatin
+                                    ,latin1Supplement: latin1Supplement
+                                    ,latinExtendedA: latinExtendedA
+                                    ,latinExtendedB: latinExtendedB
+                                    ,ipaExtensions: ipaExtensions
+                                    ,spacingModifier: spacingModifier
+                                    ,combiningDiacriticalMarks: combiningDiacriticalMarks
+                                    ,greekAndCoptic: greekAndCoptic
+                                    ,cyrillic: cyrillic
+                                    ,cyrillicSupplement: cyrillicSupplement
+                                    ,armenian: armenian
+                                    ,hebrew: hebrew
+                                    ,arabic: arabic
+                                    ,syriac: syriac
+                                    ,arabicSupplement: arabicSupplement
+                                    ,thaana: thaana
+                                    ,nko: nko
+                                    ,samaritan: samaritan
+                                    ,mandaic: mandaic
+                                    ,arabicExtendedA: arabicExtendedA
+                                    ,devanagari: devanagari
+                                    ,bengali: bengali
+                                    ,gurmukhi: gurmukhi
+                                    ,gujarati: gujarati
+                                    ,oriya: oriya
+                                    ,tamil: tamil
+                                    ,telugu: telugu
+                                    ,kannada: kannada
+                                    ,malayalam: malayalam
+                                    ,sinhala: sinhala
+                                    ,thai: thai
+                                    ,lao: lao
+                                    ,tibetan: tibetan
+                                    ,myanmar: myanmar
+                                    ,georgian: georgian
+                                    ,hangulJamo: hangulJamo
+                                    ,ethiopic: ethiopic
+                                    ,ethiopicSupplement: ethiopicSupplement
+                                    ,cherokee: cherokee
+                                    ,unifiedCanadianAboriginalSyllabic: unifiedCanadianAboriginalSyllabic
+                                    ,ogham: ogham
+                                    ,runic: runic
+                                    ,tagalog: tagalog
+                                    ,hanunoo: hanunoo
+                                    ,buhid: buhid
+                                    ,tagbanwa: tagbanwa
+                                    ,khmer: khmer
+                                    ,mongolian: mongolian
+                                    ,unifiedCanadianAboriginalSyllabicExtended: unifiedCanadianAboriginalSyllabicExtended
+                                    ,limbu: limbu
+                                    ,taiLe: taiLe
+                                    ,newTaiLue: newTaiLue
+                                    ,khmerSymbol: khmerSymbol
+                                    ,buginese: buginese
+                                    ,taiTham: taiTham
+                                    ,balinese: balinese
+                                    ,sundanese: sundanese
+                                    ,batak: batak
+                                    ,lepcha: lepcha
+                                    ,olChiki: olChiki
+                                    ,sundaneseSupplement: sundaneseSupplement
+                                    ,vedicExtensions: vedicExtensions
+                                    ,phoneticExtensions: phoneticExtensions
+                                    ,phoneticExtensionsSupplement: phoneticExtensionsSupplement
+                                    ,combiningDiacriticalMarksSupplement: combiningDiacriticalMarksSupplement
+                                    ,latinExtendedAdditional: latinExtendedAdditional
+                                    ,greekExtended: greekExtended
+                                    ,generalPunctuation: generalPunctuation
+                                    ,superscriptOrSubscript: superscriptOrSubscript
+                                    ,currencySymbol: currencySymbol
+                                    ,combiningDiacriticalMarksForSymbols: combiningDiacriticalMarksForSymbols
+                                    ,letterlikeSymbol: letterlikeSymbol
+                                    ,numberForm: numberForm
+                                    ,arrow: arrow
+                                    ,mathematicalOperator: mathematicalOperator
+                                    ,miscellaneousTechnical: miscellaneousTechnical
+                                    ,controlPicture: controlPicture
+                                    ,opticalCharacterRecognition: opticalCharacterRecognition
+                                    ,enclosedAlphanumeric: enclosedAlphanumeric
+                                    ,boxDrawing: boxDrawing
+                                    ,blockElement: blockElement
+                                    ,geometricShape: geometricShape
+                                    ,miscellaneousSymbol: miscellaneousSymbol
+                                    ,dingbat: dingbat
+                                    ,miscellaneousMathematicalSymbolA: miscellaneousMathematicalSymbolA
+                                    ,supplementalArrowA: supplementalArrowA
+                                    ,braillePattern: braillePattern
+                                    ,supplementalArrowB: supplementalArrowB
+                                    ,miscellaneousMathematicalSymbolB: miscellaneousMathematicalSymbolB
+                                    ,supplementalMathematicalOperator: supplementalMathematicalOperator
+                                    ,miscellaneousSymbolOrArrow: miscellaneousSymbolOrArrow
+                                    ,glagolitic: glagolitic
+                                    ,latinExtendedC: latinExtendedC
+                                    ,coptic: coptic
+                                    ,georgianSupplement: georgianSupplement
+                                    ,tifinagh: tifinagh
+                                    ,ethiopicExtended: ethiopicExtended
+                                    ,cyrillicExtendedA: cyrillicExtendedA
+                                    ,supplementalPunctuation: supplementalPunctuation
+                                    ,cjkRadicalSupplement: cjkRadicalSupplement
+                                    ,kangxiRadical: kangxiRadical
+                                    ,ideographicDescription: ideographicDescription
+                                    ,cjkSymbolOrPunctuation: cjkSymbolOrPunctuation
+                                    ,hiragana: hiragana
+                                    ,katakana: katakana
+                                    ,bopomofo: bopomofo
+                                    ,hangulCompatibilityJamo: hangulCompatibilityJamo
+                                    ,kanbun: kanbun
+                                    ,bopomofoExtended: bopomofoExtended
+                                    ,cjkStroke: cjkStroke
+                                    ,katakanaPhoneticExtension: katakanaPhoneticExtension
+                                    ,enclosedCJKLetterOrMonth: enclosedCJKLetterOrMonth
+                                    ,cjkCompatibility: cjkCompatibility
+                                    ,cjkUnifiedIdeographExtensionA: cjkUnifiedIdeographExtensionA
+                                    ,yijingHexagramSymbol: yijingHexagramSymbol
+                                    ,cjkUnifiedIdeograph: cjkUnifiedIdeograph
+                                    ,yiSyllable: yiSyllable
+                                    ,yiRadical: yiRadical
+                                    ,lisu: lisu
+                                    ,vai: vai
+                                    ,cyrillicExtendedB: cyrillicExtendedB
+                                    ,bamum: bamum
+                                    ,modifierToneLetter: modifierToneLetter
+                                    ,latinExtendedD: latinExtendedD
+                                    ,sylotiNagri: sylotiNagri
+                                    ,commonIndicNumberForm: commonIndicNumberForm
+                                    ,phagsPa: phagsPa
+                                    ,saurashtra: saurashtra
+                                    ,devanagariExtended: devanagariExtended
+                                    ,kayahLi: kayahLi
+                                    ,rejang: rejang
+                                    ,hangulJamoExtendedA: hangulJamoExtendedA
+                                    ,javanese: javanese
+                                    ,cham: cham
+                                    ,myanmarExtendedA: myanmarExtendedA
+                                    ,taiViet: taiViet
+                                    ,meeteiMayekExtension: meeteiMayekExtension
+                                    ,ethiopicExtendedA: ethiopicExtendedA
+                                    ,meeteiMayek: meeteiMayek
+                                    ,hangulSyllable: hangulSyllable
+                                    ,hangulJamoExtendedB: hangulJamoExtendedB
+                                    ,highSurrogate: highSurrogate
+                                    ,highPrivateUseSurrogate: highPrivateUseSurrogate
+                                    ,lowSurrogate: lowSurrogate
+                                    ,privateUseArea: privateUseArea
+                                    ,cjkCompatibilityIdeograph: cjkCompatibilityIdeograph
+                                    ,alphabeticPresentationForm: alphabeticPresentationForm
+                                    ,arabicPresentationFormA: arabicPresentationFormA
+                                    ,variationSelector: variationSelector
+                                    ,verticalForm: verticalForm
+                                    ,combiningHalfMark: combiningHalfMark
+                                    ,cjkCompatibilityForm: cjkCompatibilityForm
+                                    ,smallFormVariant: smallFormVariant
+                                    ,arabicPresentationFormB: arabicPresentationFormB
+                                    ,halfwidthOrFullwidthForm: halfwidthOrFullwidthForm
+                                    ,special: special
+                                    ,linearBSyllable: linearBSyllable
+                                    ,linearBIdeogram: linearBIdeogram
+                                    ,aegeanNumber: aegeanNumber
+                                    ,ancientGreekNumber: ancientGreekNumber
+                                    ,ancientSymbol: ancientSymbol
+                                    ,phaistosDisc: phaistosDisc
+                                    ,lycian: lycian
+                                    ,carian: carian
+                                    ,oldItalic: oldItalic
+                                    ,gothic: gothic
+                                    ,ugaritic: ugaritic
+                                    ,oldPersian: oldPersian
+                                    ,deseret: deseret
+                                    ,shavian: shavian
+                                    ,osmanya: osmanya
+                                    ,cypriotSyllable: cypriotSyllable
+                                    ,imperialAramaic: imperialAramaic
+                                    ,phoenician: phoenician
+                                    ,lydian: lydian
+                                    ,meroiticHieroglyph: meroiticHieroglyph
+                                    ,meroiticCursive: meroiticCursive
+                                    ,kharoshthi: kharoshthi
+                                    ,oldSouthArabian: oldSouthArabian
+                                    ,avestan: avestan
+                                    ,inscriptionalParthian: inscriptionalParthian
+                                    ,inscriptionalPahlavi: inscriptionalPahlavi
+                                    ,oldTurkic: oldTurkic
+                                    ,rumiNumericalSymbol: rumiNumericalSymbol
+                                    ,brahmi: brahmi
+                                    ,kaithi: kaithi
+                                    ,soraSompeng: soraSompeng
+                                    ,chakma: chakma
+                                    ,sharada: sharada
+                                    ,takri: takri
+                                    ,cuneiform: cuneiform
+                                    ,cuneiformNumberOrPunctuation: cuneiformNumberOrPunctuation
+                                    ,egyptianHieroglyph: egyptianHieroglyph
+                                    ,bamumSupplement: bamumSupplement
+                                    ,miao: miao
+                                    ,kanaSupplement: kanaSupplement
+                                    ,byzantineMusicalSymbol: byzantineMusicalSymbol
+                                    ,musicalSymbol: musicalSymbol
+                                    ,ancientGreekMusicalNotationSymbol: ancientGreekMusicalNotationSymbol
+                                    ,taiXuanJingSymbol: taiXuanJingSymbol
+                                    ,countingRodNumeral: countingRodNumeral
+                                    ,mathematicalAlphanumericSymbol: mathematicalAlphanumericSymbol
+                                    ,arabicMathematicalAlphabeticSymbol: arabicMathematicalAlphabeticSymbol
+                                    ,mahjongTile: mahjongTile
+                                    ,dominoTile: dominoTile
+                                    ,playingCard: playingCard
+                                    ,enclosedAlphanumericSupplement: enclosedAlphanumericSupplement
+                                    ,enclosedIdeographicSupplement: enclosedIdeographicSupplement
+                                    ,miscellaneousSymbolOrPictograph: miscellaneousSymbolOrPictograph
+                                    ,emoticon: emoticon
+                                    ,transportOrMapSymbol: transportOrMapSymbol
+                                    ,alchemicalSymbol: alchemicalSymbol
+                                    ,cjkUnifiedIdeographExtensionB: cjkUnifiedIdeographExtensionB
+                                    ,cjkUnifiedIdeographExtensionC: cjkUnifiedIdeographExtensionC
+                                    ,cjkUnifiedIdeographExtensionD: cjkUnifiedIdeographExtensionD
+                                    ,cjkCompatibilityIdeographSupplement: cjkCompatibilityIdeographSupplement
+                                    ,tag: tag
+                                    ,variationSelectorSupplement: variationSelectorSupplement
+                                    ,supplementaryPrivateUseAreaA: supplementaryPrivateUseAreaA
+                                    ,supplementaryPrivateUseAreaB: supplementaryPrivateUseAreaB};
+};

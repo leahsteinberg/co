@@ -1,0 +1,26 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Mouse = Elm.Random.Mouse || {};
+Elm.Random.Mouse.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Mouse = _elm.Random.Mouse || {};
+   if (_elm.Random.Mouse.values) return _elm.Random.Mouse.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Bool = Elm.Random.Bool.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var leftMouseDown = $Random$Bool.bool;
+   var mouseY = function (screenHeight) {    return A2($Random.$int,0,screenHeight);};
+   var mouseX = function (screenWidth) {    return A2($Random.$int,0,screenWidth);};
+   var mousePosition = F2(function (screenWidth,screenHeight) {
+      return A2($Random$Extra.zip,A2($Random.$int,0,screenWidth),A2($Random.$int,0,screenHeight));
+   });
+   return _elm.Random.Mouse.values = {_op: _op,mousePosition: mousePosition,mouseX: mouseX,mouseY: mouseY,leftMouseDown: leftMouseDown};
+};

@@ -1,0 +1,26 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Result = Elm.Random.Result || {};
+Elm.Random.Result.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Result = _elm.Random.Result || {};
+   if (_elm.Random.Result.values) return _elm.Random.Result.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var error = function (generator) {    return A2($Random$Extra.map,$Result.Err,generator);};
+   var ok = function (generator) {    return A2($Random$Extra.map,$Result.Ok,generator);};
+   var result = F2(function (errorGenerator,okGenerator) {
+      return A2($Random$Extra.frequency,
+      _U.list([{ctor: "_Tuple2",_0: 1,_1: error(errorGenerator)},{ctor: "_Tuple2",_0: 1,_1: ok(okGenerator)}]),
+      ok(okGenerator));
+   });
+   return _elm.Random.Result.values = {_op: _op,ok: ok,error: error,result: result};
+};

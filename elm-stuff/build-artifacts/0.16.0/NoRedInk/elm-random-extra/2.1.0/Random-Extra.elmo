@@ -1,0 +1,210 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Extra = Elm.Random.Extra || {};
+Elm.Random.Extra.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Extra = _elm.Random.Extra || {};
+   if (_elm.Random.Extra.values) return _elm.Random.Extra.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Utils = Elm.Utils.make(_elm);
+   var _op = {};
+   var mapConstraint = F2(function (constraint,generator) {
+      return A2($Random.map,function (a) {    return {ctor: "_Tuple2",_0: a,_1: constraint(a)};},generator);
+   });
+   var quickGenerate = function (generator) {    return $Basics.fst(A2($Random.generate,generator,$Random.initialSeed(1)));};
+   var cappedGenerateUntil = F4(function (maxGenerations,predicate,generator,seed) {
+      if (_U.cmp(maxGenerations,0) < 1) return _U.list([]); else {
+            var _p0 = A2($Random.generate,generator,seed);
+            var value = _p0._0;
+            var nextSeed = _p0._1;
+            return predicate(value) ? A2($List._op["::"],value,A4(cappedGenerateUntil,maxGenerations - 1,predicate,generator,nextSeed)) : _U.list([]);
+         }
+   });
+   var generateUntil = F3(function (predicate,generator,seed) {
+      var _p1 = A2($Random.generate,generator,seed);
+      var value = _p1._0;
+      var nextSeed = _p1._1;
+      return predicate(value) ? A2($List._op["::"],value,A3(generateUntil,predicate,generator,nextSeed)) : _U.list([]);
+   });
+   var generateIterativelyUntil = F4(function (maxLength,predicate,constructor,seed) {
+      var iterate = function (index) {
+         return _U.cmp(index,maxLength) > -1 ? _U.list([]) : A2($Basics._op["++"],A3(generateUntil,predicate,constructor(index),seed),iterate(index + 1));
+      };
+      return iterate(0);
+   });
+   var generateIterativelySuchThat = F2(function (maxLength,predicate) {
+      return A2(generateIterativelyUntil,maxLength,function (a) {    return $Basics.not(predicate(a));});
+   });
+   var generateN = F3(function (n,generator,seed) {
+      if (_U.cmp(n,0) < 1) return _U.list([]); else {
+            var _p2 = A2($Random.generate,generator,seed);
+            var value = _p2._0;
+            var nextSeed = _p2._1;
+            return A2($List._op["::"],value,A3(generateN,n - 1,generator,nextSeed));
+         }
+   });
+   var map5 = $Random.map5;
+   var map4 = $Random.map4;
+   var map3 = $Random.map3;
+   var map2 = $Random.map2;
+   var map = $Random.map;
+   var flatMap6 = F7(function (constructor,generatorA,generatorB,generatorC,generatorD,generatorE,generatorF) {
+      return A2($Random.andThen,
+      generatorA,
+      function (a) {
+         return A2($Random.andThen,
+         generatorB,
+         function (b) {
+            return A2($Random.andThen,
+            generatorC,
+            function (c) {
+               return A2($Random.andThen,
+               generatorD,
+               function (d) {
+                  return A2($Random.andThen,
+                  generatorE,
+                  function (e) {
+                     return A2($Random.andThen,generatorF,function (f) {    return A6(constructor,a,b,c,d,e,f);});
+                  });
+               });
+            });
+         });
+      });
+   });
+   var flatMap5 = F6(function (constructor,generatorA,generatorB,generatorC,generatorD,generatorE) {
+      return A2($Random.andThen,
+      generatorA,
+      function (a) {
+         return A2($Random.andThen,
+         generatorB,
+         function (b) {
+            return A2($Random.andThen,
+            generatorC,
+            function (c) {
+               return A2($Random.andThen,
+               generatorD,
+               function (d) {
+                  return A2($Random.andThen,generatorE,function (e) {    return A5(constructor,a,b,c,d,e);});
+               });
+            });
+         });
+      });
+   });
+   var flatMap4 = F5(function (constructor,generatorA,generatorB,generatorC,generatorD) {
+      return A2($Random.andThen,
+      generatorA,
+      function (a) {
+         return A2($Random.andThen,
+         generatorB,
+         function (b) {
+            return A2($Random.andThen,generatorC,function (c) {    return A2($Random.andThen,generatorD,function (d) {    return A4(constructor,a,b,c,d);});});
+         });
+      });
+   });
+   var flatMap3 = F4(function (constructor,generatorA,generatorB,generatorC) {
+      return A2($Random.andThen,
+      generatorA,
+      function (a) {
+         return A2($Random.andThen,generatorB,function (b) {    return A2($Random.andThen,generatorC,function (c) {    return A3(constructor,a,b,c);});});
+      });
+   });
+   var flatMap2 = F3(function (constructor,generatorA,generatorB) {
+      return A2($Random.andThen,generatorA,function (a) {    return A2($Random.andThen,generatorB,function (b) {    return A2(constructor,a,b);});});
+   });
+   var flatMap = $Basics.flip($Random.andThen);
+   var andThen = $Random.andThen;
+   var zip5 = map5(F5(function (v0,v1,v2,v3,v4) {    return {ctor: "_Tuple5",_0: v0,_1: v1,_2: v2,_3: v3,_4: v4};}));
+   var zip4 = map4(F4(function (v0,v1,v2,v3) {    return {ctor: "_Tuple4",_0: v0,_1: v1,_2: v2,_3: v3};}));
+   var zip3 = map3(F3(function (v0,v1,v2) {    return {ctor: "_Tuple3",_0: v0,_1: v1,_2: v2};}));
+   var zip = map2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
+   var reduce = F3(function (reducer,initial,generator) {    return A2($Random.map,function (a) {    return A2(reducer,a,initial);},generator);});
+   var fold = reduce;
+   var andMap = F2(function (funcGenerator,generator) {    return A3($Random.map2,F2(function (x,y) {    return x(y);}),funcGenerator,generator);});
+   var map6 = F7(function (f,generatorA,generatorB,generatorC,generatorD,generatorE,generatorF) {
+      return A2(andMap,A6($Random.map5,f,generatorA,generatorB,generatorC,generatorD,generatorE),generatorF);
+   });
+   var zip6 = map6(F6(function (v0,v1,v2,v3,v4,v5) {    return {ctor: "_Tuple6",_0: v0,_1: v1,_2: v2,_3: v3,_4: v4,_5: v5};}));
+   var constant = function () {
+      var dummy = A2($Random.$int,1,2);
+      return function (value) {
+         return A2($Random.map,function (_p3) {    return value;},dummy);
+      };
+   }();
+   var select = function (list) {
+      return A2($Random.map,function (index) {    return A2($Utils.get,index,list);},A2($Random.$int,0,$List.length(list) - 1));
+   };
+   var selectWithDefault = F2(function (defaultValue,list) {    return A2(map,$Maybe.withDefault(defaultValue),select(list));});
+   var flattenList = function (generators) {
+      var _p4 = generators;
+      if (_p4.ctor === "[]") {
+            return constant(_U.list([]));
+         } else {
+            return A3(flatMap2,F2(function (a,b) {    return constant(A2($List._op["::"],a,b));}),_p4._0,flattenList(_p4._1));
+         }
+   };
+   var keepIf = F2(function (predicate,generator) {
+      return A2($Random.andThen,generator,function (a) {    return predicate(a) ? constant(a) : A2(keepIf,predicate,generator);});
+   });
+   var dropIf = function (predicate) {    return keepIf(function (a) {    return $Basics.not(predicate(a));});};
+   var generateSuchThat = F3(function (predicate,generator,seed) {    return A2($Random.generate,A2(keepIf,predicate,generator),seed);});
+   var frequency = F2(function (pairs,defaultGenerator) {
+      var frequencies = A2($List.map,function (_p5) {    return $Basics.abs($Basics.fst(_p5));},pairs);
+      var total = $List.sum(frequencies) * $Basics.toFloat($List.length(frequencies));
+      return _U.eq(total,0) ? defaultGenerator : A2($Random.andThen,
+      A2($Random.$float,0,total),
+      function (randIndex) {
+         var index = $Basics.floor(randIndex);
+         var maybePair = A2($Utils.get,index,pairs);
+         var generator = function () {    var _p6 = maybePair;if (_p6.ctor === "Nothing") {    return defaultGenerator;} else {    return _p6._0._1;}}();
+         return generator;
+      });
+   });
+   var merge = F2(function (generator1,generator2) {
+      return A2(frequency,_U.list([{ctor: "_Tuple2",_0: 1,_1: generator1},{ctor: "_Tuple2",_0: 1,_1: generator2}]),generator1);
+   });
+   return _elm.Random.Extra.values = {_op: _op
+                                     ,frequency: frequency
+                                     ,keepIf: keepIf
+                                     ,dropIf: dropIf
+                                     ,flattenList: flattenList
+                                     ,select: select
+                                     ,selectWithDefault: selectWithDefault
+                                     ,constant: constant
+                                     ,andMap: andMap
+                                     ,reduce: reduce
+                                     ,fold: fold
+                                     ,zip: zip
+                                     ,zip3: zip3
+                                     ,zip4: zip4
+                                     ,zip5: zip5
+                                     ,zip6: zip6
+                                     ,andThen: andThen
+                                     ,flatMap: flatMap
+                                     ,flatMap2: flatMap2
+                                     ,flatMap3: flatMap3
+                                     ,flatMap4: flatMap4
+                                     ,flatMap5: flatMap5
+                                     ,flatMap6: flatMap6
+                                     ,map: map
+                                     ,map2: map2
+                                     ,map3: map3
+                                     ,map4: map4
+                                     ,map5: map5
+                                     ,map6: map6
+                                     ,merge: merge
+                                     ,generateN: generateN
+                                     ,generateSuchThat: generateSuchThat
+                                     ,generateUntil: generateUntil
+                                     ,generateIterativelySuchThat: generateIterativelySuchThat
+                                     ,generateIterativelyUntil: generateIterativelyUntil
+                                     ,cappedGenerateUntil: cappedGenerateUntil
+                                     ,quickGenerate: quickGenerate
+                                     ,mapConstraint: mapConstraint};
+};

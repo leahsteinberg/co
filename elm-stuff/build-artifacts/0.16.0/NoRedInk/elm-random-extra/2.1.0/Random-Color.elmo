@@ -1,0 +1,45 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Color = Elm.Random.Color || {};
+Elm.Random.Color.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Color = _elm.Random.Color || {};
+   if (_elm.Random.Color.values) return _elm.Random.Color.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var blue = A2($Random$Extra.map,function (blue) {    return A3($Color.rgb,0,0,blue);},A2($Random.$int,0,255));
+   var green = A2($Random$Extra.map,function (green) {    return A3($Color.rgb,0,green,0);},A2($Random.$int,0,255));
+   var red = A2($Random$Extra.map,function (red) {    return A3($Color.rgb,red,0,0);},A2($Random.$int,0,255));
+   var greyscale = A2($Random$Extra.map,$Color.greyscale,A2($Random.$float,0,1));
+   var grayscale = greyscale;
+   var hsla = A5($Random$Extra.map4,
+   $Color.hsla,
+   A2($Random$Extra.map,$Basics.degrees,A2($Random.$float,0,360)),
+   A2($Random.$float,0,1),
+   A2($Random.$float,0,1),
+   A2($Random.$float,0,1));
+   var hsl = A4($Random$Extra.map3,$Color.hsl,A2($Random$Extra.map,$Basics.degrees,A2($Random.$float,0,360)),A2($Random.$float,0,1),A2($Random.$float,0,1));
+   var rgb = A4($Random$Extra.map3,$Color.rgb,A2($Random.$int,0,255),A2($Random.$int,0,255),A2($Random.$int,0,255));
+   var color = A5($Random$Extra.map4,$Color.rgba,A2($Random.$int,0,255),A2($Random.$int,0,255),A2($Random.$int,0,255),A2($Random.$float,0,1));
+   var rgba = color;
+   return _elm.Random.Color.values = {_op: _op
+                                     ,color: color
+                                     ,rgb: rgb
+                                     ,rgba: rgba
+                                     ,hsl: hsl
+                                     ,hsla: hsla
+                                     ,greyscale: greyscale
+                                     ,grayscale: grayscale
+                                     ,red: red
+                                     ,green: green
+                                     ,blue: blue};
+};

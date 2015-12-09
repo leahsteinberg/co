@@ -1,0 +1,28 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Int = Elm.Random.Int || {};
+Elm.Random.Int.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Int = _elm.Random.Int || {};
+   if (_elm.Random.Int.values) return _elm.Random.Int.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var intLessThan = function (value) {    return A2($Random.$int,$Random.minInt,value - 1);};
+   var intGreaterThan = function (value) {    return A2($Random.$int,value + 1,$Random.maxInt);};
+   var negativeInt = A2($Random.$int,$Random.minInt,-1);
+   var positiveInt = A2($Random.$int,1,$Random.maxInt);
+   var anyInt = A2($Random.$int,$Random.minInt,$Random.maxInt);
+   return _elm.Random.Int.values = {_op: _op
+                                   ,anyInt: anyInt
+                                   ,positiveInt: positiveInt
+                                   ,negativeInt: negativeInt
+                                   ,intGreaterThan: intGreaterThan
+                                   ,intLessThan: intLessThan};
+};

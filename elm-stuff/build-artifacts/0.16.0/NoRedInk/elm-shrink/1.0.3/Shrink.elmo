@@ -1,0 +1,317 @@
+Elm.Shrink = Elm.Shrink || {};
+Elm.Shrink.make = function (_elm) {
+   "use strict";
+   _elm.Shrink = _elm.Shrink || {};
+   if (_elm.Shrink.values) return _elm.Shrink.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Lazy = Elm.Lazy.make(_elm),
+   $Lazy$List = Elm.Lazy.List.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var seriesFloat = F2(function (low,high) {
+      if (_U.cmp(low,high - 1.0e-4) > -1) return $Lazy$List.empty; else {
+            var low$ = low + (high - low) / 2;
+            return A2($Lazy$List._op[":::"],low,A2(seriesFloat,low$,high));
+         }
+   });
+   var seriesInt = F2(function (low,high) {
+      if (_U.cmp(low,high) > -1) return $Lazy$List.empty; else if (_U.eq(low,high - 1)) return A2($Lazy$List._op[":::"],low,$Lazy$List.empty); else {
+               var low$ = low + ((high - low) / 2 | 0);
+               return A2($Lazy$List._op[":::"],low,A2(seriesInt,low$,high));
+            }
+   });
+   var andMap = $Lazy$List.andMap;
+   var map = $Lazy$List.map;
+   var merge = F3(function (shrink1,shrink2,a) {    return $Lazy$List.unique(A2($Lazy$List._op["+++"],shrink1(a),shrink2(a)));});
+   var keepIf = F3(function (predicate,shrink,a) {    return A2($Lazy$List.keepIf,predicate,shrink(a));});
+   var dropIf = function (predicate) {    return keepIf(function (_p0) {    return $Basics.not(predicate(_p0));});};
+   var convert = F4(function (f,f$,shrink,b) {    return A2($Lazy$List.map,f,shrink(f$(b)));});
+   var tuple5 = F2(function (_p2,_p1) {
+      var _p3 = _p2;
+      var _p14 = _p3._4;
+      var _p13 = _p3._3;
+      var _p12 = _p3._2;
+      var _p11 = _p3._1;
+      var _p10 = _p3._0;
+      var _p4 = _p1;
+      var _p9 = _p4._4;
+      var _p8 = _p4._3;
+      var _p7 = _p4._2;
+      var _p6 = _p4._1;
+      var _p5 = _p4._0;
+      return A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (e) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: _p7,_3: _p8,_4: e};},_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (d) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: _p7,_3: d,_4: _p9};},_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (c) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: c,_3: _p8,_4: _p9};},_p12(_p7)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (b) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: _p7,_3: _p8,_4: _p9};},_p11(_p6)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (a) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: _p7,_3: _p8,_4: _p9};},_p10(_p5)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (d,e) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: _p7,_3: d,_4: e};}),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (c,e) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: c,_3: _p8,_4: e};}),_p12(_p7),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,e) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: _p7,_3: _p8,_4: e};}),_p11(_p6),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,e) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: _p7,_3: _p8,_4: e};}),_p10(_p5),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (c,d) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: c,_3: d,_4: _p9};}),_p12(_p7),_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,d) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: _p7,_3: d,_4: _p9};}),_p11(_p6),_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,d) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: _p7,_3: d,_4: _p9};}),_p10(_p5),_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,c) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: c,_3: _p8,_4: _p9};}),_p11(_p6),_p12(_p7)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,c) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: c,_3: _p8,_4: _p9};}),_p10(_p5),_p12(_p7)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,b) {    return {ctor: "_Tuple5",_0: a,_1: b,_2: _p7,_3: _p8,_4: _p9};}),_p10(_p5),_p11(_p6)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (c,d,e) {    return {ctor: "_Tuple5",_0: _p5,_1: _p6,_2: c,_3: d,_4: e};}),_p12(_p7),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (b,d,e) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: _p7,_3: d,_4: e};}),_p11(_p6),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,d,e) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: _p7,_3: d,_4: e};}),_p10(_p5),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,c,d) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: c,_3: d,_4: _p9};}),_p10(_p5),_p12(_p7),_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,b,d) {    return {ctor: "_Tuple5",_0: a,_1: b,_2: _p7,_3: d,_4: _p9};}),_p10(_p5),_p11(_p6),_p13(_p8)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,b,c) {    return {ctor: "_Tuple5",_0: a,_1: b,_2: c,_3: _p8,_4: _p9};}),_p10(_p5),_p11(_p6),_p12(_p7)),
+      A2($Lazy$List._op["+++"],
+      A5($Lazy$List.map4,F4(function (b,c,d,e) {    return {ctor: "_Tuple5",_0: _p5,_1: b,_2: c,_3: d,_4: e};}),_p11(_p6),_p12(_p7),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A5($Lazy$List.map4,F4(function (a,c,d,e) {    return {ctor: "_Tuple5",_0: a,_1: _p6,_2: c,_3: d,_4: e};}),_p10(_p5),_p12(_p7),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A5($Lazy$List.map4,F4(function (a,b,d,e) {    return {ctor: "_Tuple5",_0: a,_1: b,_2: _p7,_3: d,_4: e};}),_p10(_p5),_p11(_p6),_p13(_p8),_p14(_p9)),
+      A2($Lazy$List._op["+++"],
+      A5($Lazy$List.map4,F4(function (a,b,c,d) {    return {ctor: "_Tuple5",_0: a,_1: b,_2: c,_3: d,_4: _p9};}),_p10(_p5),_p11(_p6),_p12(_p7),_p13(_p8)),
+      A6($Lazy$List.map5,
+      F5(function (v0,v1,v2,v3,v4) {    return {ctor: "_Tuple5",_0: v0,_1: v1,_2: v2,_3: v3,_4: v4};}),
+      _p10(_p5),
+      _p11(_p6),
+      _p12(_p7),
+      _p13(_p8),
+      _p14(_p9)))))))))))))))))))))))))));
+   });
+   var tuple4 = F2(function (_p16,_p15) {
+      var _p17 = _p16;
+      var _p26 = _p17._3;
+      var _p25 = _p17._2;
+      var _p24 = _p17._1;
+      var _p23 = _p17._0;
+      var _p18 = _p15;
+      var _p22 = _p18._3;
+      var _p21 = _p18._2;
+      var _p20 = _p18._1;
+      var _p19 = _p18._0;
+      return A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (d) {    return {ctor: "_Tuple4",_0: _p19,_1: _p20,_2: _p21,_3: d};},_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (c) {    return {ctor: "_Tuple4",_0: _p19,_1: _p20,_2: c,_3: _p22};},_p25(_p21)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (b) {    return {ctor: "_Tuple4",_0: _p19,_1: b,_2: _p21,_3: _p22};},_p24(_p20)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (a) {    return {ctor: "_Tuple4",_0: a,_1: _p20,_2: _p21,_3: _p22};},_p23(_p19)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (c,d) {    return {ctor: "_Tuple4",_0: _p19,_1: _p20,_2: c,_3: d};}),_p25(_p21),_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,d) {    return {ctor: "_Tuple4",_0: _p19,_1: b,_2: _p21,_3: d};}),_p24(_p20),_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,d) {    return {ctor: "_Tuple4",_0: a,_1: _p20,_2: _p21,_3: d};}),_p23(_p19),_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,c) {    return {ctor: "_Tuple4",_0: _p19,_1: b,_2: c,_3: _p22};}),_p24(_p20),_p25(_p21)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,c) {    return {ctor: "_Tuple4",_0: a,_1: _p20,_2: c,_3: _p22};}),_p23(_p19),_p25(_p21)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,b) {    return {ctor: "_Tuple4",_0: a,_1: b,_2: _p21,_3: _p22};}),_p23(_p19),_p24(_p20)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (b,c,d) {    return {ctor: "_Tuple4",_0: _p19,_1: b,_2: c,_3: d};}),_p24(_p20),_p25(_p21),_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,c,d) {    return {ctor: "_Tuple4",_0: a,_1: _p20,_2: c,_3: d};}),_p23(_p19),_p25(_p21),_p26(_p22)),
+      A2($Lazy$List._op["+++"],
+      A4($Lazy$List.map3,F3(function (a,b,c) {    return {ctor: "_Tuple4",_0: a,_1: b,_2: c,_3: _p22};}),_p23(_p19),_p24(_p20),_p25(_p21)),
+      A5($Lazy$List.map4,
+      F4(function (v0,v1,v2,v3) {    return {ctor: "_Tuple4",_0: v0,_1: v1,_2: v2,_3: v3};}),
+      _p23(_p19),
+      _p24(_p20),
+      _p25(_p21),
+      _p26(_p22)))))))))))))));
+   });
+   var tuple3 = F2(function (_p28,_p27) {
+      var _p29 = _p28;
+      var _p36 = _p29._2;
+      var _p35 = _p29._1;
+      var _p34 = _p29._0;
+      var _p30 = _p27;
+      var _p33 = _p30._2;
+      var _p32 = _p30._1;
+      var _p31 = _p30._0;
+      return A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (c) {    return {ctor: "_Tuple3",_0: _p31,_1: _p32,_2: c};},_p36(_p33)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (b) {    return {ctor: "_Tuple3",_0: _p31,_1: b,_2: _p33};},_p35(_p32)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,function (a) {    return {ctor: "_Tuple3",_0: a,_1: _p32,_2: _p33};},_p34(_p31)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (b,c) {    return {ctor: "_Tuple3",_0: _p31,_1: b,_2: c};}),_p35(_p32),_p36(_p33)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,c) {    return {ctor: "_Tuple3",_0: a,_1: _p32,_2: c};}),_p34(_p31),_p36(_p33)),
+      A2($Lazy$List._op["+++"],
+      A3($Lazy$List.map2,F2(function (a,b) {    return {ctor: "_Tuple3",_0: a,_1: b,_2: _p33};}),_p34(_p31),_p35(_p32)),
+      A4($Lazy$List.map3,F3(function (v0,v1,v2) {    return {ctor: "_Tuple3",_0: v0,_1: v1,_2: v2};}),_p34(_p31),_p35(_p32),_p36(_p33))))))));
+   });
+   var tuple = F2(function (_p38,_p37) {
+      var _p39 = _p38;
+      var _p44 = _p39._1;
+      var _p43 = _p39._0;
+      var _p40 = _p37;
+      var _p42 = _p40._1;
+      var _p41 = _p40._0;
+      return A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};})(_p41),_p44(_p42)),
+      A2($Lazy$List._op["+++"],
+      A2($Lazy$List.map,A2($Basics.flip,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),_p42),_p43(_p41)),
+      A3($Lazy$List.map2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),_p43(_p41),_p44(_p42))));
+   });
+   var lazylist = F2(function (shrink,l) {
+      return $Lazy.lazy(function (_p45) {
+         var _p46 = _p45;
+         var removes = F3(function (k,n,l) {
+            return $Lazy.lazy(function (_p47) {
+               var _p48 = _p47;
+               if (_U.cmp(k,n) > 0) return $Lazy.force($Lazy$List.empty); else if ($Lazy$List.isEmpty(l)) return $Lazy.force(A2($Lazy$List._op[":::"],
+                     $Lazy$List.empty,
+                     $Lazy$List.empty)); else {
+                        var rest = A2($Lazy$List.drop,k,l);
+                        var first = A2($Lazy$List.take,k,l);
+                        return $Lazy.force(A2($Lazy$List._op[":::"],
+                        rest,
+                        A2($Lazy$List.map,F2(function (x,y) {    return A2($Lazy$List._op["+++"],x,y);})(first),A3(removes,k,n - k,rest))));
+                     }
+            });
+         });
+         var shrinkOne = function (l) {
+            return $Lazy.lazy(function (_p49) {
+               var _p50 = _p49;
+               var _p51 = $Lazy.force(l);
+               if (_p51.ctor === "Nil") {
+                     return $Lazy.force($Lazy$List.empty);
+                  } else {
+                     var _p53 = _p51._1;
+                     var _p52 = _p51._0;
+                     return $Lazy.force(A2($Lazy$List._op["+++"],
+                     A2($Lazy$List.map,A2($Basics.flip,F2(function (x,y) {    return A2($Lazy$List._op[":::"],x,y);}),_p53),shrink(_p52)),
+                     A2($Lazy$List.map,F2(function (x,y) {    return A2($Lazy$List._op[":::"],x,y);})(_p52),shrinkOne(_p53))));
+                  }
+            });
+         };
+         var n = $Lazy$List.length(l);
+         return $Lazy.force(A2($Lazy$List._op["+++"],
+         A2($Lazy$List.flatMap,
+         function (k) {
+            return A3(removes,k,n,l);
+         },
+         A2($Lazy$List.takeWhile,function (x) {    return _U.cmp(x,0) > 0;},A2($Lazy$List.iterate,function (n) {    return n / 2 | 0;},n))),
+         shrinkOne(l)));
+      });
+   });
+   var list = function (shrink) {    return A3(convert,$Lazy$List.toList,$Lazy$List.fromList,lazylist(shrink));};
+   var array = function (shrink) {    return A3(convert,$Lazy$List.toArray,$Lazy$List.fromArray,lazylist(shrink));};
+   var result = F3(function (shrinkError,shrinkValue,r) {
+      var _p54 = r;
+      if (_p54.ctor === "Ok") {
+            return A2($Lazy$List.map,$Result.Ok,shrinkValue(_p54._0));
+         } else {
+            return A2($Lazy$List.map,$Result.Err,shrinkError(_p54._0));
+         }
+   });
+   var maybe = F2(function (shrink,m) {
+      var _p55 = m;
+      if (_p55.ctor === "Just") {
+            return A2($Lazy$List._op[":::"],$Maybe.Nothing,A2($Lazy$List.map,$Maybe.Just,shrink(_p55._0)));
+         } else {
+            return $Lazy$List.empty;
+         }
+   });
+   var atLeastFloat = F2(function (min,n) {
+      return _U.cmp(n,0) < 0 && _U.cmp(n,min) > -1 ? A2($Lazy$List._op[":::"],
+      0 - n,
+      A2($Lazy$List.map,F2(function (x,y) {    return x * y;})(-1),A2(seriesFloat,0,0 - n))) : A2(seriesFloat,A2($Basics.max,0,min),n);
+   });
+   var $float = function (n) {
+      return _U.cmp(n,0) < 0 ? A2($Lazy$List._op[":::"],
+      0 - n,
+      A2($Lazy$List.map,F2(function (x,y) {    return x * y;})(-1),A2(seriesFloat,0,0 - n))) : A2(seriesFloat,0,n);
+   };
+   var atLeastInt = F2(function (min,n) {
+      return _U.cmp(n,0) < 0 && _U.cmp(n,min) > -1 ? A2($Lazy$List._op[":::"],
+      0 - n,
+      A2($Lazy$List.map,F2(function (x,y) {    return x * y;})(-1),A2(seriesInt,0,0 - n))) : A2(seriesInt,A2($Basics.max,0,min),n);
+   });
+   var atLeastChar = function ($char) {    return A3(convert,$Char.fromCode,$Char.toCode,atLeastInt($Char.toCode($char)));};
+   var character = atLeastChar($Char.fromCode(32));
+   var string = A3(convert,$String.fromList,$String.toList,list(character));
+   var $int = function (n) {
+      return _U.cmp(n,0) < 0 ? A2($Lazy$List._op[":::"],
+      0 - n,
+      A2($Lazy$List.map,F2(function (x,y) {    return x * y;})(-1),A2(seriesInt,0,0 - n))) : A2(seriesInt,0,n);
+   };
+   var $char = A3(convert,$Char.fromCode,$Char.toCode,$int);
+   var order = function (o) {
+      var _p56 = o;
+      switch (_p56.ctor)
+      {case "GT": return A2($Lazy$List._op[":::"],$Basics.EQ,A2($Lazy$List._op[":::"],$Basics.LT,$Lazy$List.empty));
+         case "LT": return A2($Lazy$List._op[":::"],$Basics.EQ,$Lazy$List.empty);
+         default: return $Lazy$List.empty;}
+   };
+   var bool = function (b) {
+      var _p57 = b;
+      if (_p57 === true) {
+            return A2($Lazy$List._op[":::"],false,$Lazy$List.empty);
+         } else {
+            return $Lazy$List.empty;
+         }
+   };
+   var noShrink = function (_p58) {    return $Lazy$List.empty;};
+   var $void = noShrink;
+   return _elm.Shrink.values = {_op: _op
+                               ,noShrink: noShrink
+                               ,$void: $void
+                               ,bool: bool
+                               ,order: order
+                               ,$int: $int
+                               ,atLeastInt: atLeastInt
+                               ,$float: $float
+                               ,atLeastFloat: atLeastFloat
+                               ,$char: $char
+                               ,atLeastChar: atLeastChar
+                               ,character: character
+                               ,string: string
+                               ,maybe: maybe
+                               ,result: result
+                               ,list: list
+                               ,lazylist: lazylist
+                               ,array: array
+                               ,tuple: tuple
+                               ,tuple3: tuple3
+                               ,tuple4: tuple4
+                               ,tuple5: tuple5
+                               ,convert: convert
+                               ,keepIf: keepIf
+                               ,dropIf: dropIf
+                               ,merge: merge
+                               ,map: map
+                               ,andMap: andMap};
+};

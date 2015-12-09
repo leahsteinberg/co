@@ -1,0 +1,191 @@
+Elm.Graph = Elm.Graph || {};
+Elm.Graph.make = function (_elm) {
+   "use strict";
+   _elm.Graph = _elm.Graph || {};
+   if (_elm.Graph.values) return _elm.Graph.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
+   var _op = {};
+   var updateStrAndLen = F3(function (doc,str,len) {    return _U.update(doc,{str: str,len: len});});
+   var updateCP = F2(function (doc,cp) {    return _U.update(doc,{cp: cp});});
+   var integrateDelete = F2(function (wChar,model) {
+      var newWString = A2($Woot.setInvisible,model.wString,wChar.id);
+      return _U.update(model,{wString: newWString});
+   });
+   var integrateRemoteDelete = F2(function (wChar,model) {
+      var deletePos = A2($Woot.pos,model.wString,wChar);
+      var currCP = model.doc.cp;
+      var newCP = _U.cmp(currCP,deletePos) > 0 ? currCP - 1 : currCP;
+      var newDocModel = _U.update(model,
+      {doc: A2(updateCP,model.doc,newCP)
+      ,debug: A2($Basics._op["++"],"deleting",A2($Basics._op["++"],$String.fromChar(wChar.ch),A2($Basics._op["++"]," at ",$Basics.toString(deletePos))))});
+      var newModel = A2(integrateDelete,wChar,newDocModel);
+      return {ctor: "_Tuple2",_0: newModel,_1: $Model.T(A2($Model.D,wChar.ch,deletePos))};
+   });
+   var generateDelete = F3(function (ch,place,model) {
+      var currWChar = A2($Woot.ithVisible,model.wString,place);
+      var deletedWChar = _U.update(currWChar,{vis: -1});
+      var successor = A2($Woot.ithVisible,model.wString,place + 1);
+      var predecessor = A2($Woot.ithVisible,model.wString,place - 1);
+      var newModel = _U.update(model,
+      {doc: A2(updateCP,model.doc,place)
+      ,debug: A2($Basics._op["++"],
+      "CHAR deleteing is -- ",
+      A2($Basics._op["++"],
+      $String.fromChar(ch),
+      A2($Basics._op["++"],
+      "    DELETING: ",
+      A2($Basics._op["++"],
+      $String.fromChar(currWChar.ch),
+      A2($Basics._op["++"],
+      "/thisIndex: ",
+      A2($Basics._op["++"],
+      $Basics.toString(place),
+      A2($Basics._op["++"],
+      "/pred :",
+      A2($Basics._op["++"],
+      $String.fromChar(predecessor.ch),
+      A2($Basics._op["++"],"/succ: ",A2($Basics._op["++"],$String.fromChar(successor.ch),A2($Basics._op["++"],"/place: ",$Basics.toString(place))))))))))))});
+      return {ctor: "_Tuple2",_0: A2(integrateDelete,deletedWChar,newModel),_1: $Model.W($Model.Delete(deletedWChar))};
+   });
+   var findLaterWChar = F2(function (insCh,wStr) {
+      findLaterWChar: while (true) {
+         var _p0 = wStr;
+         if (_p0.ctor === "[]") {
+               return {ctor: "_Tuple2",_0: $Constants.startChar,_1: $Constants.endChar};
+            } else {
+               if (_p0._1.ctor === "[]") {
+                     return {ctor: "_Tuple2",_0: $Constants.startChar,_1: $Constants.endChar};
+                  } else {
+                     if (_p0._1._1.ctor === "[]") {
+                           return {ctor: "_Tuple2",_0: _p0._0,_1: _p0._1._0};
+                        } else {
+                           var _p1 = _p0._1._0;
+                           if (A2($Woot.isLaterWChar,_p1,insCh)) return {ctor: "_Tuple2",_0: _p0._0,_1: _p1}; else {
+                                 var _v1 = insCh,_v2 = A2($List._op["::"],_p1,_p0._1._1);
+                                 insCh = _v1;
+                                 wStr = _v2;
+                                 continue findLaterWChar;
+                              }
+                        }
+                  }
+            }
+      }
+   });
+   var withoutPrecedenceOrdered = function (wStr) {
+      var nextAbsent = function (wC) {    return $Basics.not(A2($List.any,function (x) {    return _U.eq(x.id,wC.next);},wStr));};
+      var prevAbsent = function (wC) {    return $Basics.not(A2($List.any,function (x) {    return _U.eq(x.id,wC.prev);},wStr));};
+      var prevAndNextAbsent = function (wC) {    return prevAbsent(wC) && nextAbsent(wC);};
+      return A2($List.filter,prevAndNextAbsent,wStr);
+   };
+   var insertIntoList = F3(function (wCh,wStr,pos) {
+      var _p2 = wStr;
+      if (_p2.ctor === "::") {
+            var _p4 = _p2._1;
+            var _p3 = _p2._0;
+            return _U.eq(pos,0) ? A2($List._op["::"],wCh,A2($List._op["::"],_p3,_p4)) : A2($List._op["::"],_p3,A3(insertIntoList,wCh,_p4,pos - 1));
+         } else {
+            return _U.list([wCh]);
+         }
+   });
+   var intInsertChar = F3(function (wCh,pos,model) {
+      var newWStr = A3(insertIntoList,wCh,model.wString,pos);
+      var newStr = $Woot.wToString(newWStr);
+      var newLen = $String.length(newStr);
+      return _U.update(model,{wString: newWStr,wSeen: A2($Set.insert,wCh.id,model.wSeen),doc: A3(updateStrAndLen,model.doc,newStr,newLen)});
+   });
+   var integrateInsert$ = F5(function (wCh,pred,succ,posi,model) {
+      var subStr = A3($Woot.subSeq,model.wString,pred,succ);
+      var idOrderSubStr = A2($List._op["::"],pred,A2($Basics._op["++"],withoutPrecedenceOrdered(subStr),_U.list([succ])));
+      var _p5 = A2(findLaterWChar,wCh,idOrderSubStr);
+      var newPred = _p5._0;
+      var newSucc = _p5._1;
+      var _p6 = subStr;
+      if (_p6.ctor === "[]") {
+            var newModel = A3(intInsertChar,wCh,A2($Woot.pos,model.wString,succ),model);
+            return _U.eq(pred,succ) ? _U.update(newModel,
+            {debug: A2($Basics._op["++"],
+            newModel.debug,
+            A2($Basics._op["++"],
+            "****",
+            A2($Basics._op["++"],
+            $Basics.toString(wCh.ch),
+            A2($Basics._op["++"],$Basics.toString(A2($List.map,function (x) {    return $Basics.toString(x.ch);},idOrderSubStr))," ~~~~~"))))}) : newModel;
+         } else {
+            var newModel = A5(integrateInsert$,wCh,newPred,newSucc,posi,model);
+            return _U.update(newModel,
+            {debug: A2($Basics._op["++"],
+            newModel.debug,
+            A2($Basics._op["++"],
+            "inserting: ",
+            A2($Basics._op["++"],
+            $Basics.toString(wCh.ch),
+            A2($Basics._op["++"],
+            "// ",
+            A2($Basics._op["++"],
+            "  newPred::  ",
+            A2($Basics._op["++"],$Basics.toString(newPred.ch),A2($Basics._op["++"],"   NewSuc:: ",$Basics.toString(newSucc.ch))))))))});
+         }
+   });
+   var generateInsChar = F4(function ($char,predIndex,nextIndex,model) {
+      var newModel = _U.update(model,{counter: model.counter + 1});
+      var newId = {ctor: "_Tuple2",_0: model.site,_1: model.counter};
+      var succ = A2($Woot.ithVisible,model.wString,nextIndex);
+      var pred = A2($Woot.ithVisible,model.wString,predIndex);
+      var newWChar = {id: newId,ch: $char,prev: pred.id,next: succ.id,vis: 1};
+      var debugModel = _U.update(newModel,
+      {debug: A2($Basics._op["++"],
+      newModel.debug,
+      A2($Basics._op["++"],
+      "PRED INDEX IS: ",
+      A2($Basics._op["++"],
+      $Basics.toString(predIndex),
+      A2($Basics._op["++"],
+      "((((((newWchar",
+      A2($Basics._op["++"],
+      $Basics.toString(newWChar),
+      A2($Basics._op["++"],
+      "   pred",
+      A2($Basics._op["++"],$Basics.toString(pred.ch),A2($Basics._op["++"]," w stirng is === ",$Basics.toString(model.wString)))))))))});
+      return {ctor: "_Tuple2",_0: A5(integrateInsert$,newWChar,pred,succ,nextIndex,debugModel),_1: $Model.W($Model.Insert(newWChar))};
+   });
+   var integrateRemoteInsert = F2(function (wChar,model) {
+      var currCP = model.doc.cp;
+      var next = A2($Woot.grabNext,wChar,model.wString);
+      var prev = A2($Woot.grabPrev,wChar,model.wString);
+      var insertPos = A2($Woot.pos,model.wString,A2($Woot.grabNext,wChar,model.wString));
+      var newCP = _U.cmp(currCP,insertPos) > 0 ? currCP + 1 : currCP;
+      var newCPModel = _U.update(model,
+      {doc: A2(updateCP,model.doc,newCP),debug: A2($Basics._op["++"],model.debug,A2($Basics._op["++"],"prev: ",$Basics.toString(prev.ch)))});
+      var newModel = A5(integrateInsert$,wChar,prev,next,insertPos,newCPModel);
+      return {ctor: "_Tuple2",_0: newModel,_1: $Model.T(A3($Model.I,wChar.ch,insertPos,$Basics.fst(wChar.id)))};
+   });
+   var generateInsert = F3(function (ch,place,model) {
+      var debugModel = _U.update(model,{debug: model.debug});
+      return A4(generateInsChar,ch,place - 1,place,_U.update(debugModel,{doc: A2(updateCP,model.doc,place)}));
+   });
+   return _elm.Graph.values = {_op: _op
+                              ,generateInsert: generateInsert
+                              ,integrateRemoteInsert: integrateRemoteInsert
+                              ,insertIntoList: insertIntoList
+                              ,intInsertChar: intInsertChar
+                              ,integrateInsert$: integrateInsert$
+                              ,generateInsChar: generateInsChar
+                              ,withoutPrecedenceOrdered: withoutPrecedenceOrdered
+                              ,findLaterWChar: findLaterWChar
+                              ,generateDelete: generateDelete
+                              ,integrateRemoteDelete: integrateRemoteDelete
+                              ,integrateDelete: integrateDelete
+                              ,updateCP: updateCP
+                              ,updateStrAndLen: updateStrAndLen};
+};

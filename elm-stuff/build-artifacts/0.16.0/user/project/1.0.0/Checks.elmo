@@ -1,0 +1,170 @@
+Elm.Checks = Elm.Checks || {};
+Elm.Checks.make = function (_elm) {
+   "use strict";
+   _elm.Checks = _elm.Checks || {};
+   if (_elm.Checks.values) return _elm.Checks.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Check = Elm.Check.make(_elm),
+   $Check$Investigator = Elm.Check.Investigator.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $DraftTests = Elm.DraftTests.make(_elm),
+   $Editor = Elm.Editor.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
+   var _op = {};
+   var tripleStrings = _U.list([{ctor: "_Tuple3",_0: "footbol",_1: "how",_2: "are"}
+                               ,{ctor: "_Tuple3",_0: "what",_1: "is",_2: "love"}
+                               ,{ctor: "_Tuple3",_0: "home",_1: "cake",_2: "twelve"}]);
+   var generatePseudoRandomIndex = F2(function (origStr,i) {    return _U.eq($String.length(origStr),0) ? 0 : A2($Basics._op["%"],i,$String.length(origStr));});
+   var first_index = 0;
+   var claim_insert_string = A2($Check.$for,
+   A2($Check.is,
+   A2($Check.that,
+   $Check.claim("Can insert a string and get same string"),
+   function (str) {
+      var _p0 = A3($Editor.insertString,str,first_index,$DraftTests.makeEmptySite(1));
+      var model = _p0._0;
+      var edit = _p0._1;
+      return $Woot.wToString(model.wString);
+   }),
+   $Basics.identity),
+   $Check$Investigator.string);
+   var insert_order_irrelevant = A2($Check.$for,
+   A2($Check.is,
+   A2($Check.that,
+   $Check.claim("remote site gets same as local"),
+   function (str) {
+      var _p1 = A3($Editor.insertString,str,first_index,$DraftTests.makeEmptySite(1));
+      var localModel = _p1._0;
+      var lEdits = _p1._1;
+      var _p2 = A2($Editor.processEdits,lEdits,$DraftTests.makeEmptySite(1));
+      var remoteModel = _p2._0;
+      var rEdits = _p2._1;
+      return $Woot.wToString(remoteModel.wString);
+   }),
+   $Basics.identity),
+   $Check$Investigator.string);
+   var concurrent_insert_consistent$ = F5(function (origStr,localStr,remoteStr,x,y) {
+      var lIndex = A2(generatePseudoRandomIndex,origStr,y);
+      var rIndex = A2(generatePseudoRandomIndex,origStr,x);
+      var _p3 = A3($Editor.insertString,origStr,first_index,$DraftTests.makeEmptySite(1));
+      var localModel1 = _p3._0;
+      var lEdits1 = _p3._1;
+      var _p4 = A2($Editor.processEdits,lEdits1,$DraftTests.makeEmptySite(2));
+      var remoteModel1 = _p4._0;
+      var rEdits1 = _p4._1;
+      var _p5 = A3($Editor.insertString,remoteStr,rIndex,remoteModel1);
+      var remoteModel2 = _p5._0;
+      var rEdits2 = _p5._1;
+      var _p6 = A3($Editor.insertString,localStr,lIndex,localModel1);
+      var localModel2 = _p6._0;
+      var lEdits2 = _p6._1;
+      var _p7 = A2($Editor.processEdits,rEdits2,localModel2);
+      var localModel3 = _p7._0;
+      var lEdits3 = _p7._1;
+      var _p8 = A2($Editor.processEdits,lEdits2,remoteModel2);
+      var remoteModel3 = _p8._0;
+      var rEdits3 = _p8._1;
+      return {ctor: "_Tuple2",_0: $Woot.wToString(remoteModel3.wString),_1: $Woot.wToString(localModel3.wString)};
+   });
+   var concurrent_insert_consistent = A2($Check.$for,
+   A2($Check.is,
+   A2($Check.that,
+   $Check.claim("two people write at same time, same result"),
+   function (_p9) {
+      var _p10 = _p9;
+      return $Basics.fst(A5(concurrent_insert_consistent$,_p10._0,_p10._1._0,_p10._1._1._0,_p10._1._1._1._0,_p10._1._1._1._1));
+   }),
+   function (_p11) {
+      var _p12 = _p11;
+      return $Basics.snd(A5(concurrent_insert_consistent$,_p12._0,_p12._1._0,_p12._1._1._0,_p12._1._1._1._0,_p12._1._1._1._1));
+   }),
+   $Check$Investigator.tuple({ctor: "_Tuple2"
+                             ,_0: $Check$Investigator.string
+                             ,_1: $Check$Investigator.tuple({ctor: "_Tuple2"
+                                                            ,_0: $Check$Investigator.string
+                                                            ,_1: $Check$Investigator.tuple({ctor: "_Tuple2"
+                                                                                           ,_0: $Check$Investigator.string
+                                                                                           ,_1: $Check$Investigator.tuple({ctor: "_Tuple2"
+                                                                                                                          ,_0: $Check$Investigator.$int
+                                                                                                                          ,_1: $Check$Investigator.$int})})})}));
+   var runTests = A2($List.map,function (_p13) {    var _p14 = _p13;return A5(concurrent_insert_consistent$,_p14._0,_p14._1,_p14._2,1,1);},tripleStrings);
+   var insert_idempotent = A2($Check.$for,
+   A2($Check.is,
+   A2($Check.that,
+   $Check.claim("insert is idempotent"),
+   function (str) {
+      var _p15 = A3($Editor.insertString,str,first_index,$DraftTests.makeEmptySite(1));
+      var model = _p15._0;
+      var edits = _p15._1;
+      return $Woot.wToString(model.wString);
+   }),
+   function (str) {
+      var _p16 = A3($Editor.insertString,str,first_index,$DraftTests.makeEmptySite(1));
+      var model = _p16._0;
+      var edits = _p16._1;
+      var _p17 = A2($Editor.processEdits,edits,model);
+      var newModel = _p17._0;
+      var newEdits = _p17._1;
+      return $Woot.wToString(newModel.wString);
+   }),
+   $Check$Investigator.string);
+   var local_delete_consistent = A2($Check.$for,
+   A2($Check.is,
+   A2($Check.that,
+   $Check.claim("local delete produces consistent results"),
+   function (_p18) {
+      var _p19 = _p18;
+      var _p23 = _p19._0;
+      var newNumber = _U.eq($String.length(_p23),0) ? 0 : A2($Basics._op["%"],_p19._1,$String.length(_p23));
+      var charToDelete = function () {
+         var _p20 = A2($List.drop,newNumber,$String.toList(_p23));
+         if (_p20.ctor === "::") {
+               return _p20._0;
+            } else {
+               return _U.chr("a");
+            }
+      }();
+      var _p21 = A3($Editor.insertString,_p23,first_index,$DraftTests.makeEmptySite(1));
+      var model = _p21._0;
+      var edits = _p21._1;
+      var _p22 = A2($Editor.processEdits,_U.list([$Model.T(A2($Model.D,charToDelete,newNumber))]),model);
+      var newModel = _p22._0;
+      var newEdits = _p22._1;
+      return $Woot.wToString(newModel.wString);
+   }),
+   function (_p24) {
+      var _p25 = _p24;
+      var _p26 = _p25._0;
+      var newNumber = _U.eq($String.length(_p26),0) ? 0 : A2($Basics._op["%"],_p25._1,$String.length(_p26));
+      var newStrList = A2($Basics._op["++"],A2($List.take,newNumber,$String.toList(_p26)),A2($List.drop,newNumber + 1,$String.toList(_p26)));
+      return A3($List.foldl,F2(function ($char,accumStr) {    return A2($Basics._op["++"],$Basics.toString($char),accumStr);}),"",newStrList);
+   }),
+   $Check$Investigator.tuple({ctor: "_Tuple2",_0: $Check$Investigator.string,_1: $Check$Investigator.$int}));
+   var suite_co = A2($Check.suite,
+   "Collab Editing Suite",
+   _U.list([claim_insert_string,insert_order_irrelevant,insert_idempotent,local_delete_consistent,concurrent_insert_consistent]));
+   var result = $Check.quickCheck(suite_co);
+   var main = $Graphics$Element.show(result);
+   return _elm.Checks.values = {_op: _op
+                               ,first_index: first_index
+                               ,generatePseudoRandomIndex: generatePseudoRandomIndex
+                               ,claim_insert_string: claim_insert_string
+                               ,insert_order_irrelevant: insert_order_irrelevant
+                               ,concurrent_insert_consistent$: concurrent_insert_consistent$
+                               ,concurrent_insert_consistent: concurrent_insert_consistent
+                               ,insert_idempotent: insert_idempotent
+                               ,local_delete_consistent: local_delete_consistent
+                               ,suite_co: suite_co
+                               ,tripleStrings: tripleStrings
+                               ,runTests: runTests
+                               ,result: result
+                               ,main: main};
+};

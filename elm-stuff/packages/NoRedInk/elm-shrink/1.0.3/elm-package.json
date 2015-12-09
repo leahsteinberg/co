@@ -1,0 +1,18 @@
+{
+    "version": "1.0.3",
+    "summary": "Library for authoring shrinking strategies",
+    "repository": "https://github.com/NoRedInk/elm-shrink.git",
+    "license": "BSD-3-Clause",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Shrink"
+    ],
+    "dependencies": {
+        "NoRedInk/elm-lazy-list": "1.0.0 <= v < 3.0.0",
+        "elm-lang/core": "2.0.0 <= v < 4.0.0",
+        "maxsnew/lazy": "1.0.1 <= v < 2.0.0"
+    },
+    "elm-version": "0.15.0 <= v < 0.17.0"
+}

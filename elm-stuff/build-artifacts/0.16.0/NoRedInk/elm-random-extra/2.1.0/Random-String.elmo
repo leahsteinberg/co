@@ -1,0 +1,52 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.String = Elm.Random.String || {};
+Elm.Random.String.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.String = _elm.Random.String || {};
+   if (_elm.Random.String.values) return _elm.Random.String.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Char = Elm.Random.Char.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var capitalizedEnglishWord = function (wordLength) {
+      return A2($Random$Extra.map,
+      $String.fromList,
+      A3($Random$Extra.map2,
+      F2(function (x,y) {    return A2($List._op["::"],x,y);}),
+      $Random$Char.upperCaseLatin,
+      A2($Random.list,wordLength - 1,$Random$Char.lowerCaseLatin)));
+   };
+   var rangeLengthCapitalizedEnglishWord = F2(function (minLength,maxLength) {
+      return A2($Random$Extra.flatMap,capitalizedEnglishWord,A2($Random.$int,minLength,maxLength));
+   });
+   var anyCapitalizedEnglishWord = A2(rangeLengthCapitalizedEnglishWord,1,34);
+   var englishWord = function (wordLength) {    return A2($Random$Extra.map,$String.fromList,A2($Random.list,wordLength,$Random$Char.lowerCaseLatin));};
+   var string = F2(function (stringLength,charGenerator) {    return A2($Random$Extra.map,$String.fromList,A2($Random.list,stringLength,charGenerator));});
+   var rangeLengthString = F3(function (minLength,maxLength,charGenerator) {
+      return A2($Random$Extra.flatMap,function (len) {    return A2(string,len,charGenerator);},A2($Random.$int,minLength,maxLength));
+   });
+   var rangeLengthWord = rangeLengthString;
+   var rangeLengthEnglishWord = F2(function (minLength,maxLength) {    return A3(rangeLengthWord,minLength,maxLength,$Random$Char.lowerCaseLatin);});
+   var anyEnglishWord = A2(rangeLengthEnglishWord,1,34);
+   var word = string;
+   return _elm.Random.String.values = {_op: _op
+                                      ,string: string
+                                      ,rangeLengthString: rangeLengthString
+                                      ,word: word
+                                      ,rangeLengthWord: rangeLengthWord
+                                      ,englishWord: englishWord
+                                      ,rangeLengthEnglishWord: rangeLengthEnglishWord
+                                      ,anyEnglishWord: anyEnglishWord
+                                      ,capitalizedEnglishWord: capitalizedEnglishWord
+                                      ,rangeLengthCapitalizedEnglishWord: rangeLengthCapitalizedEnglishWord
+                                      ,anyCapitalizedEnglishWord: anyCapitalizedEnglishWord};
+};

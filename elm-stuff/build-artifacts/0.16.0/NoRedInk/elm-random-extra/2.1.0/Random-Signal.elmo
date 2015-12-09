@@ -1,0 +1,46 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Signal = Elm.Random.Signal || {};
+Elm.Random.Signal.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Signal = _elm.Random.Signal || {};
+   if (_elm.Random.Signal.values) return _elm.Random.Signal.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var application = F4(function (initialModel,actionGenerator,update,view) {
+      return A2($Random$Extra.map,view,A3($Random$Extra.reduce,update,initialModel,actionGenerator));
+   });
+   var randomSeedEvery = function (timestep) {
+      var currentTime = $Time.every(timestep);
+      return A2($Signal.map,function (_p0) {    return $Random.initialSeed($Basics.floor(_p0));},currentTime);
+   };
+   var generateEvery = F2(function (time,generator) {
+      var view = function (model) {    return $Basics.fst(A2($Random.generate,model.generator,model.seed));};
+      var update = F2(function (seed,model) {    return _U.update(model,{seed: seed});});
+      var initialModel = {seed: $Random.initialSeed(1),generator: generator};
+      return A2($Signal.map,view,A3($Signal.foldp,update,initialModel,randomSeedEvery(time)));
+   });
+   var generate = generateEvery(1000 / 60);
+   var run = F4(function (initialModel,actionGenerator,update,view) {
+      return A2($Signal.map,view,A3($Signal.foldp,update,initialModel,generate(actionGenerator)));
+   });
+   var randomSeed = randomSeedEvery(1000 / 60);
+   var constant = function (generator) {    return A2($Random$Extra.map,$Signal.constant,generator);};
+   return _elm.Random.Signal.values = {_op: _op
+                                      ,constant: constant
+                                      ,randomSeed: randomSeed
+                                      ,randomSeedEvery: randomSeedEvery
+                                      ,generateEvery: generateEvery
+                                      ,generate: generate
+                                      ,application: application
+                                      ,run: run};
+};

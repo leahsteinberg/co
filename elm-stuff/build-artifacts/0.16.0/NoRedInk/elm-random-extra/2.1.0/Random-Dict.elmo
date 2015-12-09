@@ -1,0 +1,27 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Dict = Elm.Random.Dict || {};
+Elm.Random.Dict.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Dict = _elm.Random.Dict || {};
+   if (_elm.Random.Dict.values) return _elm.Random.Dict.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var emptyDict = $Random$Extra.constant($Dict.empty);
+   var dict = F3(function (dictLength,keyGenerator,valueGenerator) {
+      return A2($Random$Extra.map,$Dict.fromList,A2($Random.list,dictLength,A2($Random$Extra.zip,keyGenerator,valueGenerator)));
+   });
+   var rangeLengthDict = F4(function (minLength,maxLength,keyGenerator,valueGenerator) {
+      return A2($Random$Extra.flatMap,function (len) {    return A3(dict,len,keyGenerator,valueGenerator);},A2($Random.$int,minLength,maxLength));
+   });
+   return _elm.Random.Dict.values = {_op: _op,dict: dict,emptyDict: emptyDict,rangeLengthDict: rangeLengthDict};
+};

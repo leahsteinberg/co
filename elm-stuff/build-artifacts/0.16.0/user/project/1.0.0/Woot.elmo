@@ -1,0 +1,178 @@
+Elm.Woot = Elm.Woot || {};
+Elm.Woot.make = function (_elm) {
+   "use strict";
+   _elm.Woot = _elm.Woot || {};
+   if (_elm.Woot.values) return _elm.Woot.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var canDel = F2(function (wCh,set) {    return A2($Set.member,wCh.id,set);});
+   var canIns = F2(function (wCh,set) {    return A2($Set.member,wCh.next,set) && A2($Set.member,wCh.prev,set);});
+   var canIntegrate = F2(function (wUpdate,dict) {
+      var _p0 = wUpdate;
+      switch (_p0.ctor)
+      {case "Insert": return A2(canIns,_p0._0,dict);
+         case "Delete": return A2(canDel,_p0._0,dict);
+         default: return false;}
+   });
+   var grabPrev = F2(function (wCh,wStr) {
+      grabPrev: while (true) {
+         var _p1 = wStr;
+         if (_p1.ctor === "::") {
+               var _p2 = _p1._0;
+               if (_U.eq(_p2.id,wCh.prev)) return _p2; else {
+                     var _v2 = wCh,_v3 = _p1._1;
+                     wCh = _v2;
+                     wStr = _v3;
+                     continue grabPrev;
+                  }
+            } else {
+               return $Constants.startChar;
+            }
+      }
+   });
+   var grabNext = F2(function (wCh,wStr) {
+      grabNext: while (true) {
+         var _p3 = wStr;
+         if (_p3.ctor === "::") {
+               var _p4 = _p3._0;
+               if (_U.eq(_p4.id,wCh.next)) return _p4; else {
+                     var _v5 = wCh,_v6 = _p3._1;
+                     wCh = _v5;
+                     wStr = _v6;
+                     continue grabNext;
+                  }
+            } else {
+               return $Constants.endChar;
+            }
+      }
+   });
+   var isVisible = function (wCh) {
+      return _U.eq(wCh.id,$Constants.startId) ? true : _U.eq(wCh.id,$Constants.endId) ? true : _U.cmp(wCh.vis,0) > 0 ? true : false;
+   };
+   var pos = F2(function (wStr,wCh) {
+      pos: while (true) {
+         var _p5 = wStr;
+         if (_p5.ctor === "[]") {
+               return 0;
+            } else {
+               var _p7 = _p5._1;
+               var _p6 = _p5._0;
+               if (isVisible(_p6)) return _U.eq(_p6.id,wCh.id) ? 0 : 1 + A2(pos,_p7,wCh); else if (_U.eq(_p6.id,wCh.id)) return 0; else {
+                        var _v8 = _p7,_v9 = wCh;
+                        wStr = _v8;
+                        wCh = _v9;
+                        continue pos;
+                     }
+            }
+      }
+   });
+   var setInvisible = F2(function (wStr,id) {
+      var _p8 = wStr;
+      if (_p8.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            var _p10 = _p8._1;
+            var _p9 = _p8._0;
+            return _U.eq(_p9.id,id) ? A2($List._op["::"],_U.update(_p9,{vis: -1}),_p10) : A2($List._op["::"],_p9,A2(setInvisible,_p10,id));
+         }
+   });
+   var ithVisible = F2(function (wStr,i) {
+      ithVisible: while (true) if (_U.eq(i,-1)) return $Constants.startChar; else {
+            var _p11 = wStr;
+            if (_p11.ctor === "[]") {
+                  return $Constants.endChar;
+               } else {
+                  var _p13 = _p11._1;
+                  var _p12 = _p11._0;
+                  if (_U.eq(i,0) && isVisible(_p12)) return _p12; else if (isVisible(_p12)) {
+                           var _v12 = _p13,_v13 = i - 1;
+                           wStr = _v12;
+                           i = _v13;
+                           continue ithVisible;
+                        } else {
+                           var _v14 = _p13,_v15 = i;
+                           wStr = _v14;
+                           i = _v15;
+                           continue ithVisible;
+                        }
+               }
+         }
+   });
+   var subSeqGrab = F2(function (wStr,end) {
+      var _p14 = wStr;
+      if (_p14.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            var _p15 = _p14._0;
+            return _U.eq(_p15.id,end.id) ? _U.list([]) : A2($List._op["::"],_p15,A2(subSeqGrab,_p14._1,end));
+         }
+   });
+   var subSeq = F3(function (wStr,start,end) {
+      subSeq: while (true) {
+         var _p16 = wStr;
+         if (_p16.ctor === "[]") {
+               return _U.list([]);
+            } else {
+               var _p17 = _p16._1;
+               if (_U.eq(_p16._0.id,start.id)) return A2(subSeqGrab,_p17,end); else {
+                     var _v18 = _p17,_v19 = start,_v20 = end;
+                     wStr = _v18;
+                     start = _v19;
+                     end = _v20;
+                     continue subSeq;
+                  }
+            }
+      }
+   });
+   var wToString = function (wStr) {
+      wToString: while (true) {
+         var _p18 = wStr;
+         if (_p18.ctor === "[]") {
+               return "";
+            } else {
+               var _p20 = _p18._1;
+               var _p19 = _p18._0;
+               if (_U.cmp(_p19.vis,0) > 0) return A2($String.cons,_p19.ch,wToString(_p20)); else {
+                     var _v22 = _p20;
+                     wStr = _v22;
+                     continue wToString;
+                  }
+            }
+      }
+   };
+   var wIdOrder = F2(function (wA,wB) {
+      var _p21 = wB.id;
+      var wBSite = _p21._0;
+      var wBClock = _p21._1;
+      var _p22 = wA.id;
+      var wASite = _p22._0;
+      var wAClock = _p22._1;
+      return _U.cmp(wASite,wBSite) > 0 ? $Basics.GT : _U.cmp(wASite,wBSite) < 0 ? $Basics.LT : _U.cmp(wAClock,wBClock) > 0 ? $Basics.GT : $Basics.GT;
+   });
+   var isLaterWChar = F2(function (wA,wB) {    return !_U.eq(A2(wIdOrder,wA,wB),$Basics.LT);});
+   return _elm.Woot.values = {_op: _op
+                             ,isLaterWChar: isLaterWChar
+                             ,wIdOrder: wIdOrder
+                             ,wToString: wToString
+                             ,subSeq: subSeq
+                             ,subSeqGrab: subSeqGrab
+                             ,ithVisible: ithVisible
+                             ,setInvisible: setInvisible
+                             ,pos: pos
+                             ,isVisible: isVisible
+                             ,grabNext: grabNext
+                             ,grabPrev: grabPrev
+                             ,canIns: canIns
+                             ,canDel: canDel
+                             ,canIntegrate: canIntegrate};
+};

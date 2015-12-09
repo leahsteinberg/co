@@ -1,0 +1,257 @@
+Elm.ConvertJson = Elm.ConvertJson || {};
+Elm.ConvertJson.make = function (_elm) {
+   "use strict";
+   _elm.ConvertJson = _elm.ConvertJson || {};
+   if (_elm.ConvertJson.values) return _elm.ConvertJson.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $Json$Encode = Elm.Json.Encode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var tInsertToJsonList = F3(function (ch,index,siteId) {
+      return _U.list([{ctor: "_Tuple2",_0: "ch",_1: $Json$Encode.string($String.fromChar(ch))}
+                     ,{ctor: "_Tuple2",_0: "index",_1: $Json$Encode.$int(index)}
+                     ,{ctor: "_Tuple2",_0: "siteId",_1: $Json$Encode.$int(siteId)}]);
+   });
+   var tDelToJsonList = F2(function (ch,index) {
+      return _U.list([{ctor: "_Tuple2",_0: "ch",_1: $Json$Encode.string($String.fromChar(ch))},{ctor: "_Tuple2",_0: "index",_1: $Json$Encode.$int(index)}]);
+   });
+   var encodeTUpdate = function (tUp) {
+      var _p0 = tUp;
+      switch (_p0.ctor)
+      {case "I": return $Json$Encode.object(A2($List._op["::"],
+           {ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("typingInsert")},
+           A3(tInsertToJsonList,_p0._0,_p0._1,_p0._2)));
+         case "D": return $Json$Encode.object(A2($List._op["::"],
+           {ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("typingDelete")},
+           A2(tDelToJsonList,_p0._0,_p0._1)));
+         default: return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("typingNoUpdate")}]));}
+   };
+   var wCharToJsonList = function (wCh) {
+      return _U.list([{ctor: "_Tuple2",_0: "id",_1: $Json$Encode.list(_U.list([$Json$Encode.$int($Basics.fst(wCh.id)),$Json$Encode.$int($Basics.snd(wCh.id))]))}
+                     ,{ctor: "_Tuple2"
+                      ,_0: "prev"
+                      ,_1: $Json$Encode.list(_U.list([$Json$Encode.$int($Basics.fst(wCh.prev)),$Json$Encode.$int($Basics.snd(wCh.prev))]))}
+                     ,{ctor: "_Tuple2"
+                      ,_0: "next"
+                      ,_1: $Json$Encode.list(_U.list([$Json$Encode.$int($Basics.fst(wCh.next)),$Json$Encode.$int($Basics.snd(wCh.next))]))}
+                     ,{ctor: "_Tuple2",_0: "vis",_1: $Json$Encode.$int(wCh.vis)}
+                     ,{ctor: "_Tuple2",_0: "ch",_1: $Json$Encode.string($String.fromChar(wCh.ch))}]);
+   };
+   var encodeWUpdate = function (wUp) {
+      var _p1 = wUp;
+      switch (_p1.ctor)
+      {case "Insert": return $Json$Encode.object(A2($List._op["::"],{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("Insert")},wCharToJsonList(_p1._0)));
+         case "Delete": return $Json$Encode.object(A2($List._op["::"],{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("Delete")},wCharToJsonList(_p1._0)));
+         default: return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("NoUpdate")}]));}
+   };
+   var encodeStringUpdate = function (str) {
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("StringUpdate")}
+                                         ,{ctor: "_Tuple2",_0: "string",_1: $Json$Encode.string(str)}]));
+   };
+   var encodeWInsert = function (wCh) {
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "id",_1: $Json$Encode.string(wCh.id)}
+                                         ,{ctor: "_Tuple2",_0: "ch",_1: $Json$Encode.string($String.fromChar(wCh.ch))}
+                                         ,{ctor: "_Tuple2",_0: "next",_1: $Json$Encode.string(wCh.next)}
+                                         ,{ctor: "_Tuple2",_0: "prev",_1: $Json$Encode.string(wCh.prev)}
+                                         ,{ctor: "_Tuple2",_0: "vis",_1: $Json$Encode.$int(wCh.vis)}]));
+   };
+   var stringUpdateToJson = function (str) {    var strValue = encodeStringUpdate(str);return A2($Json$Encode.encode,2,strValue);};
+   var wUpdateToJson = function (wUpdate) {    var wUpValue = encodeWUpdate(wUpdate);return A2($Json$Encode.encode,2,wUpValue);};
+   var wUpdatesToJson = function (wUpdates) {
+      var wUpdateListValue = $Json$Encode.list(A2($List.map,encodeWUpdate,wUpdates));
+      return A2($Json$Encode.encode,2,wUpdateListValue);
+   };
+   var tUpdateToJson = function (tUpd) {    var tUpValue = encodeTUpdate(tUpd);return A2($Json$Encode.encode,2,tUpValue);};
+   var tUpdatesToJson = function (tUpdates) {
+      var tUpdateListValue = $Json$Encode.list(A2($List.map,encodeTUpdate,tUpdates));
+      return A2($Json$Encode.encode,2,tUpdateListValue);
+   };
+   var wSiteIdDecoder = A2($Json$Decode._op[":="],"siteId",$Json$Decode.$int);
+   var decodeWSiteId = function (str) {
+      var _p2 = A2($Json$Decode.decodeString,wSiteIdDecoder,str);
+      if (_p2.ctor === "Ok") {
+            return $Model.SiteId(_p2._0);
+         } else {
+            return $Model.NoUpdate;
+         }
+   };
+   var decCP = A2($Json$Decode._op[":="],"cp",$Json$Decode.$int);
+   var tDeleteStringDecoder = A3($Json$Decode.object2,
+   F2(function (str,cp) {    return A2($Model.DS,str,cp);}),
+   A2($Json$Decode._op[":="],"str",$Json$Decode.string),
+   decCP);
+   var tInsertStringDecoder = A3($Json$Decode.object2,
+   F2(function (str,cp) {    return A2($Model.IS,str,cp);}),
+   A2($Json$Decode._op[":="],"str",$Json$Decode.string),
+   decCP);
+   var toChar = function (str) {    var _p3 = $List.head($String.toList(str));if (_p3.ctor === "Just") {    return _p3._0;} else {    return _U.chr("$");}};
+   var tDeleteDecoder = A3($Json$Decode.object2,
+   F2(function (ch,cp) {    return A2($Model.D,toChar(ch),cp);}),
+   A2($Json$Decode._op[":="],"ch",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"cp",$Json$Decode.$int));
+   var decCh = A2($Json$Decode._op[":="],"ch",$Json$Decode.string);
+   var tInsertDecoder = A4($Json$Decode.object3,
+   F3(function (ch,cp,siteId) {    return A3($Model.I,toChar(ch),cp,siteId);}),
+   decCh,
+   decCP,
+   A2($Json$Decode._op[":="],"siteId",$Json$Decode.$int));
+   var decodeTUpdate = F2(function (typeStr,str) {
+      if (_U.eq(typeStr,"Insert")) {
+            var _p4 = A2($Json$Decode.decodeString,tInsertDecoder,str);
+            if (_p4.ctor === "Ok") {
+                  return _p4._0;
+               } else {
+                  return $Model.NoTUpdate;
+               }
+         } else if (_U.eq(typeStr,"Delete")) {
+               var _p5 = A2($Json$Decode.decodeString,tDeleteDecoder,str);
+               if (_p5.ctor === "Ok") {
+                     return _p5._0;
+                  } else {
+                     return $Model.NoTUpdate;
+                  }
+            } else if (_U.eq(typeStr,"InsertString")) {
+                  var _p6 = A2($Json$Decode.decodeString,tInsertStringDecoder,str);
+                  if (_p6.ctor === "Ok") {
+                        return _p6._0;
+                     } else {
+                        return $Model.NoTUpdate;
+                     }
+               } else if (_U.eq(typeStr,"DeleteString")) {
+                     var _p7 = A2($Json$Decode.decodeString,tDeleteStringDecoder,str);
+                     if (_p7.ctor === "Ok") {
+                           return _p7._0;
+                        } else {
+                           return $Model.NoTUpdate;
+                        }
+                  } else return $Model.NoTUpdate;
+   });
+   var decPrev = A2($Json$Decode._op[":="],
+   "prev",
+   A3($Json$Decode.tuple2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),$Json$Decode.$int,$Json$Decode.$int));
+   var decNext = A2($Json$Decode._op[":="],
+   "next",
+   A3($Json$Decode.tuple2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),$Json$Decode.$int,$Json$Decode.$int));
+   var decVis = A2($Json$Decode._op[":="],"vis",$Json$Decode.$int);
+   var decodeId = A2($Json$Decode._op[":="],
+   "id",
+   A3($Json$Decode.tuple2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),$Json$Decode.$int,$Json$Decode.$int));
+   var wCharDecoder = A6($Json$Decode.object5,
+   F5(function (id,next,prev,vis,chr) {    return A5($Model.WChar,id,next,prev,vis,toChar(chr));}),
+   decodeId,
+   decNext,
+   decPrev,
+   decVis,
+   decCh);
+   var decodeWInsert = function (str) {
+      var _p8 = A2($Json$Decode.decodeString,wCharDecoder,str);
+      if (_p8.ctor === "Ok") {
+            return $Model.Insert(_p8._0);
+         } else {
+            return $Model.NoUpdate;
+         }
+   };
+   var decodeWDelete = function (str) {
+      var _p9 = A2($Json$Decode.decodeString,wCharDecoder,str);
+      if (_p9.ctor === "Ok") {
+            return $Model.Delete(_p9._0);
+         } else {
+            return $Model.NoUpdate;
+         }
+   };
+   var decodeWUpdate = F2(function (typeStr,str) {
+      return _U.eq(typeStr,"Insert") ? decodeWInsert(str) : _U.eq(typeStr,"Delete") ? decodeWDelete(str) : _U.eq(typeStr,
+      "SiteId") ? decodeWSiteId(str) : $Model.NoUpdate;
+   });
+   var jsonToTUpdate = function (str) {
+      var _p10 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
+      if (_p10.ctor === "Ok") {
+            return A2(decodeTUpdate,_p10._0,str);
+         } else {
+            return $Model.NoTUpdate;
+         }
+   };
+   var jsonObjToWUpdate = function (str) {
+      var _p11 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
+      if (_p11.ctor === "Ok") {
+            return A2(decodeWUpdate,_p11._0,str);
+         } else {
+            return $Model.NoUpdate;
+         }
+   };
+   var wCharMaker = F5(function (id,strCh,vis,next,prev) {    return {id: id,ch: toChar(strCh),vis: vis,next: next,prev: prev};});
+   var siteIdDecoder = A2($Json$Decode.object1,function (id) {    return $Model.SiteId(id);},A2($Json$Decode._op[":="],"siteId",$Json$Decode.$int));
+   var wDeleteDecoder = A6($Json$Decode.object5,
+   F5(function (id,ch,vis,next,prev) {    return $Model.Delete(A5(wCharMaker,id,ch,vis,next,prev));}),
+   decodeId,
+   A2($Json$Decode._op[":="],"ch",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"vis",$Json$Decode.$int),
+   decNext,
+   decPrev);
+   var insertDeleteDecoder = A7($Json$Decode.object6,
+   F6(function (t,id,ch,vis,next,prev) {
+      return _U.eq(t,"Insert") ? $Model.Insert(A5(wCharMaker,id,ch,vis,next,prev)) : $Model.Delete(A5(wCharMaker,id,ch,vis,next,prev));
+   }),
+   A2($Json$Decode._op[":="],"type",$Json$Decode.string),
+   decodeId,
+   A2($Json$Decode._op[":="],"ch",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"vis",$Json$Decode.$int),
+   decNext,
+   decPrev);
+   var wUpdateDecoder = $Json$Decode.oneOf(_U.list([siteIdDecoder,insertDeleteDecoder]));
+   var jsonToWUpdates = function (str) {
+      var _p12 = A2($Json$Decode.decodeString,$Json$Decode.list(wUpdateDecoder),str);
+      if (_p12.ctor === "Ok") {
+            return _p12._0;
+         } else {
+            return _U.list([$Model.NoUpdate]);
+         }
+   };
+   return _elm.ConvertJson.values = {_op: _op
+                                    ,wUpdateDecoder: wUpdateDecoder
+                                    ,insertDeleteDecoder: insertDeleteDecoder
+                                    ,wDeleteDecoder: wDeleteDecoder
+                                    ,siteIdDecoder: siteIdDecoder
+                                    ,wCharMaker: wCharMaker
+                                    ,jsonToWUpdates: jsonToWUpdates
+                                    ,jsonObjToWUpdate: jsonObjToWUpdate
+                                    ,jsonToTUpdate: jsonToTUpdate
+                                    ,decodeId: decodeId
+                                    ,decVis: decVis
+                                    ,decNext: decNext
+                                    ,decPrev: decPrev
+                                    ,decCh: decCh
+                                    ,toChar: toChar
+                                    ,decodeTUpdate: decodeTUpdate
+                                    ,tInsertStringDecoder: tInsertStringDecoder
+                                    ,tDeleteStringDecoder: tDeleteStringDecoder
+                                    ,tInsertDecoder: tInsertDecoder
+                                    ,tDeleteDecoder: tDeleteDecoder
+                                    ,decCP: decCP
+                                    ,decodeWUpdate: decodeWUpdate
+                                    ,decodeWInsert: decodeWInsert
+                                    ,decodeWDelete: decodeWDelete
+                                    ,decodeWSiteId: decodeWSiteId
+                                    ,wCharDecoder: wCharDecoder
+                                    ,wSiteIdDecoder: wSiteIdDecoder
+                                    ,tUpdatesToJson: tUpdatesToJson
+                                    ,tUpdateToJson: tUpdateToJson
+                                    ,wUpdatesToJson: wUpdatesToJson
+                                    ,wUpdateToJson: wUpdateToJson
+                                    ,stringUpdateToJson: stringUpdateToJson
+                                    ,encodeWInsert: encodeWInsert
+                                    ,encodeStringUpdate: encodeStringUpdate
+                                    ,encodeWUpdate: encodeWUpdate
+                                    ,wCharToJsonList: wCharToJsonList
+                                    ,tDelToJsonList: tDelToJsonList
+                                    ,tInsertToJsonList: tInsertToJsonList
+                                    ,encodeTUpdate: encodeTUpdate};
+};

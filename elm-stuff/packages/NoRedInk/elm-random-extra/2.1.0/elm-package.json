@@ -1,0 +1,39 @@
+{
+    "version": "2.1.0",
+    "summary": "Extra functionality for the core Random library",
+    "repository": "https://github.com/NoRedInk/elm-random-extra.git",
+    "license": "MIT",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Random.Array",
+        "Random.Bool",
+        "Random.Char",
+        "Random.Color",
+        "Random.Date",
+        "Random.Dict",
+        "Random.Extra",
+        "Random.Float",
+        "Random.Function",
+        "Random.Int",
+        "Random.Keyboard",
+        "Random.List",
+        "Random.Mailbox",
+        "Random.Maybe",
+        "Random.Mouse",
+        "Random.Order",
+        "Random.Result",
+        "Random.Set",
+        "Random.Signal",
+        "Random.String",
+        "Random.Task",
+        "Random.Touch",
+        "Random.Window"
+    ],
+    "dependencies": {
+        "NoRedInk/elm-task-extra": "1.0.1 <= v < 2.0.0",
+        "elm-lang/core": "3.0.0 <= v < 4.0.0"
+    },
+    "elm-version": "0.16.0 <= v < 0.17.0"
+}

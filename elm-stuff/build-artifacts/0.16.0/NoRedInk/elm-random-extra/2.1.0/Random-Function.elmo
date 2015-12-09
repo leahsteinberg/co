@@ -1,0 +1,30 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Function = Elm.Random.Function || {};
+Elm.Random.Function.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Function = _elm.Random.Function || {};
+   if (_elm.Random.Function.values) return _elm.Random.Function.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   _op["<<<"] = F2(function (generatorBC,generatorAB) {
+      return A3($Random.map2,F2(function (f,g) {    return function (_p0) {    return g(f(_p0));};}),generatorAB,generatorBC);
+   });
+   _op[">>>"] = F2(function (generatorAB,generatorBC) {
+      return A3($Random.map2,F2(function (f,g) {    return function (_p1) {    return g(f(_p1));};}),generatorAB,generatorBC);
+   });
+   var func = function (generatorB) {    return A2($Random.map,F2(function (b,a) {    return b;}),generatorB);};
+   var func2 = function (generatorC) {    return func(func(generatorC));};
+   var func3 = function (generatorD) {    return func(func2(generatorD));};
+   var func4 = function (generatorE) {    return func(func3(generatorE));};
+   var func5 = function (generatorF) {    return func(func4(generatorF));};
+   var func6 = function (generatorG) {    return func(func5(generatorG));};
+   return _elm.Random.Function.values = {_op: _op,func: func,func2: func2,func3: func3,func4: func4,func5: func5,func6: func6};
+};

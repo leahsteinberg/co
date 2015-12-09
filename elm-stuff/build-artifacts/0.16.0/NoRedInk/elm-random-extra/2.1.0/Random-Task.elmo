@@ -1,0 +1,42 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Task = Elm.Random.Task || {};
+Elm.Random.Task.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Task = _elm.Random.Task || {};
+   if (_elm.Random.Task.values) return _elm.Random.Task.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $Task$Extra = Elm.Task.Extra.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var broadcast = F2(function (addresses,generator) {    return A2($Random$Extra.map,$Task$Extra.broadcast(addresses),generator);});
+   var send = F2(function (address,generator) {    return A2($Random$Extra.map,$Signal.send(address),generator);});
+   var optional = function (generator) {    return A2($Random$Extra.map,$Task$Extra.optional,generator);};
+   var parallel = function (generator) {    return A2($Random$Extra.map,$Task$Extra.parallel,generator);};
+   var sequence = function (generator) {    return A2($Random$Extra.map,$Task.sequence,generator);};
+   var spawn = function (generator) {    return A2($Random$Extra.map,$Task.spawn,generator);};
+   var timeout = function (time) {    return $Random$Extra.constant($Task.sleep(time));};
+   var rangeLengthTimeout = F2(function (minTime,maxTime) {    return A2($Random$Extra.flatMap,timeout,A2($Random.$float,minTime,maxTime));});
+   var error = function (generator) {    return A2($Random$Extra.map,$Task.fail,generator);};
+   var task = function (generator) {    return A2($Random$Extra.map,$Task.succeed,generator);};
+   return _elm.Random.Task.values = {_op: _op
+                                    ,task: task
+                                    ,error: error
+                                    ,timeout: timeout
+                                    ,rangeLengthTimeout: rangeLengthTimeout
+                                    ,spawn: spawn
+                                    ,sequence: sequence
+                                    ,parallel: parallel
+                                    ,optional: optional
+                                    ,send: send
+                                    ,broadcast: broadcast};
+};

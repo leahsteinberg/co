@@ -1,0 +1,44 @@
+Elm.Model = Elm.Model || {};
+Elm.Model.make = function (_elm) {
+   "use strict";
+   _elm.Model = _elm.Model || {};
+   if (_elm.Model.values) return _elm.Model.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var Model = F9(function (a,b,c,d,e,f,g,h,i) {    return {counter: a,site: b,wString: c,start: d,doc: e,debug: f,wSeen: g,pool: h,processedPool: i};});
+   var NoTUpdate = {ctor: "NoTUpdate"};
+   var DS = F2(function (a,b) {    return {ctor: "DS",_0: a,_1: b};});
+   var IS = F2(function (a,b) {    return {ctor: "IS",_0: a,_1: b};});
+   var D = F2(function (a,b) {    return {ctor: "D",_0: a,_1: b};});
+   var I = F3(function (a,b,c) {    return {ctor: "I",_0: a,_1: b,_2: c};});
+   var T = function (a) {    return {ctor: "T",_0: a};};
+   var W = function (a) {    return {ctor: "W",_0: a};};
+   var NoUpdate = {ctor: "NoUpdate"};
+   var SiteId = function (a) {    return {ctor: "SiteId",_0: a};};
+   var Delete = function (a) {    return {ctor: "Delete",_0: a};};
+   var Insert = function (a) {    return {ctor: "Insert",_0: a};};
+   var WChar = F5(function (a,b,c,d,e) {    return {id: a,next: b,prev: c,vis: d,ch: e};});
+   var Doc = F3(function (a,b,c) {    return {cp: a,str: b,len: c};});
+   return _elm.Model.values = {_op: _op
+                              ,Doc: Doc
+                              ,WChar: WChar
+                              ,Insert: Insert
+                              ,Delete: Delete
+                              ,SiteId: SiteId
+                              ,NoUpdate: NoUpdate
+                              ,W: W
+                              ,T: T
+                              ,I: I
+                              ,D: D
+                              ,IS: IS
+                              ,DS: DS
+                              ,NoTUpdate: NoTUpdate
+                              ,Model: Model};
+};

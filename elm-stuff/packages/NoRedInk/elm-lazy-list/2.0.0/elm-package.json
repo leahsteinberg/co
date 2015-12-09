@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "summary": "Lazy list implementation in Elm",
+    "repository": "https://github.com/NoRedInk/elm-lazy-list.git",
+    "license": "BSD-3-Clause",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [
+        "Lazy.List"
+    ],
+    "dependencies": {
+        "elm-lang/core": "2.0.0 <= v < 4.0.0",
+        "maxsnew/lazy": "1.1.0 <= v < 2.0.0"
+    },
+    "elm-version": "0.15.0 <= v < 0.17.0"
+}

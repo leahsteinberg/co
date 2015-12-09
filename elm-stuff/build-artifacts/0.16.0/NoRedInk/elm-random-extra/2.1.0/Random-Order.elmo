@@ -1,0 +1,20 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Order = Elm.Random.Order || {};
+Elm.Random.Order.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Order = _elm.Random.Order || {};
+   if (_elm.Random.Order.values) return _elm.Random.Order.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var order = A2($Random$Extra.selectWithDefault,$Basics.EQ,_U.list([$Basics.LT,$Basics.EQ,$Basics.GT]));
+   return _elm.Random.Order.values = {_op: _op,order: order};
+};

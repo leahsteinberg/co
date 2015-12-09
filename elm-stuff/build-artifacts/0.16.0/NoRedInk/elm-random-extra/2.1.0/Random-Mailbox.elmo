@@ -1,0 +1,21 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Mailbox = Elm.Random.Mailbox || {};
+Elm.Random.Mailbox.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Mailbox = _elm.Random.Mailbox || {};
+   if (_elm.Random.Mailbox.values) return _elm.Random.Mailbox.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var mailbox = function (generator) {    return A2($Random$Extra.map,$Signal.mailbox,generator);};
+   var address = function (generator) {    return A2($Random$Extra.map,function (_) {    return _.address;},mailbox(generator));};
+   return _elm.Random.Mailbox.values = {_op: _op,mailbox: mailbox,address: address};
+};

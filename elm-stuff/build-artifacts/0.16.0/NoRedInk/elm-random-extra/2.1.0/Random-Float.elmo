@@ -1,0 +1,50 @@
+Elm.Random = Elm.Random || {};
+Elm.Random.Float = Elm.Random.Float || {};
+Elm.Random.Float.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   _elm.Random.Float = _elm.Random.Float || {};
+   if (_elm.Random.Float.values) return _elm.Random.Float.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var normal = F3(function (start,end,standardDeviation) {
+      var normalDistribution = F3(function (mean,stdDev,x) {
+         if (_U.eq(stdDev,0)) return x; else {
+               var exponent = (x - mean) * (x - mean) / (2 * stdDev * stdDev);
+               var scale = 1 / (stdDev * $Basics.sqrt(2 * $Basics.pi));
+               return scale * Math.pow($Basics.e,0 - exponent);
+            }
+      });
+      return A2($Random$Extra.map,A2(normalDistribution,(end - start) / 2,standardDeviation),A2($Random.$float,start,end));
+   });
+   var standardNormal = A3(normal,$Basics.toFloat($Random.minInt) + 1,$Basics.toFloat($Random.maxInt),1);
+   var gaussian = normal;
+   var unitRange = A2($Random.$float,-1,1);
+   var negativeProbability = A2($Random.$float,-1,0);
+   var probability = A2($Random.$float,0,1);
+   var floatLessThan = function (value) {    return A2($Random.$float,$Basics.toFloat($Random.minInt),value);};
+   var floatGreaterThan = function (value) {    return A2($Random.$float,value,$Basics.toFloat($Random.maxInt));};
+   var negativeFloat = A2($Random.$float,$Basics.toFloat($Random.minInt),0);
+   var positiveFloat = A2($Random.$float,0,$Basics.toFloat($Random.maxInt));
+   var anyFloat = A2($Random.$float,$Basics.toFloat($Random.minInt),$Basics.toFloat($Random.maxInt));
+   return _elm.Random.Float.values = {_op: _op
+                                     ,anyFloat: anyFloat
+                                     ,positiveFloat: positiveFloat
+                                     ,negativeFloat: negativeFloat
+                                     ,floatGreaterThan: floatGreaterThan
+                                     ,floatLessThan: floatLessThan
+                                     ,probability: probability
+                                     ,negativeProbability: negativeProbability
+                                     ,unitRange: unitRange
+                                     ,normal: normal
+                                     ,standardNormal: standardNormal
+                                     ,gaussian: gaussian};
+};

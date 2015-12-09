@@ -1,0 +1,142 @@
+Elm.Check = Elm.Check || {};
+Elm.Check.Investigator = Elm.Check.Investigator || {};
+Elm.Check.Investigator.make = function (_elm) {
+   "use strict";
+   _elm.Check = _elm.Check || {};
+   _elm.Check.Investigator = _elm.Check.Investigator || {};
+   if (_elm.Check.Investigator.values) return _elm.Check.Investigator.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Random$Array = Elm.Random.Array.make(_elm),
+   $Random$Bool = Elm.Random.Bool.make(_elm),
+   $Random$Char = Elm.Random.Char.make(_elm),
+   $Random$Extra = Elm.Random.Extra.make(_elm),
+   $Random$Function = Elm.Random.Function.make(_elm),
+   $Random$List = Elm.Random.List.make(_elm),
+   $Random$Maybe = Elm.Random.Maybe.make(_elm),
+   $Random$Order = Elm.Random.Order.make(_elm),
+   $Random$Result = Elm.Random.Result.make(_elm),
+   $Random$String = Elm.Random.String.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Shrink = Elm.Shrink.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var random = function (_) {    return _.generator;};
+   var shrink = function (_) {    return _.shrinker;};
+   var investigator = F2(function (generator,shrinker) {    return {generator: generator,shrinker: shrinker};});
+   var $void = A2(investigator,$Random$Extra.constant({ctor: "_Tuple0"}),$Shrink.$void);
+   var bool = A2(investigator,$Random$Bool.bool,$Shrink.bool);
+   var order = A2(investigator,$Random$Order.order,$Shrink.order);
+   var $int = function () {
+      var generator = A2($Random$Extra.frequency,
+      _U.list([{ctor: "_Tuple2",_0: 3,_1: A2($Random.$int,-50,50)},{ctor: "_Tuple2",_0: 1,_1: A2($Random.$int,$Random.minInt,$Random.maxInt)}]),
+      A2($Random.$int,-50,50));
+      return A2(investigator,generator,$Shrink.$int);
+   }();
+   var rangeInt = F2(function (min,max) {    return A2(investigator,A2($Random.$int,min,max),$Shrink.$int);});
+   var $float = function () {
+      var generator = A2($Random$Extra.frequency,
+      _U.list([{ctor: "_Tuple2",_0: 3,_1: A2($Random.$float,-50,50)}
+              ,{ctor: "_Tuple2",_0: 1,_1: A2($Random.$float,$Basics.toFloat($Random.minInt),$Basics.toFloat($Random.maxInt))}]),
+      A2($Random.$float,-50,50));
+      return A2(investigator,A2($Random.$float,-50,50),$Shrink.$float);
+   }();
+   var percentage = function () {
+      var generator = A2($Random$Extra.frequency,
+      _U.list([{ctor: "_Tuple2",_0: 3,_1: A2($Random.$float,0,1)}
+              ,{ctor: "_Tuple2",_0: 1,_1: $Random$Extra.constant(0)}
+              ,{ctor: "_Tuple2",_0: 1,_1: $Random$Extra.constant(1)}]),
+      A2($Random.$float,0,1));
+      return A2(investigator,generator,$Shrink.$float);
+   }();
+   var ascii = A2(investigator,$Random$Char.ascii,$Shrink.$char);
+   var $char = A2(investigator,A2($Random$Char.$char,32,127),$Shrink.character);
+   var upperCaseChar = A2(investigator,$Random$Char.upperCaseLatin,$Shrink.character);
+   var lowerCaseChar = A2(investigator,$Random$Char.lowerCaseLatin,$Shrink.character);
+   var unicode = A2(investigator,$Random$Char.unicode,$Shrink.$char);
+   var string = A2(investigator,A3($Random$String.rangeLengthString,0,10,$Random$Char.ascii),$Shrink.string);
+   var maybe = function (inv) {    return A2(investigator,$Random$Maybe.maybe(inv.generator),$Shrink.maybe(inv.shrinker));};
+   var result = F2(function (errSpec,valSpec) {
+      return A2(investigator,A2($Random$Result.result,errSpec.generator,valSpec.generator),A2($Shrink.result,errSpec.shrinker,valSpec.shrinker));
+   });
+   var list = function (inv) {    return A2(investigator,A3($Random$List.rangeLengthList,0,10,inv.generator),$Shrink.list(inv.shrinker));};
+   var array = function (inv) {    return A2(investigator,A3($Random$Array.rangeLengthArray,0,10,inv.generator),$Shrink.array(inv.shrinker));};
+   var tuple = function (_p0) {
+      var _p1 = _p0;
+      var _p3 = _p1._1;
+      var _p2 = _p1._0;
+      return A2(investigator,A2($Random$Extra.zip,_p2.generator,_p3.generator),$Shrink.tuple({ctor: "_Tuple2",_0: _p2.shrinker,_1: _p3.shrinker}));
+   };
+   var tuple3 = function (_p4) {
+      var _p5 = _p4;
+      var _p8 = _p5._2;
+      var _p7 = _p5._1;
+      var _p6 = _p5._0;
+      return A2(investigator,
+      A3($Random$Extra.zip3,_p6.generator,_p7.generator,_p8.generator),
+      $Shrink.tuple3({ctor: "_Tuple3",_0: _p6.shrinker,_1: _p7.shrinker,_2: _p8.shrinker}));
+   };
+   var tuple4 = function (_p9) {
+      var _p10 = _p9;
+      var _p14 = _p10._3;
+      var _p13 = _p10._2;
+      var _p12 = _p10._1;
+      var _p11 = _p10._0;
+      return A2(investigator,
+      A4($Random$Extra.zip4,_p11.generator,_p12.generator,_p13.generator,_p14.generator),
+      $Shrink.tuple4({ctor: "_Tuple4",_0: _p11.shrinker,_1: _p12.shrinker,_2: _p13.shrinker,_3: _p14.shrinker}));
+   };
+   var tuple5 = function (_p15) {
+      var _p16 = _p15;
+      var _p21 = _p16._4;
+      var _p20 = _p16._3;
+      var _p19 = _p16._2;
+      var _p18 = _p16._1;
+      var _p17 = _p16._0;
+      return A2(investigator,
+      A5($Random$Extra.zip5,_p17.generator,_p18.generator,_p19.generator,_p20.generator,_p21.generator),
+      $Shrink.tuple5({ctor: "_Tuple5",_0: _p17.shrinker,_1: _p18.shrinker,_2: _p19.shrinker,_3: _p20.shrinker,_4: _p21.shrinker}));
+   };
+   var func = function (invB) {    return A2(investigator,$Random$Function.func(invB.generator),$Shrink.noShrink);};
+   var func2 = function (invC) {    return A2(investigator,$Random$Function.func2(invC.generator),$Shrink.noShrink);};
+   var func3 = function (invD) {    return A2(investigator,$Random$Function.func3(invD.generator),$Shrink.noShrink);};
+   var func4 = function (invE) {    return A2(investigator,$Random$Function.func4(invE.generator),$Shrink.noShrink);};
+   var func5 = function (invF) {    return A2(investigator,$Random$Function.func5(invF.generator),$Shrink.noShrink);};
+   var Investigator = F2(function (a,b) {    return {generator: a,shrinker: b};});
+   return _elm.Check.Investigator.values = {_op: _op
+                                           ,Investigator: Investigator
+                                           ,investigator: investigator
+                                           ,$void: $void
+                                           ,bool: bool
+                                           ,order: order
+                                           ,$int: $int
+                                           ,rangeInt: rangeInt
+                                           ,$float: $float
+                                           ,percentage: percentage
+                                           ,ascii: ascii
+                                           ,$char: $char
+                                           ,upperCaseChar: upperCaseChar
+                                           ,lowerCaseChar: lowerCaseChar
+                                           ,unicode: unicode
+                                           ,string: string
+                                           ,maybe: maybe
+                                           ,result: result
+                                           ,list: list
+                                           ,array: array
+                                           ,tuple: tuple
+                                           ,tuple3: tuple3
+                                           ,tuple4: tuple4
+                                           ,tuple5: tuple5
+                                           ,func: func
+                                           ,func2: func2
+                                           ,func3: func3
+                                           ,func4: func4
+                                           ,func5: func5
+                                           ,shrink: shrink
+                                           ,random: random};
+};

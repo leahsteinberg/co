@@ -1,0 +1,188 @@
+Elm.Check = Elm.Check || {};
+Elm.Check.make = function (_elm) {
+   "use strict";
+   _elm.Check = _elm.Check || {};
+   if (_elm.Check.values) return _elm.Check.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Check$Investigator = Elm.Check.Investigator.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Lazy$List = Elm.Lazy.List.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Trampoline = Elm.Trampoline.make(_elm);
+   var _op = {};
+   var $false = F2(function (f,pred) {    return A2(f,pred,$Basics.always(false));});
+   var $true = F2(function (f,pred) {    return A2(f,pred,$Basics.always(true));});
+   var $for = F2(function (f,x) {    return f(x);});
+   var is = F2(function (f,x) {    return f(x);});
+   var that = F2(function (f,x) {    return f(x);});
+   var FailureOptions = F8(function (a,b,c,d,e,f,g,h) {
+      return {name: a,counterExample: b,actual: c,expected: d,original: e,seed: f,numberOfChecks: g,numberOfShrinks: h};
+   });
+   var SuccessOptions = F3(function (a,b,c) {    return {name: a,seed: b,numberOfChecks: c};});
+   var Multiple = F2(function (a,b) {    return {ctor: "Multiple",_0: a,_1: b};});
+   var check = F3(function (claim,n,seed) {
+      var _p0 = claim;
+      if (_p0.ctor === "Claim") {
+            return A2(_p0._1,n,seed);
+         } else {
+            return A2(Multiple,_p0._0,A2($List.map,function (c) {    return A3(check,c,n,seed);},_p0._1));
+         }
+   });
+   var quickCheck = function (claim) {    return A3(check,claim,100,$Random.initialSeed(1));};
+   var Unit = function (a) {    return {ctor: "Unit",_0: a};};
+   var Suite = F2(function (a,b) {    return {ctor: "Suite",_0: a,_1: b};});
+   var suite = F2(function (name,claims) {    return A2(Suite,name,claims);});
+   var Claim = F2(function (a,b) {    return {ctor: "Claim",_0: a,_1: b};});
+   var claim = F4(function (name,actualStatement,expectedStatement,investigator) {
+      return A2(Claim,
+      name,
+      F2(function (numberOfChecks,seed) {
+         var originalCounterExample$ = F2(function (seed,currentNumberOfChecks) {
+            if (_U.cmp(currentNumberOfChecks,numberOfChecks) > -1) return $Trampoline.Done($Result.Ok(numberOfChecks)); else {
+                  var _p1 = A2($Random.generate,investigator.generator,seed);
+                  var value = _p1._0;
+                  var nextSeed = _p1._1;
+                  var actual = actualStatement(value);
+                  var expected = expectedStatement(value);
+                  return _U.eq(actual,expected) ? $Trampoline.Continue(function (_p2) {
+                     var _p3 = _p2;
+                     return A2(originalCounterExample$,nextSeed,currentNumberOfChecks + 1);
+                  }) : $Trampoline.Done($Result.Err({ctor: "_Tuple5",_0: value,_1: actual,_2: expected,_3: nextSeed,_4: currentNumberOfChecks + 1}));
+               }
+         });
+         var originalCounterExample = $Trampoline.trampoline(A2(originalCounterExample$,seed,0));
+         var _p4 = originalCounterExample;
+         if (_p4.ctor === "Ok") {
+               return Unit($Result.Ok({name: name,seed: seed,numberOfChecks: A2($Basics.max,0,_p4._0)}));
+            } else {
+               var _p9 = _p4._0._0;
+               var shrink = F2(function (counterExample,currentNumberOfShrinks) {
+                  var shrunkenCounterExamples = investigator.shrinker(counterExample);
+                  var failingShrunkenCounterExamples = A2($Lazy$List.keepIf,
+                  function (shrunk) {
+                     return $Basics.not(_U.eq(actualStatement(shrunk),expectedStatement(shrunk)));
+                  },
+                  shrunkenCounterExamples);
+                  var _p5 = $Lazy$List.head(failingShrunkenCounterExamples);
+                  if (_p5.ctor === "Nothing") {
+                        return $Trampoline.Done({ctor: "_Tuple2",_0: counterExample,_1: currentNumberOfShrinks});
+                     } else {
+                        return $Trampoline.Continue(function (_p6) {    var _p7 = _p6;return A2(shrink,_p5._0,currentNumberOfShrinks + 1);});
+                     }
+               });
+               var _p8 = $Trampoline.trampoline(A2(shrink,_p9,0));
+               var minimal = _p8._0;
+               var numberOfShrinks = _p8._1;
+               var actual = actualStatement(minimal);
+               var expected = expectedStatement(minimal);
+               return Unit($Result.Err({name: name
+                                       ,seed: _p4._0._3
+                                       ,counterExample: $Basics.toString(minimal)
+                                       ,expected: $Basics.toString(expected)
+                                       ,actual: $Basics.toString(actual)
+                                       ,original: {counterExample: $Basics.toString(_p9)
+                                                  ,actual: $Basics.toString(_p4._0._1)
+                                                  ,expected: $Basics.toString(_p4._0._2)}
+                                       ,numberOfChecks: _p4._0._4
+                                       ,numberOfShrinks: numberOfShrinks}));
+            }
+      }));
+   });
+   var claimTrue = F2(function (name,predicate) {    return A3(claim,name,predicate,$Basics.always(true));});
+   var claimFalse = F2(function (name,predicate) {    return A3(claim,name,predicate,$Basics.always(false));});
+   var claim2 = F5(function (name,actualStatement,expectedStatement,specA,specB) {
+      return A4(claim,
+      name,
+      function (_p10) {
+         var _p11 = _p10;
+         return A2(actualStatement,_p11._0,_p11._1);
+      },
+      function (_p12) {
+         var _p13 = _p12;
+         return A2(expectedStatement,_p13._0,_p13._1);
+      },
+      $Check$Investigator.tuple({ctor: "_Tuple2",_0: specA,_1: specB}));
+   });
+   var claim2True = F2(function (name,predicate) {    return A3(claim2,name,predicate,F2(function (_p15,_p14) {    return true;}));});
+   var claim2False = F2(function (name,predicate) {    return A3(claim2,name,predicate,F2(function (_p17,_p16) {    return false;}));});
+   var claim3 = F6(function (name,actualStatement,expectedStatement,specA,specB,specC) {
+      return A4(claim,
+      name,
+      function (_p18) {
+         var _p19 = _p18;
+         return A3(actualStatement,_p19._0,_p19._1,_p19._2);
+      },
+      function (_p20) {
+         var _p21 = _p20;
+         return A3(expectedStatement,_p21._0,_p21._1,_p21._2);
+      },
+      $Check$Investigator.tuple3({ctor: "_Tuple3",_0: specA,_1: specB,_2: specC}));
+   });
+   var claim3True = F2(function (name,predicate) {    return A3(claim3,name,predicate,F3(function (_p24,_p23,_p22) {    return true;}));});
+   var claim3False = F2(function (name,predicate) {    return A3(claim3,name,predicate,F3(function (_p27,_p26,_p25) {    return false;}));});
+   var claim4 = F7(function (name,actualStatement,expectedStatement,specA,specB,specC,specD) {
+      return A4(claim,
+      name,
+      function (_p28) {
+         var _p29 = _p28;
+         return A4(actualStatement,_p29._0,_p29._1,_p29._2,_p29._3);
+      },
+      function (_p30) {
+         var _p31 = _p30;
+         return A4(expectedStatement,_p31._0,_p31._1,_p31._2,_p31._3);
+      },
+      $Check$Investigator.tuple4({ctor: "_Tuple4",_0: specA,_1: specB,_2: specC,_3: specD}));
+   });
+   var claim4True = F2(function (name,predicate) {    return A3(claim4,name,predicate,F4(function (_p35,_p34,_p33,_p32) {    return true;}));});
+   var claim4False = F2(function (name,predicate) {    return A3(claim4,name,predicate,F4(function (_p39,_p38,_p37,_p36) {    return false;}));});
+   var claim5 = F8(function (name,actualStatement,expectedStatement,specA,specB,specC,specD,specE) {
+      return A4(claim,
+      name,
+      function (_p40) {
+         var _p41 = _p40;
+         return A5(actualStatement,_p41._0,_p41._1,_p41._2,_p41._3,_p41._4);
+      },
+      function (_p42) {
+         var _p43 = _p42;
+         return A5(expectedStatement,_p43._0,_p43._1,_p43._2,_p43._3,_p43._4);
+      },
+      $Check$Investigator.tuple5({ctor: "_Tuple5",_0: specA,_1: specB,_2: specC,_3: specD,_4: specE}));
+   });
+   var claim5True = F2(function (name,predicate) {    return A3(claim5,name,predicate,F5(function (_p48,_p47,_p46,_p45,_p44) {    return true;}));});
+   var claim5False = F2(function (name,predicate) {    return A3(claim5,name,predicate,F5(function (_p53,_p52,_p51,_p50,_p49) {    return false;}));});
+   return _elm.Check.values = {_op: _op
+                              ,Claim: Claim
+                              ,Suite: Suite
+                              ,Unit: Unit
+                              ,Multiple: Multiple
+                              ,SuccessOptions: SuccessOptions
+                              ,FailureOptions: FailureOptions
+                              ,claim: claim
+                              ,claimTrue: claimTrue
+                              ,claimFalse: claimFalse
+                              ,check: check
+                              ,quickCheck: quickCheck
+                              ,suite: suite
+                              ,claim2: claim2
+                              ,claim2True: claim2True
+                              ,claim2False: claim2False
+                              ,claim3: claim3
+                              ,claim3True: claim3True
+                              ,claim3False: claim3False
+                              ,claim4: claim4
+                              ,claim4True: claim4True
+                              ,claim4False: claim4False
+                              ,claim5: claim5
+                              ,claim5True: claim5True
+                              ,claim5False: claim5False
+                              ,that: that
+                              ,is: is
+                              ,$for: $for
+                              ,$true: $true
+                              ,$false: $false};
+};

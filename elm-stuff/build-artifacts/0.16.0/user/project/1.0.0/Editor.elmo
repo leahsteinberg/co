@@ -1,0 +1,148 @@
+Elm.Editor = Elm.Editor || {};
+Elm.Editor.make = function (_elm) {
+   "use strict";
+   _elm.Editor = _elm.Editor || {};
+   if (_elm.Editor.values) return _elm.Editor.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
+   var _op = {};
+   var sendDebug = F2(function (model,str) {
+      return {ctor: "_Tuple2",_0: _U.update(model,{debug: A2($Basics._op["++"],str,model.debug)}),_1: $Model.W($Model.NoUpdate)};
+   });
+   var createInsertTUpdate = F2(function (_p0,tUpdates) {    var _p1 = _p0;return A2($List._op["::"],A3($Model.I,_p1._0,_p1._1,_p1._2),tUpdates);});
+   var toEditList = function (_p2) {    var _p3 = _p2;return {ctor: "_Tuple2",_0: _p3._0,_1: _U.list([_p3._1])};};
+   var processTUpdate = F2(function (typ,model) {
+      var _p4 = typ;
+      switch (_p4.ctor)
+      {case "I": return toEditList(A3($Graph.generateInsert,_p4._0,_p4._1,model));
+         case "D": return toEditList(A3($Graph.generateDelete,_p4._0,_p4._1,model));
+         case "IS": var _p5 = A3(insertString,_p4._0,_p4._1 - 1,model);
+           var newModel = _p5._0;
+           var newEdits = _p5._1;
+           return {ctor: "_Tuple2",_0: newModel,_1: $List.reverse(newEdits)};
+         default: return {ctor: "_Tuple2",_0: model,_1: _U.list([$Model.W($Model.NoUpdate)])};}
+   });
+   var insertString = F3(function (string,index,model) {
+      var strIndexList = A3($List.map2,
+      F2(function (ch,index) {    return {ctor: "_Tuple3",_0: ch,_1: index,_2: model.site};}),
+      $String.toList(string),
+      _U.range(index,index + $String.length(string) - 1));
+      var tUpdates = A3($List.foldr,createInsertTUpdate,_U.list([]),strIndexList);
+      return A3($List.foldl,insertCharOfString,{ctor: "_Tuple2",_0: model,_1: _U.list([])},tUpdates);
+   });
+   var insertCharOfString = F2(function (tUpdate,_p6) {
+      var _p7 = _p6;
+      var _p8 = A2(processTUpdate,tUpdate,_p7._0);
+      var newModel = _p8._0;
+      var newEdits = _p8._1;
+      return {ctor: "_Tuple2",_0: newModel,_1: A2($Basics._op["++"],_p7._1,newEdits)};
+   });
+   var integrateRemoteUpdate = F2(function (wUpd,m) {
+      var integrate = F2(function (intFunction,wCh) {
+         var _p9 = toEditList(A2(intFunction,wCh,m));
+         var newModel = _p9._0;
+         var newEdits = _p9._1;
+         var _p10 = integratePool(newModel);
+         var newIntModel = _p10._0;
+         var newIntEdits = _p10._1;
+         return {ctor: "_Tuple2",_0: newIntModel,_1: A2($Basics._op["++"],newIntEdits,newEdits)};
+      });
+      var _p11 = wUpd;
+      switch (_p11.ctor)
+      {case "Insert": return A2(integrate,$Graph.integrateRemoteInsert,_p11._0);
+         case "Delete": return A2(integrate,$Graph.integrateRemoteDelete,_p11._0);
+         default: return {ctor: "_Tuple2",_0: m,_1: _U.list([])};}
+   });
+   var integratePool = function (model) {
+      integratePool: while (true) {
+         var _p12 = model.pool;
+         if (_p12.ctor === "[]") {
+               return {ctor: "_Tuple2",_0: _U.update(model,{pool: model.processedPool,processedPool: _U.list([])}),_1: _U.list([])};
+            } else {
+               var _p14 = _p12._1;
+               var _p13 = _p12._0;
+               if (A2($Woot.canIntegrate,_p13,model.wSeen)) return A2(integrateRemoteUpdate,
+                  _p13,
+                  _U.update(model,{pool: A2($Basics._op["++"],model.processedPool,_p14),processedPool: _U.list([])})); else {
+                     var _v6 = _U.update(model,{pool: _p14,processedPool: A2($List._op["::"],_p13,model.processedPool)});
+                     model = _v6;
+                     continue integratePool;
+                  }
+            }
+      }
+   };
+   var integrateNew = F4(function (integrateFunction,wUpd,wCh,model) {
+      var _p15 = toEditList(A2(integrateFunction,wCh,model));
+      var newModel = _p15._0;
+      var newEdits = _p15._1;
+      var _p16 = integratePool(newModel);
+      var intNewModel = _p16._0;
+      var intNewEdits = _p16._1;
+      return {ctor: "_Tuple2",_0: intNewModel,_1: A2($Basics._op["++"],intNewEdits,newEdits)};
+   });
+   var processServerUpdate = F2(function (wUpd,model) {
+      var handleIntegration = F3(function (wCh,insert,integrateFunction) {
+         return insert && A2($Set.member,wCh.id,model.wSeen) ? {ctor: "_Tuple2",_0: model,_1: _U.list([])} : A2($Woot.canIntegrate,
+         wUpd,
+         model.wSeen) ? A4(integrateNew,integrateFunction,wUpd,wCh,model) : {ctor: "_Tuple2"
+                                                                            ,_0: _U.update(model,{pool: A2($List._op["::"],wUpd,model.pool)})
+                                                                            ,_1: _U.list([])};
+      });
+      var _p17 = wUpd;
+      switch (_p17.ctor)
+      {case "SiteId": return {ctor: "_Tuple2",_0: _U.update(model,{site: _p17._0}),_1: _U.list([])};
+         case "Insert": return A3(handleIntegration,_p17._0,true,$Graph.integrateRemoteInsert);
+         case "Delete": return A3(handleIntegration,_p17._0,false,$Graph.integrateRemoteDelete);
+         default: return {ctor: "_Tuple2",_0: model,_1: _U.list([])};}
+   });
+   var processEdit = F2(function (edit,model) {
+      var _p18 = edit;
+      if (_p18.ctor === "T") {
+            return A2(processTUpdate,_p18._0,model);
+         } else {
+            return A2(processServerUpdate,_p18._0,model);
+         }
+   });
+   var processEditsAccum = F3(function (edits,model,oldEdits) {
+      processEditsAccum: while (true) {
+         var _p19 = edits;
+         if (_p19.ctor === "[]") {
+               return {ctor: "_Tuple2",_0: model,_1: oldEdits};
+            } else {
+               var _p20 = A2(processEdit,_p19._0,model);
+               var newModel = _p20._0;
+               var accEdits = _p20._1;
+               var _v10 = _p19._1,_v11 = newModel,_v12 = A2($Basics._op["++"],oldEdits,accEdits);
+               edits = _v10;
+               model = _v11;
+               oldEdits = _v12;
+               continue processEditsAccum;
+            }
+      }
+   });
+   var processEdits = F2(function (edits,model) {    return A3(processEditsAccum,edits,model,_U.list([]));});
+   return _elm.Editor.values = {_op: _op
+                               ,integrateRemoteUpdate: integrateRemoteUpdate
+                               ,integratePool: integratePool
+                               ,processEdits: processEdits
+                               ,processEditsAccum: processEditsAccum
+                               ,processEdit: processEdit
+                               ,integrateNew: integrateNew
+                               ,processServerUpdate: processServerUpdate
+                               ,processTUpdate: processTUpdate
+                               ,insertString: insertString
+                               ,insertCharOfString: insertCharOfString
+                               ,toEditList: toEditList
+                               ,createInsertTUpdate: createInsertTUpdate
+                               ,sendDebug: sendDebug};
+};

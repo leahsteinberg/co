@@ -1,0 +1,125 @@
+Elm.DraftTests = Elm.DraftTests || {};
+Elm.DraftTests.make = function (_elm) {
+   "use strict";
+   _elm.DraftTests = _elm.DraftTests || {};
+   if (_elm.DraftTests.values) return _elm.DraftTests.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Constants = Elm.Constants.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Editor = Elm.Editor.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Model = Elm.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
+   var _op = {};
+   var makeEmptySite = function (id) {
+      return {counter: 1
+             ,site: id
+             ,wString: _U.list([])
+             ,doc: {cp: 666,str: "bad",len: 666}
+             ,debug: ""
+             ,wSeen: A2($Set.insert,$Constants.endId,A2($Set.insert,$Constants.startId,$Set.empty))
+             ,start: $Constants.startChar
+             ,processedPool: _U.list([])
+             ,pool: _U.list([])};
+   };
+   var simpleCase = function () {
+      var empty = makeEmptySite(1);
+      var _p0 = A3($Editor.insertString,"a",1,empty);
+      var model = _p0._0;
+      var added = _p0._1;
+      return _U.eq($Woot.wToString(model.wString),"a");
+   }();
+   var simpleCaseLonger = function () {
+      var empty = makeEmptySite(1);
+      var _p1 = A3($Editor.insertString,"hello",1,empty);
+      var model = _p1._0;
+      var edit = _p1._1;
+      return _U.eq($Woot.wToString(model.wString),"hello");
+   }();
+   var insertOrderIrrelevant = function () {
+      var remote = makeEmptySite(2);
+      var local = makeEmptySite(1);
+      var _p2 = A3($Editor.insertString,"hello",1,local);
+      var localModel = _p2._0;
+      var lEdits = _p2._1;
+      var _p3 = A2($Editor.processEdits,lEdits,remote);
+      var remoteModel = _p3._0;
+      var rEdits = _p3._1;
+      return _U.eq($Woot.wToString(remoteModel.wString),"hello") && _U.eq($Woot.wToString(localModel.wString),"hello");
+   }();
+   var concurrentInsertsConsistentText = function () {
+      var _p4 = A3($Editor.insertString,"hello",1,makeEmptySite(1));
+      var localModel = _p4._0;
+      var lEdits = _p4._1;
+      var _p5 = A2($Editor.processEdits,lEdits,makeEmptySite(2));
+      var remoteModel = _p5._0;
+      var rEdits = _p5._1;
+      var _p6 = A3($Editor.insertString,"kittie",5,remoteModel);
+      var remoteModelType = _p6._0;
+      var newREdits = _p6._1;
+      var _p7 = A3($Editor.insertString,"doggie",3,localModel);
+      var localModelType = _p7._0;
+      var newLEdits = _p7._1;
+      var _p8 = A2($Editor.processEdits,newREdits,localModelType);
+      var localModelNew = _p8._0;
+      var newLPEdits = _p8._1;
+      var _p9 = A2($Editor.processEdits,newLEdits,remoteModelType);
+      var remoteModelNew = _p9._0;
+      var newRPEdits = _p9._1;
+      return _U.eq($Woot.wToString(remoteModelNew.wString),$Woot.wToString(localModelNew.wString));
+   }();
+   var insertIsIdempotent = function () {
+      var _p10 = A3($Editor.insertString,"hey there",1,makeEmptySite(1));
+      var localModel = _p10._0;
+      var lEdits = _p10._1;
+      var _p11 = A2($Editor.processEdits,lEdits,localModel);
+      var newLocalModel = _p11._0;
+      var newEdits = _p11._1;
+      return _U.eq($Woot.wToString(localModel.wString),$Woot.wToString(newLocalModel.wString));
+   }();
+   var localDeleteRemovesCharacter = function () {
+      var _p12 = A3($Editor.insertString,"hi how are you?",1,makeEmptySite(1));
+      var localModel = _p12._0;
+      var lEdits = _p12._1;
+      var _p13 = A2($Editor.processEdits,_U.list([$Model.T(A2($Model.D,_U.chr("h"),3))]),localModel);
+      var newModel = _p13._0;
+      var newEdits = _p13._1;
+      return _U.eq($Woot.wToString(newModel.wString),"hi ow are you?");
+   }();
+   var remoteDeleteProducesConsistentResults = function () {
+      var _p14 = A3($Editor.insertString,"what are you doing there?!?",1,makeEmptySite(1));
+      var localModel = _p14._0;
+      var lEdits = _p14._1;
+      var _p15 = A2($Editor.processEdits,_U.list([$Model.T(A2($Model.D,_U.chr("a"),5))]),localModel);
+      var newLocalModel = _p15._0;
+      var newLEdits = _p15._1;
+      var _p16 = A2($Editor.processEdits,A2($Basics._op["++"],newLEdits,lEdits),makeEmptySite(2));
+      var remoteModel = _p16._0;
+      var remoteEdits = _p16._1;
+      return _U.eq($Woot.wToString(remoteModel.wString),"what re you doing there?!?");
+   }();
+   var runTestsStrings = _U.list([remoteDeleteProducesConsistentResults]);
+   var runTests1 = _U.list([simpleCase
+                           ,simpleCaseLonger
+                           ,insertOrderIrrelevant
+                           ,concurrentInsertsConsistentText
+                           ,insertIsIdempotent
+                           ,localDeleteRemovesCharacter
+                           ,remoteDeleteProducesConsistentResults]);
+   return _elm.DraftTests.values = {_op: _op
+                                   ,makeEmptySite: makeEmptySite
+                                   ,simpleCase: simpleCase
+                                   ,simpleCaseLonger: simpleCaseLonger
+                                   ,insertOrderIrrelevant: insertOrderIrrelevant
+                                   ,concurrentInsertsConsistentText: concurrentInsertsConsistentText
+                                   ,insertIsIdempotent: insertIsIdempotent
+                                   ,localDeleteRemovesCharacter: localDeleteRemovesCharacter
+                                   ,remoteDeleteProducesConsistentResults: remoteDeleteProducesConsistentResults
+                                   ,runTestsStrings: runTestsStrings
+                                   ,runTests1: runTests1};
+};
