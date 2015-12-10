@@ -82,11 +82,7 @@ function updateDoc(str){
 
       textArea.replaceRange(docUpdate["ch"], from, null, "server!!!");
       var to = textArea.posFromIndex(location + 1);
-      var markColor = colors[docUpdate.siteId % colors.length];
-
-
-      var markedText = textArea.markText(from, to, {css: "color:" + markColor});
-      setTimeout(clearMark.bind(markedText), 400);
+      makeMark(from, to, docUpdate.siteId);
 
 
       updateCaret("insert");
@@ -126,5 +122,16 @@ function clearMark() {
   var markedText = this;
   markedText.clear();
 }
+
+
+function makeMark(from, to, o_peer_id) {
+
+  var markColor = colors[o_peer_id % colors.length];
+  var markedText = textArea.markText(from, to, {css: "color:" + markColor});
+  setTimeout(clearMark.bind(markedText), 400);
+
+}
+
+
 
 

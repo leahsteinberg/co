@@ -95,7 +95,7 @@ function initializeConnection() {
 
     conn.on('data', function(data){
       console.log("got data from: ", conn.peer);
-          handleData(data);
+          handleData(data, conn.peer);
 
     });
 
@@ -129,9 +129,9 @@ function contactPeers(peers_list) {
 }
 
 
-function handleData(data) 
+function handleData(data, sending_peer_id) 
 {
-  	
+
   	if (data === undefined) {
     	return;
   	}
@@ -142,13 +142,23 @@ function handleData(data)
   	}
 
     if (data.data_type === "woot_wstring_update") {
-      if (upToDate) { return; }
+      if (upToDate) { 
+        console.log("already up to date!");
+
+        return; }
 
       if (data.woot_data["String"] === undefined 
         || data.woot_data.WString === undefined ){ return; }
 
+      var catchUpStr = data.woot_data["String"];
+
+      var other_peer_id =  parseInt(sending_peer_id.substr(sending_peer_id.lastIndexOf('-') + 1));
+
+      upToDate = true;
       woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
-      textArea.setValue(data.woot_data["String"]);
+      textArea.setValue(catchUpStr);
+      makeMark(textArea.posFromIndex(0), textArea.posFromIndex(catchUpStr.length), other_peer_id);
+
 
     }
 
@@ -158,7 +168,6 @@ function handleData(data)
     	}
   	}
 }
-
 
 
 /* relay typing updates to peers through p2p connection */
