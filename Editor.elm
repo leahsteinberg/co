@@ -98,9 +98,20 @@ processTUpdate typ model =
               (newModel, newEdits) = insertString str (index - 1) model
           in
               (newModel, List.reverse newEdits)
+        DS str index -> deleteString str index model
         RequestWString -> (model, [W (CurrWString model.wString (Woot.wToString model.wString))])
         _ -> (model, [W NoUpdate])
 
+
+
+deleteString : String -> Int -> Model -> (Model, List Edit)
+deleteString str index model = 
+    let
+        tUpdates = List.map2 (\ ch index -> D ch index) (String.toList str) [index..(index + String.length str - 1)]
+                          |> List.reverse
+        newModel = {model | debug = model.debug ++ "DELETTTING: " ++ str++"DELETE LIST: " ++ (toString tUpdates)}
+    in 
+        List.foldr processTUpdateOfString (newModel, []) tUpdates
 
 
 insertString : String -> Int -> Model -> (Model, List Edit)
@@ -108,12 +119,13 @@ insertString string index model =
     let
       strIndexList = List.map2 (\ch index -> (ch, index, model.site)) (String.toList string) [index..(index + String.length string - 1)]
       tUpdates = List.foldr createInsertTUpdate [] strIndexList
+
     in
-        List.foldl insertCharOfString (model, []) tUpdates
+        List.foldl processTUpdateOfString (model, []) tUpdates
 
 
-insertCharOfString : TUpdate -> (Model, List Edit) -> (Model, List Edit)
-insertCharOfString tUpdate (model, edits) =
+processTUpdateOfString : TUpdate -> (Model, List Edit) -> (Model, List Edit)
+processTUpdateOfString tUpdate (model, edits) =
     let
         (newModel, newEdits) = processTUpdate tUpdate model
     in

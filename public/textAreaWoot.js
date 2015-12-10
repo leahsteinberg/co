@@ -20,16 +20,21 @@ textArea.on("change", function (i, c){
   var siteIdInt = parseInt(peer_state.peer_id.substr(peer_state.peer_id.lastIndexOf('-') + 1));
 
   /* pasted text */
-  if (c.origin === "paste") {
+  if (c.origin === "paste" && c.removed[0] === "") {
     toSend = handlePaste(c);
   }
 
-
-  /* deleting and inserting at the same time */
-  else if (c.removed[0] != "" && c['text'][0] != "") { 
-
-
+  /* deleted a string of text */
+  else if (c.origin === "+delete" && c.removed.length > 0 && c.removed[0].length > 0) {
+    toSend = handleDeleteString(c);
+    console.log("handling deleting a string of text", toSend);
   }
+
+  /* deleting and inserting at the same time   (highlight replace) */
+  // else if (c.removed[0] != "" && c['text'][0] != "") { 
+  //   toSend = handleTextReplace(c);
+
+  // }
 
   /* deletion */
   else if (c.removed[0] != "") {
@@ -54,15 +59,34 @@ textArea.on("change", function (i, c){
  
 });
 
+
+function handleTextReplace(c) {
+
+  var toSendDelete = handleDeleteString(c);
+  var toSendInsert = handlePaste(c);
+
+  return toSendDelete.concat(toSendInsert);
+}
+
+function handleDeleteString(c) {
+
+  var toSend = {};
+  toSend["type"] = "DeleteString";
+  toSend["str"] = c.removed[0];
+  toSend.cp = textArea.indexFromPos(c.from);
+
+  return [toSend];
+}
+
+
 function handlePaste(c) {
+
   var toSend = {};
   toSend["type"] = "InsertString";
   toSend["str"] = c.text[0];
   toSend.cp = textArea.indexFromPos(c.from) + 1;
 
   return [toSend];
-
-
 }
 
 function handleDeletion(c, cp) {
@@ -87,8 +111,6 @@ function handleInsertion(c, cp, siteIdInt) {
 
       toSend["type"] = "Insert";
       toSend["ch"] = c.text[0];
-      toSend["siteId"] = siteIdInt;
-      cp = cp - 1;
   }
 
   /* new line insertion */
@@ -96,11 +118,10 @@ function handleInsertion(c, cp, siteIdInt) {
 
       toSend["type"] = "Insert";
       toSend["ch"] = "\n";
-      toSend["siteId"] = siteIdInt;
-      cp = cp - 1;
   }
 
-  toSend.cp = cp;
+  toSend["siteId"] = siteIdInt;
+  toSend.cp = cp - 1;
 
   return [toSend];
 }
