@@ -138,7 +138,6 @@ sendNewString : Signal String
 sendNewString = Signal.map (\(mod, upd) -> stringUpdateToJson mod.doc.str) modelFold
 
 
-
 -- - - - - - P R O C E S S - I N C O M I N G - - - - - 
 
 serverUpdateToEdit : Signal (List Edit)
@@ -165,5 +164,6 @@ tester =
       (remoteModel, localModel)
 
 main = Graphics.Element.empty
---  Signal.map2 (\ (m, w) s -> show (toString m.debug ++"WSTRING: " ++ wToString m.wString ++ "..."++ toString s)) modelFold serverUpdates
+
+--  Signal.map3 (\ (m, w) t s -> show ("WSTRING: " ++ wToString m.wString ++ ".typing.."++ toString t ++ ".. server updates  .. " ++ toString s ++ "        DEBUG : " ++ m.debug)) modelFold tUpdate serverUpdates
 

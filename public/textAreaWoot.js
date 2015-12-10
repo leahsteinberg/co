@@ -31,10 +31,10 @@ textArea.on("change", function (i, c){
   }
 
   /* deleting and inserting at the same time   (highlight replace) */
-  // else if (c.removed[0] != "" && c['text'][0] != "") { 
-  //   toSend = handleTextReplace(c);
-
-  // }
+  else if (c.removed[0] != "" && c['text'][0] != "") { 
+    toSend = handleTextReplace(c);
+  
+  }
 
   /* deletion */
   else if (c.removed[0] != "") {
