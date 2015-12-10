@@ -25,6 +25,7 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
 
  In **WoOT** every character is a little object (a WChar) that holds on to:
+ 		
  		- its character
 
  		- an id -> who made this character and when did they make it (out of all the chars THEY have made)
@@ -70,17 +71,20 @@ type alias WChar = {id: WId
 
 
 
+**another cool thing:**
 
-	**another cool thing:**
+We never delete a WChar. We simply mark it invisible.
 
- 	We never delete a WChar. We simply mark it invisible.
+Yeah, this takes up space, but it helps us avoid confusion when different peers are working with different versions of t*he document.
 
- 	Yeah, this takes up space, but it helps us avoid confusion when different
- 	peers are working with different versions of t*he document.
-
- 	the document is *eventually* consistent.
+The document is *eventually* consistent.
 
 
+
+Because the server doesn't need to do any work, I decided to use WebRTC to make all (most) of the communication peer-to-peer.
+
+I followed the model of a "mesh" network. The peers join by talking to the server, and the server tells them about all the existing peers.
+Then they contact the peers and let them know they've arrived. After that, all communication is broadcasts of updates to Woot.
 
 
 
