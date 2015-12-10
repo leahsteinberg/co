@@ -19,36 +19,28 @@ function setUpPeerServer(doc_name_url){
 
 
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
-      console.log("peer id", peer_state.peer_id);
 			peer_state.doc_id = peer_info.doc_id;
       
       var peerhost;
-      console.log("at: ", window.location.host);
       if (window.location.host != "localhost:4004") {
-          peerhost = "52.70.229.110";
+        peerhost = "52.70.229.110";
       }
       else {
-        console.log("connecting to localhost")
         peerhost = "localhost";
       }
 
 			peer = new Peer(peer_state.peer_id, {host: peerhost, path: '/myapp', debug: 2});
 
-			if (peer === undefined) {
-        		// TODO error handling
-        		return;
-        	}
+			if (peer === undefined) { return; }
 
         	/* update peer state */
-       		peer_state.peer = peer;
+      peer_state.peer = peer;
 
        		/* tell Woot its id */
-			var siteIdUpdate = [
-									           {
-										          "type": "SiteId"
-                            			, "siteId": peer_info.site_id
-                        			}
-                            	];
+			var siteIdUpdate = [{
+										        "type": "SiteId",
+                            "siteId": peer_info.site_id
+                        	}];
 
         	woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
         
@@ -190,10 +182,12 @@ function sendPeerUpdates(msg) {
 function broadcast(msg){
 
   	for (key in peer_state.connections) {
-    	if (peer_state.connections[key] === undefined) {
-      		continue;
-    	}
+
+    	if (peer_state.connections[key] === undefined) { continue; }
+
     	peer_state.connections[key].send(msg);
   	}
 }
+
+
 
