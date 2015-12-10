@@ -8,6 +8,8 @@
 
 var peer_state = {connections: {}};
 
+var upToDate = false;
+
 
 function setUpPeerServer(doc_name_url){
 
@@ -103,6 +105,9 @@ function initializeConnection() {
 }
 
 function contactPeers(peers_list) {
+  if (peers_list.length <= 1 ){
+    upToDate = true;
+  } 
 
 	for (var i = 0; i < peers_list.length; i++) {
 		
@@ -137,17 +142,13 @@ function handleData(data)
   	}
 
     if (data.data_type === "woot_wstring_update") {
-      console.log("woot string update!", data.woot_data);
+      if (upToDate) { return; }
 
-      if (data.woot_data["String"] === undefined || data.woot_data.WString === undefined ){ 
-        console.log("not working!!!")
-
-        return; }
+      if (data.woot_data["String"] === undefined 
+        || data.woot_data.WString === undefined ){ return; }
 
       woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
-      console.log("watnt ot set: ", data["String"]);
       textArea.setValue(data.woot_data["String"]);
-
 
     }
 
