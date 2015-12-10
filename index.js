@@ -29,7 +29,6 @@ pserver.on('connection', function(id) {
 pserver.on('disconnect', function(id) {
 
   console.log("peer disconnected: ", id);
-  var doc_id = 
 });
 
 
