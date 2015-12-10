@@ -3,11 +3,11 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
 
 
- - RC resident Martin Kleppmann talked about ways of dealing with data where you just hold on to EVERYTHING 
+ - [Recurse Center](www.recurse.com) resident Martin Kleppmann talked about ways of dealing with data where you just hold on to EVERYTHING 
  		that has ever happened, so you can always rebuild to the current state.
 
  - talked about Collaborative Text Editing, mentioned a 
- 		Conflict-free Replicated Data Type ( CRDT ) used in an algorithm called WoOT
+ 		**Conflict-free Replicated Data Type** ( CRDT ) used in an algorithm called WoOT
 
  - WoOt == Without Operational Transform
 
@@ -19,10 +19,22 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
  In WoOT every character is a little object (a WChar) that holds on to:
  		- its character
+
  		- an id -> who made this character and when did they make it (out of all the chars THEY have made)
+
  		- a letter that MUST come before it (maybe not directly before it)
+
  		- a letter that MUST come after it
+
  		- a visibility flag
+
+```
+type alias WChar = {id: WId
+                , next: WId
+                , prev: WId
+                , vis: Int
+                , ch: Char}
+```
 
  When you add a character, you tell WoOT what you just did, and it will spit out a WChar.
 
@@ -40,12 +52,12 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
  	another cool thing:
 
- 			We never delete a WChar. We simply mark it invisible.
+ 	We never delete a WChar. We simply mark it invisible.
 
- 				Yeah, this takes up space, but it helps us avoid confusion when different
- 				peers are working with different versions of the document.
+ 	Yeah, this takes up space, but it helps us avoid confusion when different
+ 	peers are working with different versions of the document.
 
- 	the document is EVENTUALLY consistent.
+ 	the document is *eventually* consistent.
 
 
 
