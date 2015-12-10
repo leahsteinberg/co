@@ -15,7 +15,7 @@
 
 
 <script src="public/elm.js"></script>
-<script src="public/peerserver.js"> </script>
+<script src="public/peerclient.js"> </script>
 
 <script src="public/textAreaWoot.js"></script>
 
@@ -38,18 +38,18 @@ var doc_name_url = url.substr(url.lastIndexOf('/') + 1);
 
 var div = document.getElementById('anchor');
 
-var woot = Elm.embed(Elm.TUpdate
-					, document.getElementById('anchor'), 
-                          {
-                            tUpdatePort: JSON.stringify({"type": "NoUpdate"})
-                            , windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})
-                          });
+var woot = Elm.embed(
+				Elm.TUpdate, 
+				document.getElementById('anchor'), 
+                {  	tUpdatePort: JSON.stringify({"type": "NoUpdate"}),
+                    windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})
+                });
 
 woot.ports.sendUpdatesPortPeer.subscribe(sendPeerUpdates);
 woot.ports.docUpdatesPort.subscribe(updateDoc);
 
 $(document).ready(function(e){
-  setUpPeerServer(doc_name_url);
+  	setUpPeerServer(doc_name_url);
 });
 
 </script>

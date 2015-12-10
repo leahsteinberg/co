@@ -157,12 +157,12 @@ generateDelete ch place model =
 
         newModel = {model |
                 doc = updateCP model.doc place
-                , debug = "CHAR deleteing is -- " ++ fromChar ch
-                ++ "    DELETING: "
-                ++ String.fromChar currWChar.ch ++ "/thisIndex: " 
-                ++ toString place ++ "/pred :" ++ String.fromChar predecessor.ch 
-                ++ "/succ: " ++ String.fromChar successor.ch
-                ++ "/place: " ++ toString place
+                --, debug = "CHAR deleteing is -- " ++ fromChar ch
+                --++ "    DELETING: "
+                --++ String.fromChar currWChar.ch ++ "/thisIndex: " 
+                --++ toString place ++ "/pred :" ++ String.fromChar predecessor.ch 
+                --++ "/succ: " ++ String.fromChar successor.ch
+                --++ "/place: " ++ toString place
                 }
     in
         (integrateDelete deletedWChar newModel,  W (Delete deletedWChar))
@@ -175,7 +175,8 @@ integrateRemoteDelete wChar model =
         deletePos = pos model.wString wChar
         newCP = if currCP > deletePos then currCP - 1 else currCP
         newDocModel =  {model | doc = (updateCP model.doc newCP)
-                    , debug = "deleting" ++ fromChar wChar.ch ++ " at " ++ toString deletePos}
+                    --, debug = "deleting" ++ fromChar wChar.ch ++ " at " ++ toString deletePos
+                }
         newModel = integrateDelete wChar newDocModel
 
     in 

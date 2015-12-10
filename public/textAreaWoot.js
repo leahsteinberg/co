@@ -1,6 +1,6 @@
 
 
-var textArea = CodeMirror(document.body);
+var textArea = CodeMirror(document.body, {autofocus: true});
 
 
 var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf", "#ffbf00"];
@@ -10,11 +10,12 @@ var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf
 textArea.on("change", function (i, c){
   console.log("omg", c);
 
+  setCursorColor(peer_state.peer_id_int);
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
   
-  var toSend = [{}];
+  var toSend;
   var cursor = textArea.getCursor();
   var cp = textArea.indexFromPos(cursor);
   var siteIdInt = parseInt(peer_state.peer_id.substr(peer_state.peer_id.lastIndexOf('-') + 1));
@@ -56,6 +57,8 @@ textArea.on("change", function (i, c){
   for (var i = 0; i < toSend.length; i++) {
       woot.ports.tUpdatePort.send(JSON.stringify(toSend[i]));
   }
+    setCursorColor(peer_state.peer_id_int);
+
  
 });
 
@@ -129,6 +132,8 @@ function handleInsertion(c, cp, siteIdInt) {
 
 /* display changes from remote users  */
 function updateDoc(str){
+  setCursorColor(peer_state.peer_id_int);
+
 
   var docUpdates = JSON.parse(str);
 
@@ -181,6 +186,8 @@ function updateCaret(action){
       newCaret = update(caret);
   }
   textArea.setCursor(textArea.posFromIndex(newCaret));
+  setCursorColor(peer_state.peer_id_int);
+
 }
 
 
@@ -200,8 +207,20 @@ function clearMark() {
   markedText.clear();
 }
 
+function setCursorColor(p_id) {
+  var markColor = colors[p_id % colors.length];
+  var cursor = $(".CodeMirror-cursor");
+  cursor[0].style.borderLeft = "1px solid " + markColor;
+  cursor[0].style.borderRight = "1px solid " + markColor;
+
+}
 
 
+document.onkeydown = function(e) {
+
+  if (!upToDate) {e.preventDefault(); e.stopPropagation();}
+
+}
 
 
 

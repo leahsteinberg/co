@@ -18,9 +18,13 @@ function setUpPeerServer(doc_name_url){
 			var peer_info = JSON.parse(result);
 
 
+
+
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
 			peer_state.doc_id = peer_info.doc_id;
-      
+      peer_state.peer_id_int = peer_info.site_id;
+      setCursorColor(peer_info.site_id);
+
       var peerhost;
       if (window.location.host != "localhost:4004") {
         peerhost = "52.70.229.110";
@@ -42,10 +46,12 @@ function setUpPeerServer(doc_name_url){
                             "siteId": peer_info.site_id
                         	}];
 
-        	woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
+
+      woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
         
-        	contactPeers(peer_info.members);
-        	peer_state.peer.on("connection", handleConnection); 
+      contactPeers(peer_info.members);
+      setTimeout(allowTyping, 1000);
+      peer_state.peer.on("connection", handleConnection); 
 		}
 	});
 
@@ -187,6 +193,11 @@ function broadcast(msg){
 
     	peer_state.connections[key].send(msg);
   	}
+}
+
+
+function allowTyping() {
+  upToDate = true;
 }
 
 
