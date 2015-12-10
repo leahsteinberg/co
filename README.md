@@ -47,7 +47,7 @@ type alias WChar =
 
  When you add a character, you tell WoOT what you just did `Insert 'b' 4`, and it will spit out a `WChar`.
 
- Send this WChar to all the peers and they will **integrate** it in.
+ Send this WChar to all the peers and they will **integrate** it in to the list of WChars that represents their version of the document.
 
  Integration is where the conflict-free stuff happens. 
 
@@ -61,9 +61,6 @@ type alias WChar =
 
 
 ####if you scramble up all the WChars of a document, and give them to a new client, they will for sure integrate them into the correct order!
-
-
-
 
 
 #####**another cool thing:**
@@ -86,11 +83,12 @@ Then they contact the peers and let them know they've arrived. After that, all c
 
 
 
-
 front end  -> CodeMirror text editor
 
 client logic -> Elm implementation of Woot algorithm
 
 networking -> peer.js 'mesh' network with minimal server interaction
+
+server -> node express server
 
 
