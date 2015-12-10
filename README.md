@@ -22,7 +22,7 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
 
 
-
+### How does WoOT Work?
 
  In **WoOT** every character is a little object (a `WChar`) that holds on to:
  		
@@ -47,42 +47,40 @@ type alias WChar =
 
  When you add a character, you tell WoOT what you just did `Insert 'b' 4`, and it will spit out a `WChar`.
 
- Send this WChar to all the peers and they will **integrate** it in to the list of WChars that represents their version of the document.
+ Send this `WChar` to all the peers and they will **integrate** it in to the list of `WChars`, (a `WString`) that represents their version of the document.
 
- Integration is where the conflict-free stuff happens. 
+ Integration is where the **conflict-free** stuff happens. 
 
  The way that it integrates in keeps in mind: 
 
- 		- the person who made it (lower ids have precedence)
+ - the person who made it (lower ids have precedence)
 
- 		- the prev and next chars' positions
+ - the prev and next chars' positions
 
- 		- when that person made it.
+ - when that person made it (only compared to the other characters they have made)
 
 
 ####if you scramble up all the WChars of a document, and give them to a new client, they will for sure integrate them into the correct order!
 
 
-#####**another cool thing:**
+#####another cool thing:
 
 We never delete a WChar. We simply mark it invisible.
 
-Yeah, this takes up space, but it helps us avoid confusion when different peers are working with different versions of t*he document.
-
-The document is *eventually* consistent.
+Yeah, this takes up space, but it helps us avoid confusion when different peers are working with different versions of t*he document. The document is *eventually* consistent.
 
 
 ###Peer.js
 
 
-Because the server doesn't need to do any work, I decided to use WebRTC to make all (most) of the communication peer-to-peer.
+Because the server doesn't need to do any work, I decided to use a WebRTC library, `Peer.js` to make all (most) of the communication peer-to-peer.
 
-I followed the model of a "mesh" network. The peers join by talking to the server, and the server tells them about all the existing peers.
-Then they contact the peers and let them know they've arrived. After that, all communication is broadcasts of updates to Woot.
-
-
+I followed the model of a **"mesh"** network, in this case, where every peer talks to every other peer. The peers join by talking to the server, and the server tells them about all the existing peers.
+Then they contact the peers and let them know they've arrived. After that, all communication is broadcasts of updates to WoOT.
 
 
+
+#### How I did it: 
 front end  -> CodeMirror text editor
 
 client logic -> Elm implementation of Woot algorithm
