@@ -9,9 +9,9 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
  - talked about Collaborative Text Editing, mentioned a 
  		**Conflict-free Replicated Data Type** ( CRDT ) used in an algorithm called WoOT
 
- - WoOt == Without Operational Transform
+ - WoOt **==** Without Operational Transform
 
- Operational Transform is what google docs uses. You get an operation and you 
+ Operational Transform is what Google Docs uses. You get an operation and you 
  		transform it so that it fits with the state of your document. 
 
  	Supposedly this is very annoying.
@@ -26,17 +26,17 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
  In **WoOT** every character is a little object (a WChar) that holds on to:
  		
- 		- its character
+- its character
 
- 		- an id -> who made this character and when did they make it (out of all the chars THEY have made)
+- an id -> who made this character and when did they make it (out of all the chars THEY have made)
 
- 		- a letter that MUST come before it (maybe not directly before it)
+- a letter that MUST come before it (maybe not directly before it)
 
- 		- a letter that MUST come after it
+- a letter that MUST come after it
 
- 		- a visibility flag
+- a visibility flag
 
-```
+```elm
 type alias WChar = {id: WId
                 , next: WId
                 , prev: WId
