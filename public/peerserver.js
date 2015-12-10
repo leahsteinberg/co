@@ -19,16 +19,15 @@ function setUpPeerServer(doc_name_url){
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
       console.log("peer id", peer_state.peer_id);
 			peer_state.doc_id = peer_info.doc_id;
+      
       var peerhost;
       
       if (window.location.host != "localhost") {
           peerhost = "52.70.229.110";
-
       }
       else {
         peerhost = "localhost";
       }
-
 
 			peer = new Peer(peer_state.peer_id, {host: peerhost, path: '/myapp', debug: 3});
 
@@ -86,6 +85,7 @@ function initializeConnection() {
       					{ peer_id: peer_state.peer_id
         				, members: members
         				, data_type: "member_update"
+
         				};
 
     conn.send(initialData);
@@ -95,6 +95,9 @@ function initializeConnection() {
           handleData(data);
 
     });
+
+    woot.ports.tUpdatePort.send(JSON.stringify({type: "RequestWString"}));
+    // TODO send to the TYping port asking for the curr w string
 
 }
 
@@ -112,7 +115,7 @@ function contactPeers(peers_list) {
 			return;
 		}
 
-		if (peer_state.connections[fellow_id] === undefined) { // TODO determine if this is necessary
+		if (peer_state.connections[fellow_id] === undefined) { 
 			var conn = peer_state.peer.connect(fellow_id);
 			handleConnection(conn);
 		}
@@ -131,11 +134,32 @@ function handleData(data)
   		contactPeers(data.members);
   	}
 
+    if (data.data_type === "woot_wstring_update") {
+      console.log(data.woot_data);
+
+    }
+
   	if (data.data_type === "woot_peer_update"){
     	if (data.woot_data != undefined){
       		woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
     	}
   	}
+}
+
+
+
+/* relay typing updates to peers through p2p connection */
+function sendPeerUpdates(msg) {
+  var message = JSON.parse(msg);
+  if (message.length === 0) { return; }
+  var toSend;
+  if (message.type == "CurrWString") {
+    toSend = {data_type: "woot_wstring_update", woot_data: message};
+
+  }
+  toSend = {data_type: "woot_peer_update", woot_data: message};
+  broadcast(toSend); /* in peerserver.js */
+
 }
 
 

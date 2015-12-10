@@ -56,15 +56,6 @@ textArea.on("change", function (i, c){
 });
 
 
-/* relay typing updates to peers through p2p connection */
-function sendPeerUpdates(msg) {
-  var message = JSON.parse(msg);
-  if (message.length === 0) { return; }
-  var toSend = {data_type: "woot_peer_update", woot_data: message}
-  broadcast(toSend); /* in peerserver.js */
-
-}
-
 
 /* display changes from remote users in this  */
 

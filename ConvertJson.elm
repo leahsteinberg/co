@@ -5,6 +5,7 @@ import Model exposing (..)
 import Char exposing (toCode)
 import String exposing (toList)
 import List exposing (head)
+import Woot exposing (wToString)
 import Debug
 import Result exposing (..)
 
@@ -93,21 +94,23 @@ toChar str =
 decodeTUpdate : String -> String -> TUpdate
 decodeTUpdate typeStr str =
     if typeStr == "Insert" then
-            case Dec.decodeString tInsertDecoder str of
-                Ok x -> x
-                Err error -> NoTUpdate
-    else if typeStr == "Delete" then
-                case Dec.decodeString tDeleteDecoder str of
-                    Ok x -> x
-                    Err error -> NoTUpdate
-    else if typeStr == "InsertString" then
-            case Dec.decodeString tInsertStringDecoder str of
-              Ok x -> x
-              Err error -> NoTUpdate
-    else if typeStr == "DeleteString" then
-          case Dec.decodeString tDeleteStringDecoder str of
+        case Dec.decodeString tInsertDecoder str of
             Ok x -> x
             Err error -> NoTUpdate
+    else if typeStr == "Delete" then
+            case Dec.decodeString tDeleteDecoder str of
+                Ok x -> x
+                Err error -> NoTUpdate
+    else if typeStr == "InsertString" then
+        case Dec.decodeString tInsertStringDecoder str of
+            Ok x -> x
+            Err error -> NoTUpdate
+    else if typeStr == "DeleteString" then
+        case Dec.decodeString tDeleteStringDecoder str of
+            Ok x -> x
+            Err error -> NoTUpdate
+    else if typeStr == "RequestWString" then
+        RequestWString
     else NoTUpdate
 
 tInsertStringDecoder : Decoder TUpdate
@@ -143,6 +146,7 @@ decodeWUpdate typeStr str =
     if typeStr == "Insert" then decodeWInsert str
     else if typeStr == "Delete" then decodeWDelete str
     else if typeStr == "SiteId" then decodeWSiteId str
+    else if typeStr == "CurrWString" then decodeCurrWString str
     else NoUpdate
 
 
@@ -168,6 +172,19 @@ decodeWSiteId str =
         Ok siteId -> SiteId siteId
         Err e -> NoUpdate
 
+
+
+
+decodeCurrWString : String -> WUpdate
+decodeCurrWString str =
+    case Dec.decodeString wStringDecoder str of
+        Ok wString -> CurrWString wString (wToString wString)
+        Err e -> NoUpdate
+
+
+wStringDecoder : Decoder WString
+wStringDecoder =
+    Dec.list (wCharDecoder) 
 
 
 wCharDecoder : Decoder WChar
@@ -237,6 +254,12 @@ encodeWUpdate wUp =
     case wUp of
         Insert wCh -> object (("type", Enc.string "Insert") :: wCharToJsonList wCh)
         Delete wCh -> object (("type", Enc.string "Delete") :: wCharToJsonList wCh)
+        
+
+
+        CurrWString wString str -> object [("type", Enc.string "CurrWString")
+                                        , ("WString", Enc.list  (List.map (\wCh -> object (wCharToJsonList wCh)) wString))
+                                        , ("String", Enc.string str)]
         _ -> object [("type", Enc.string "NoUpdate")]
 
 

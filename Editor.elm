@@ -83,6 +83,8 @@ processServerUpdate wUpd model =
 
         Delete wCh -> handleIntegration wCh False integrateRemoteDelete
 
+        CurrWString wString str -> ({model | wString = wString}, []) 
+
         NoUpdate ->  (model, [])
 
 
@@ -96,6 +98,7 @@ processTUpdate typ model =
               (newModel, newEdits) = insertString str (index - 1) model
           in
               (newModel, List.reverse newEdits)
+        RequestWString -> (model, [W (CurrWString model.wString (Woot.wToString model.wString))])
         _ -> (model, [W NoUpdate])
 
 
