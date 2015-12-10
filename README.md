@@ -24,24 +24,18 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
 
 
- In **WoOT** every character is a little object (a WChar) that holds on to:
+ In **WoOT** every character is a little object (a `WChar`) that holds on to:
  		
-- its character
-
-- an id -> who made this character and when did they make it (out of all the chars THEY have made)
-
-- a letter that MUST come before it (maybe not directly before it)
-
-- a letter that MUST come after it
-
-- a visibility flag
 
 ```elm
-type alias WChar = {id: WId
+type alias WChar = 
+				{
+				id: WId
                 , next: WId
                 , prev: WId
                 , vis: Int
-                , ch: Char}
+                , ch: Char
+                }
 ```
 
 
@@ -51,13 +45,13 @@ type alias WChar = {id: WId
 
 
 
- When you add a character, you tell WoOT what you just did, and it will spit out a WChar.
+ When you add a character, you tell WoOT what you just did `Insert 'b' 4`, and it will spit out a `WChar`.
 
  Send this WChar to all the peers and they will **integrate** it in.
 
  Integration is where the conflict-free stuff happens. 
 
- The way that it integrates in, it keeps in mind: 
+ The way that it integrates in keeps in mind: 
 
  		- the person who made it (lower ids have precedence)
 
@@ -65,13 +59,14 @@ type alias WChar = {id: WId
 
  		- when that person made it.
 
- based on all of this, if you give the WChars of a document to a new client, they will for sure integrate them into the correct order!
+
+####if you scramble up all the WChars of a document, and give them to a new client, they will for sure integrate them into the correct order!
 
 
 
 
 
-**another cool thing:**
+#####**another cool thing:**
 
 We never delete a WChar. We simply mark it invisible.
 
@@ -79,6 +74,8 @@ Yeah, this takes up space, but it helps us avoid confusion when different peers 
 
 The document is *eventually* consistent.
 
+
+###Peer.js
 
 
 Because the server doesn't need to do any work, I decided to use WebRTC to make all (most) of the communication peer-to-peer.
