@@ -8,14 +8,11 @@ import Editor exposing (insertString, processEdits)
 import String exposing (toList, length)
 import Char exposing (toCode)
 import Html exposing (Html, Attribute, div, text, ul, ol, li)
+import Model exposing (..)
 
 first_index = 0 
-generatePseudoRandomIndex : String -> String -> Int
-generatePseudoRandomIndex origStr insertStr =
-  case toList insertStr of
-    ch :: chars -> if length origStr == 0 then 0 else (toCode ch) % (length origStr)
-    [] -> 0
-
+generatePseudoRandomIndex : String -> Int -> Int
+generatePseudoRandomIndex origStr i =if length origStr == 0 then 0 else i % (length origStr)
 
 
 claim_insert_string = 
@@ -49,12 +46,12 @@ insert_order_irrelevant =
         string
 
 
-concurrent_insert_consistent' = (\ origStr localStr remoteStr  ->
+concurrent_insert_consistent' = (\ origStr localStr remoteStr  x y ->
         let
           (localModel1, lEdits1) = insertString origStr first_index (makeEmptySite 1)
           (remoteModel1, rEdits1) = processEdits lEdits1 (makeEmptySite 2)
-          rIndex = generatePseudoRandomIndex origStr remoteStr
-          lIndex = generatePseudoRandomIndex origStr localStr
+          rIndex = generatePseudoRandomIndex origStr x 
+          lIndex = generatePseudoRandomIndex origStr y
           (localModel2, lEdits2) = insertString localStr lIndex localModel1
           (remoteModel2, rEdits2) = insertString remoteStr rIndex remoteModel1
           (localModel3, lEdits3) = processEdits rEdits2 localModel2
@@ -68,22 +65,77 @@ concurrent_insert_consistent =
   claim 
     "two people write at same time, same result"
     `that`
-        (\ (origStr, (localStr, remoteStr)) ->
-            fst (concurrent_insert_consistent' origStr localStr remoteStr)
+        (\ (origStr, (localStr, (remoteStr, (x, y)))) ->
+            fst (concurrent_insert_consistent' origStr localStr remoteStr x y)
           )
       `is`
-        (\ (origStr, (localStr, remoteStr)) ->
-            snd (concurrent_insert_consistent' origStr localStr remoteStr)
+        (\ (origStr, (localStr, (remoteStr, (x, y)))) ->
+            snd (concurrent_insert_consistent' origStr localStr remoteStr x y)
           )
         `for`
-          tuple (string, (tuple (string, string)))
+          tuple (string, (tuple (string, tuple (string, tuple (int, int)))))
+
+insert_idempotent = 
+    claim
+    "insert is idempotent"
+    `that`
+      (\str ->
+        let
+            (model, edits) = insertString str first_index (makeEmptySite 1)
+        in
+            wToString model.wString
+        )
+      `is`
+        (\str ->
+          let
+              (model, edits) = insertString str first_index (makeEmptySite 1)
+              (newModel, newEdits) = processEdits edits model
+          in
+              wToString newModel.wString
+          )
+        `for`
+        string
+
+
+local_delete_consistent = 
+  claim
+    "local delete produces consistent results"
+  `that`
+    (\ (str, x) ->
+      let
+          (model, edits) = insertString str first_index (makeEmptySite 1)
+          newNumber = if String.length str == 0 then 0 else x % (String.length str)
+          charToDelete = case List.drop newNumber (String.toList str) of
+                    x :: xs -> x
+                    [] -> 'a'
+          (newModel, newEdits) = processEdits [T (D charToDelete newNumber)] model
+--          (remoteModel, remoteEdits) = processEdits (List.reverse (edits ++ newEdits)) (makeEmptySite 2)
+      in
+          wToString newModel.wString
+      )
+  `is`
+    (\ (str, x) ->
+      let
+          newNumber = if String.length str == 0 then 0 else x % (String.length str)
+          newStrList = List.take newNumber (String.toList str) ++ (List.drop (newNumber + 1) (String.toList str))
+      in
+          List.foldl (\char accumStr -> toString char ++ accumStr) "" newStrList
+    )
+  `for`
+      tuple (string, int)
+
+
+
+
 
 
 suite_co = 
   suite "Collab Editing Suite"
   [claim_insert_string
   , insert_order_irrelevant
- , concurrent_insert_consistent
+  , insert_idempotent
+  , local_delete_consistent
+  , concurrent_insert_consistent
     ]
 
 
@@ -92,7 +144,7 @@ tripleStrings = [("footbol", "how", "are"), ("what", "is", "love"), ("home", "ca
 
 
 runTests = List.map (\ (origStr, localStr, remoteStr) -> 
-          concurrent_insert_consistent' origStr localStr remoteStr)
+          concurrent_insert_consistent' origStr localStr remoteStr 1 1)
            tripleStrings
 
 

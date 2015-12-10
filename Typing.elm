@@ -160,7 +160,7 @@ tester =
       local = makeEmptySite 1
       remote = makeEmptySite 2
       (localModel, lEdits) = insertString "hey" 0 local
-      (remoteModel, rEdits) = processEdits (lEdits) remote
+      (remoteModel, rEdits) = processEdits lEdits remote
   in
       (remoteModel, localModel)
 
