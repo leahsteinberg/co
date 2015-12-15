@@ -39,7 +39,7 @@ var rooms = {names: {}, next_doc_id: 1, docs: {}};
 /* htpp end points */
 
 app.get('/:doc', function(req, res) {
-  res.sendFile(path.resolve('public/index.html'));
+  res.sendFile(path.resolve('public/main.html'));
 
 });
 
