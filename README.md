@@ -1,4 +1,8 @@
-#**Co** is a collaborative text editor
+#+BEGIN_HTML
+<a href='http://www.recurse.com' title='Made with love at the Recurse Center'><img src='https://cloud.githubusercontent.com/assets/2883345/11325206/336ea5f4-9150-11e5-9e90-d86ad31993d8.png' height='20px'/></a>
+#+END_HTML
+
+#**Co** is a collaborative text editor  <a href='http://www.recurse.com' title='Made with love at the Recurse Center'><img src='https://cloud.githubusercontent.com/assets/2883345/11325206/336ea5f4-9150-11e5-9e90-d86ad31993d8.png' height='20px'/></a>
 based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Operational Transform)
 
 ### What is WoOT?
