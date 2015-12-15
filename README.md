@@ -5,7 +5,7 @@ based on **[WoOT](https://hal.inria.fr/inria-00071240/document)** (Without Opera
 
 ### What is WoOT?
 
- - [Recurse Center](www.recurse.com) resident Martin Kleppmann talked about ways of dealing with data where you just hold on to EVERYTHING 
+ - Recurse Center resident Martin Kleppmann talked about ways of dealing with data where you just hold on to EVERYTHING 
  		that has ever happened, so you can always rebuild to the current state.
 
  - talked about Collaborative Text Editing, mentioned a 

@@ -13270,6 +13270,7 @@ Elm.Model.make = function (_elm) {
    var _op = {};
    var Model = F9(function (a,b,c,d,e,f,g,h,i) {    return {counter: a,site: b,wString: c,start: d,doc: e,debug: f,wSeen: g,pool: h,processedPool: i};});
    var NoTUpdate = {ctor: "NoTUpdate"};
+   var RequestWString = {ctor: "RequestWString"};
    var DS = F2(function (a,b) {    return {ctor: "DS",_0: a,_1: b};});
    var IS = F2(function (a,b) {    return {ctor: "IS",_0: a,_1: b};});
    var D = F2(function (a,b) {    return {ctor: "D",_0: a,_1: b};});
@@ -13277,6 +13278,7 @@ Elm.Model.make = function (_elm) {
    var T = function (a) {    return {ctor: "T",_0: a};};
    var W = function (a) {    return {ctor: "W",_0: a};};
    var NoUpdate = {ctor: "NoUpdate"};
+   var CurrWString = F2(function (a,b) {    return {ctor: "CurrWString",_0: a,_1: b};});
    var SiteId = function (a) {    return {ctor: "SiteId",_0: a};};
    var Delete = function (a) {    return {ctor: "Delete",_0: a};};
    var Insert = function (a) {    return {ctor: "Insert",_0: a};};
@@ -13288,6 +13290,7 @@ Elm.Model.make = function (_elm) {
                               ,Insert: Insert
                               ,Delete: Delete
                               ,SiteId: SiteId
+                              ,CurrWString: CurrWString
                               ,NoUpdate: NoUpdate
                               ,W: W
                               ,T: T
@@ -13295,6 +13298,7 @@ Elm.Model.make = function (_elm) {
                               ,D: D
                               ,IS: IS
                               ,DS: DS
+                              ,RequestWString: RequestWString
                               ,NoTUpdate: NoTUpdate
                               ,Model: Model};
 };
@@ -13589,7 +13593,8 @@ Elm.ConvertJson.make = function (_elm) {
    $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm);
+   $String = Elm.String.make(_elm),
+   $Woot = Elm.Woot.make(_elm);
    var _op = {};
    var tInsertToJsonList = F3(function (ch,index,siteId) {
       return _U.list([{ctor: "_Tuple2",_0: "ch",_1: $Json$Encode.string($String.fromChar(ch))}
@@ -13626,6 +13631,15 @@ Elm.ConvertJson.make = function (_elm) {
       switch (_p1.ctor)
       {case "Insert": return $Json$Encode.object(A2($List._op["::"],{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("Insert")},wCharToJsonList(_p1._0)));
          case "Delete": return $Json$Encode.object(A2($List._op["::"],{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("Delete")},wCharToJsonList(_p1._0)));
+         case "CurrWString": return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("CurrWString")}
+                                                                ,{ctor: "_Tuple2"
+                                                                 ,_0: "WString"
+                                                                 ,_1: $Json$Encode.list(A2($List.map,
+                                                                 function (wCh) {
+                                                                    return $Json$Encode.object(wCharToJsonList(wCh));
+                                                                 },
+                                                                 _p1._0))}
+                                                                ,{ctor: "_Tuple2",_0: "String",_1: $Json$Encode.string(_p1._1)}]));
          default: return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "type",_1: $Json$Encode.string("NoUpdate")}]));}
    };
    var encodeStringUpdate = function (str) {
@@ -13708,7 +13722,7 @@ Elm.ConvertJson.make = function (_elm) {
                         } else {
                            return $Model.NoTUpdate;
                         }
-                  } else return $Model.NoTUpdate;
+                  } else if (_U.eq(typeStr,"RequestWString")) return $Model.RequestWString; else return $Model.NoTUpdate;
    });
    var decPrev = A2($Json$Decode._op[":="],
    "prev",
@@ -13743,22 +13757,32 @@ Elm.ConvertJson.make = function (_elm) {
             return $Model.NoUpdate;
          }
    };
+   var wStringDecoder = $Json$Decode.list(wCharDecoder);
+   var decodeCurrWString = function (str) {
+      var _p10 = A2($Json$Decode.decodeString,wStringDecoder,str);
+      if (_p10.ctor === "Ok") {
+            var _p11 = _p10._0;
+            return A2($Model.CurrWString,_p11,$Woot.wToString(_p11));
+         } else {
+            return $Model.NoUpdate;
+         }
+   };
    var decodeWUpdate = F2(function (typeStr,str) {
       return _U.eq(typeStr,"Insert") ? decodeWInsert(str) : _U.eq(typeStr,"Delete") ? decodeWDelete(str) : _U.eq(typeStr,
-      "SiteId") ? decodeWSiteId(str) : $Model.NoUpdate;
+      "SiteId") ? decodeWSiteId(str) : _U.eq(typeStr,"CurrWString") ? decodeCurrWString(str) : $Model.NoUpdate;
    });
    var jsonToTUpdate = function (str) {
-      var _p10 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
-      if (_p10.ctor === "Ok") {
-            return A2(decodeTUpdate,_p10._0,str);
+      var _p12 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
+      if (_p12.ctor === "Ok") {
+            return A2(decodeTUpdate,_p12._0,str);
          } else {
             return $Model.NoTUpdate;
          }
    };
    var jsonObjToWUpdate = function (str) {
-      var _p11 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
-      if (_p11.ctor === "Ok") {
-            return A2(decodeWUpdate,_p11._0,str);
+      var _p13 = A2($Json$Decode.decodeString,A2($Json$Decode._op[":="],"type",$Json$Decode.string),str);
+      if (_p13.ctor === "Ok") {
+            return A2(decodeWUpdate,_p13._0,str);
          } else {
             return $Model.NoUpdate;
          }
@@ -13784,9 +13808,9 @@ Elm.ConvertJson.make = function (_elm) {
    decPrev);
    var wUpdateDecoder = $Json$Decode.oneOf(_U.list([siteIdDecoder,insertDeleteDecoder]));
    var jsonToWUpdates = function (str) {
-      var _p12 = A2($Json$Decode.decodeString,$Json$Decode.list(wUpdateDecoder),str);
-      if (_p12.ctor === "Ok") {
-            return _p12._0;
+      var _p14 = A2($Json$Decode.decodeString,$Json$Decode.list(wUpdateDecoder),str);
+      if (_p14.ctor === "Ok") {
+            return _p14._0;
          } else {
             return _U.list([$Model.NoUpdate]);
          }
@@ -13816,6 +13840,8 @@ Elm.ConvertJson.make = function (_elm) {
                                     ,decodeWInsert: decodeWInsert
                                     ,decodeWDelete: decodeWDelete
                                     ,decodeWSiteId: decodeWSiteId
+                                    ,decodeCurrWString: decodeCurrWString
+                                    ,wStringDecoder: wStringDecoder
                                     ,wCharDecoder: wCharDecoder
                                     ,wSiteIdDecoder: wSiteIdDecoder
                                     ,tUpdatesToJson: tUpdatesToJson
@@ -13859,36 +13885,16 @@ Elm.Graph.make = function (_elm) {
       var deletePos = A2($Woot.pos,model.wString,wChar);
       var currCP = model.doc.cp;
       var newCP = _U.cmp(currCP,deletePos) > 0 ? currCP - 1 : currCP;
-      var newDocModel = _U.update(model,
-      {doc: A2(updateCP,model.doc,newCP)
-      ,debug: A2($Basics._op["++"],"deleting",A2($Basics._op["++"],$String.fromChar(wChar.ch),A2($Basics._op["++"]," at ",$Basics.toString(deletePos))))});
+      var newDocModel = _U.update(model,{doc: A2(updateCP,model.doc,newCP)});
       var newModel = A2(integrateDelete,wChar,newDocModel);
       return {ctor: "_Tuple2",_0: newModel,_1: $Model.T(A2($Model.D,wChar.ch,deletePos))};
    });
    var generateDelete = F3(function (ch,place,model) {
+      var newModel = _U.update(model,{doc: A2(updateCP,model.doc,place)});
       var currWChar = A2($Woot.ithVisible,model.wString,place);
       var deletedWChar = _U.update(currWChar,{vis: -1});
       var successor = A2($Woot.ithVisible,model.wString,place + 1);
       var predecessor = A2($Woot.ithVisible,model.wString,place - 1);
-      var newModel = _U.update(model,
-      {doc: A2(updateCP,model.doc,place)
-      ,debug: A2($Basics._op["++"],
-      "CHAR deleteing is -- ",
-      A2($Basics._op["++"],
-      $String.fromChar(ch),
-      A2($Basics._op["++"],
-      "    DELETING: ",
-      A2($Basics._op["++"],
-      $String.fromChar(currWChar.ch),
-      A2($Basics._op["++"],
-      "/thisIndex: ",
-      A2($Basics._op["++"],
-      $Basics.toString(place),
-      A2($Basics._op["++"],
-      "/pred :",
-      A2($Basics._op["++"],
-      $String.fromChar(predecessor.ch),
-      A2($Basics._op["++"],"/succ: ",A2($Basics._op["++"],$String.fromChar(successor.ch),A2($Basics._op["++"],"/place: ",$Basics.toString(place))))))))))))});
       return {ctor: "_Tuple2",_0: A2(integrateDelete,deletedWChar,newModel),_1: $Model.W($Model.Delete(deletedWChar))};
    });
    var findLaterWChar = F2(function (insCh,wStr) {
@@ -14054,7 +14060,27 @@ Elm.Editor.make = function (_elm) {
            var newModel = _p5._0;
            var newEdits = _p5._1;
            return {ctor: "_Tuple2",_0: newModel,_1: $List.reverse(newEdits)};
+         case "DS": return A3(deleteString,_p4._0,_p4._1,model);
+         case "RequestWString": return {ctor: "_Tuple2",_0: model,_1: _U.list([$Model.W(A2($Model.CurrWString,model.wString,$Woot.wToString(model.wString)))])};
          default: return {ctor: "_Tuple2",_0: model,_1: _U.list([$Model.W($Model.NoUpdate)])};}
+   });
+   var deleteString = F3(function (str,index,model) {
+      var tUpdates = $List.reverse(A3($List.map2,
+      F2(function (ch,index) {    return A2($Model.D,ch,index);}),
+      $String.toList(str),
+      _U.range(index,index + $String.length(str) - 1)));
+      var newModel = _U.update(model,
+      {debug: A2($Basics._op["++"],
+      model.debug,
+      A2($Basics._op["++"],"DELETTTING: ",A2($Basics._op["++"],str,A2($Basics._op["++"],"DELETE LIST: ",$Basics.toString(tUpdates)))))});
+      return A3($List.foldr,processTUpdateOfString,{ctor: "_Tuple2",_0: newModel,_1: _U.list([])},tUpdates);
+   });
+   var processTUpdateOfString = F2(function (tUpdate,_p6) {
+      var _p7 = _p6;
+      var _p8 = A2(processTUpdate,tUpdate,_p7._0);
+      var newModel = _p8._0;
+      var newEdits = _p8._1;
+      return {ctor: "_Tuple2",_0: newModel,_1: A2($Basics._op["++"],_p7._1,newEdits)};
    });
    var insertString = F3(function (string,index,model) {
       var strIndexList = A3($List.map2,
@@ -14062,14 +14088,7 @@ Elm.Editor.make = function (_elm) {
       $String.toList(string),
       _U.range(index,index + $String.length(string) - 1));
       var tUpdates = A3($List.foldr,createInsertTUpdate,_U.list([]),strIndexList);
-      return A3($List.foldl,insertCharOfString,{ctor: "_Tuple2",_0: model,_1: _U.list([])},tUpdates);
-   });
-   var insertCharOfString = F2(function (tUpdate,_p6) {
-      var _p7 = _p6;
-      var _p8 = A2(processTUpdate,tUpdate,_p7._0);
-      var newModel = _p8._0;
-      var newEdits = _p8._1;
-      return {ctor: "_Tuple2",_0: newModel,_1: A2($Basics._op["++"],_p7._1,newEdits)};
+      return A3($List.foldl,processTUpdateOfString,{ctor: "_Tuple2",_0: model,_1: _U.list([])},tUpdates);
    });
    var integrateRemoteUpdate = F2(function (wUpd,m) {
       var integrate = F2(function (intFunction,wCh) {
@@ -14127,6 +14146,7 @@ Elm.Editor.make = function (_elm) {
       {case "SiteId": return {ctor: "_Tuple2",_0: _U.update(model,{site: _p17._0}),_1: _U.list([])};
          case "Insert": return A3(handleIntegration,_p17._0,true,$Graph.integrateRemoteInsert);
          case "Delete": return A3(handleIntegration,_p17._0,false,$Graph.integrateRemoteDelete);
+         case "CurrWString": return {ctor: "_Tuple2",_0: _U.update(model,{wString: _p17._0}),_1: _U.list([])};
          default: return {ctor: "_Tuple2",_0: model,_1: _U.list([])};}
    });
    var processEdit = F2(function (edit,model) {
@@ -14164,8 +14184,9 @@ Elm.Editor.make = function (_elm) {
                                ,integrateNew: integrateNew
                                ,processServerUpdate: processServerUpdate
                                ,processTUpdate: processTUpdate
+                               ,deleteString: deleteString
                                ,insertString: insertString
-                               ,insertCharOfString: insertCharOfString
+                               ,processTUpdateOfString: processTUpdateOfString
                                ,toEditList: toEditList
                                ,createInsertTUpdate: createInsertTUpdate
                                ,sendDebug: sendDebug};
