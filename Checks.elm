@@ -64,7 +64,6 @@ cicprime = (\ origStr localStr remoteStr l r ->
           (localModel3, _) = processEdits rEdits2 localModel2
           (remoteModel3, _) = processEdits lEdits2 remoteModel2
         in
---          if lIndex == rIndex  && lIndex == 0 then ("hi", "hi") else
           (wToString localModel3.wString, wToString remoteModel3.wString))
 
 
@@ -132,6 +131,65 @@ local_delete_consistent =
   `for`
       tuple (string, int)
 
+remote_delete =
+  claim
+  "remote delete produces consistent results"
+  `that`
+  (\ (str, x)  ->
+    let
+        (model, edits) = insertString str first_index (makeEmptySite 1)
+        newNumber = if String.length str == 0 then 0 else x % (String.length str)
+        charToDelete = case List.drop newNumber (String.toList str) of
+                    x :: xs -> x
+                    [] -> 'a'
+        (newModel, newEdits) = processEdits [T (D charToDelete newNumber)] model
+        (remoteModel, _ ) = processEdits (newEdits++edits) (makeEmptySite 2)
+    in
+        wToString remoteModel.wString)
+  `is`
+      (\ (str, x) ->
+      let
+          newNumber = if String.length str == 0 then 0 else x % (String.length str)
+          newStrList = List.take newNumber (String.toList str) ++ (List.drop (newNumber + 1) (String.toList str))
+      in
+          String.fromList newStrList
+    )
+        `for`
+      tuple (string, int)
+
+
+  
+
+delete_emit_after_ins =
+    claim
+    "delete operations should be emitted after corresponding insert"
+    `that`
+    (\ (str, x) ->
+      let
+          ---- - - - - - -  Make a site and insert a string, then delete it ---
+        (localModel1, insertEdits) = insertString str first_index (makeEmptySite 1)
+        newNumber = if String.length str == 0 then 0 else x % (String.length str)
+        charToDelete = case List.drop newNumber (String.toList str) of
+                    x :: xs -> x
+                    [] -> 'a'
+        (newModel, deleteEdits) = processEdits [T (D charToDelete newNumber)] localModel1
+
+          --- -- - - - first give the delete op to a remote site, then give the insert op ---
+        (remoteModel1, _) = processEdits deleteEdits (makeEmptySite 2)
+        (remoteModel2, _) = processEdits insertEdits (remoteModel1)
+      in
+        wToString remoteModel2.wString)
+    `is`
+      (\ (str, x) ->
+      let
+          newNumber = if String.length str == 0 then 0 else x % (String.length str)
+          newStrList = List.take newNumber (String.toList str) ++ (List.drop (newNumber + 1) (String.toList str))
+      in
+          String.fromList newStrList
+        )
+    `for`
+      tuple (string, int)
+
 
 
 suite_co = 
@@ -141,6 +199,8 @@ suite_co =
   , insert_idempotent
   , local_delete_consistent
   , concurrent_insert_consistent
+  , remote_delete
+  , delete_emit_after_ins
     ]
 
 --concurrent_insert_consistent'
@@ -171,9 +231,6 @@ cicwString s1 s2 s3 x y=
       (m1, m2) = cic s1 s2 s3 x y
     in
       (m1.wString, m2.wString)
-
-
-
 
 cicdebug : String -> String -> String -> Int -> Int -> (String, String)
 cicdebug s1 s2 s3 x y = 
