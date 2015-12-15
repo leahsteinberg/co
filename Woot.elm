@@ -1,6 +1,6 @@
 module Woot where
 
-
+import Debug
 import Dict exposing (..)
 import Model exposing (..)
 import Constants exposing (..)
@@ -11,7 +11,7 @@ import Set exposing (..)
 
 
 isLaterWChar : WChar -> WChar -> Bool
-isLaterWChar wA wB = wIdOrder wA wB /= LT
+isLaterWChar wA wB = wIdOrder wA wB /= LT -- TODO i flipped this!
 
 
 
@@ -21,10 +21,10 @@ wIdOrder wA wB =
         (wASite, wAClock) = wA.id
         (wBSite, wBClock) = wB.id
     in
-        if wASite > wBSite then GT
+        if wASite > wBSite then GT -- before was >
         else if wASite < wBSite then LT 
         else if wAClock > wBClock then GT 
-        else GT
+        else LT
 
 
 wToString : WString -> String
@@ -39,7 +39,7 @@ wToString wStr =
 subSeq : WString -> WChar -> WChar -> WString
 subSeq wStr start end =
     case wStr of
-        [] -> []
+        [] -> Debug.crash "oh no"
         x :: xs -> if x.id == start.id 
                     then subSeqGrab xs end 
                     else subSeq xs start end
@@ -48,7 +48,7 @@ subSeq wStr start end =
 subSeqGrab : WString -> WChar -> WString
 subSeqGrab wStr end =
     case wStr of
-        [] -> []
+        [] -> []--Debug.crash (toString end)
         x :: xs -> if x.id == end.id 
                     then [] 
                     else x :: subSeqGrab xs end

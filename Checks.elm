@@ -1,18 +1,21 @@
 module Checks where
-import Graphics.Element exposing (..)
 import Check exposing (..)
+import Graphics.Element exposing (..)
 import Check.Investigator exposing (..)
 import DraftTests exposing (makeEmptySite)
+
+
 import Woot exposing (wToString)
 import Editor exposing (insertString, processEdits)
+
+
 import String exposing (toList, length)
 import Char exposing (toCode)
-import Html exposing (Html, Attribute, div, text, ul, ol, li)
 import Model exposing (..)
 
 first_index = 0 
-generatePseudoRandomIndex : String -> Int -> Int
-generatePseudoRandomIndex origStr i =if length origStr == 0 then 0 else i % (length origStr)
+indexInBounds : String -> Int -> Int
+indexInBounds origStr i = if length origStr == 0 then 0 else (abs i) % ((length origStr) + 1)
 
 
 claim_insert_string = 
@@ -36,7 +39,7 @@ insert_order_irrelevant =
       (\ str ->
         let
             (localModel, lEdits) = insertString str first_index (makeEmptySite 1)
-            (remoteModel, rEdits) = processEdits (lEdits) (makeEmptySite 1)
+            (remoteModel, rEdits) = processEdits (lEdits) (makeEmptySite 2)
         in
             wToString remoteModel.wString 
         )
@@ -46,18 +49,23 @@ insert_order_irrelevant =
         string
 
 
-concurrent_insert_consistent' = (\ origStr localStr remoteStr  x y ->
+
+--concurrent_insert_consistent'
+cicprime = (\ origStr localStr remoteStr l r ->
         let
+
           (localModel1, lEdits1) = insertString origStr first_index (makeEmptySite 1)
-          (remoteModel1, rEdits1) = processEdits lEdits1 (makeEmptySite 2)
-          rIndex = generatePseudoRandomIndex origStr x 
-          lIndex = generatePseudoRandomIndex origStr y
+          (remoteModel1, _) = processEdits lEdits1 (makeEmptySite 2)
+
+          lIndex = indexInBounds origStr l
+          rIndex = indexInBounds origStr r
           (localModel2, lEdits2) = insertString localStr lIndex localModel1
           (remoteModel2, rEdits2) = insertString remoteStr rIndex remoteModel1
-          (localModel3, lEdits3) = processEdits rEdits2 localModel2
-          (remoteModel3, rEdits3) = processEdits lEdits2 remoteModel2
+          (localModel3, _) = processEdits rEdits2 localModel2
+          (remoteModel3, _) = processEdits lEdits2 remoteModel2
         in
-          (wToString remoteModel3.wString, wToString localModel3.wString))
+--          if lIndex == rIndex  && lIndex == 0 then ("hi", "hi") else
+          (wToString localModel3.wString, wToString remoteModel3.wString))
 
 
 
@@ -66,11 +74,11 @@ concurrent_insert_consistent =
     "two people write at same time, same result"
     `that`
         (\ (origStr, (localStr, (remoteStr, (x, y)))) ->
-            fst (concurrent_insert_consistent' origStr localStr remoteStr x y)
+            fst (cicprime origStr localStr remoteStr x y)
           )
       `is`
         (\ (origStr, (localStr, (remoteStr, (x, y)))) ->
-            snd (concurrent_insert_consistent' origStr localStr remoteStr x y)
+            snd (cicprime origStr localStr remoteStr x y)
           )
         `for`
           tuple (string, (tuple (string, tuple (string, tuple (int, int)))))
@@ -119,13 +127,10 @@ local_delete_consistent =
           newNumber = if String.length str == 0 then 0 else x % (String.length str)
           newStrList = List.take newNumber (String.toList str) ++ (List.drop (newNumber + 1) (String.toList str))
       in
-          List.foldl (\char accumStr -> toString char ++ accumStr) "" newStrList
+          String.fromList newStrList
     )
   `for`
       tuple (string, int)
-
-
-
 
 
 
@@ -138,13 +143,53 @@ suite_co =
   , concurrent_insert_consistent
     ]
 
+--concurrent_insert_consistent'
+cic = (\ origStr localStr remoteStr l r ->
+        let
+
+          (localModel1, lEdits1) = insertString origStr first_index (makeEmptySite 1)
+          (remoteModel1, _) = processEdits lEdits1 (makeEmptySite 2)
+
+          lIndex = indexInBounds origStr l
+          rIndex = indexInBounds origStr r
+          (localModel2, lEdits2) = insertString localStr lIndex localModel1
+          (remoteModel2, rEdits2) = insertString remoteStr rIndex remoteModel1
+          (localModel3, _) = processEdits rEdits2 localModel2
+          (remoteModel3, _) = processEdits lEdits2 remoteModel2
+        in
+        
+          (localModel3, remoteModel3))
+
+cicdebugStrings s1 s2 s3 x y= 
+    let 
+      (m1, m2) = cic s1 s2 s3 x y
+    in
+      (wToString m1.wString, wToString m2.wString)
+
+cicwString s1 s2 s3 x y= 
+    let 
+      (m1, m2) = cic s1 s2 s3 x y
+    in
+      (m1.wString, m2.wString)
+
+
+
+
+cicdebug : String -> String -> String -> Int -> Int -> (String, String)
+cicdebug s1 s2 s3 x y = 
+    let 
+      (m1, m2) = cic s1 s2 s3 x y
+    in
+      (m1.debug, m2.debug)
+
+
 
 
 tripleStrings = [("footbol", "how", "are"), ("what", "is", "love"), ("home", "cake", "twelve")]
 
 
 runTests = List.map (\ (origStr, localStr, remoteStr) -> 
-          concurrent_insert_consistent' origStr localStr remoteStr 1 1)
+          cicprime origStr localStr remoteStr 1 1)
            tripleStrings
 
 
