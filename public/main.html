@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+  <head> 
+
+  </head>
+<body>
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+<script src="public/lib/codemirror.js"></script>
+
+
+<link rel="stylesheet" href="public/lib/codemirror.css">
+<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+
+
+
+<script src="public/elm.js"></script>
+<script src="public/peerclient.js"> </script>
+
+<script src="public/textAreaWoot.js"></script>
+
+
+
+
+<style>
+.other {
+  color: "#7f00ff";
+}
+</style>
+<div id="anchor"> </div>
+
+
+
+<script>
+
+var url = window.location.href;
+var doc_name_url = url.substr(url.lastIndexOf('/') + 1);
+
+var div = document.getElementById('anchor');
+
+var woot = Elm.embed(
+				Elm.TUpdate, 
+				document.getElementById('anchor'), 
+                {  	tUpdatePort: JSON.stringify({"type": "NoUpdate"}),
+                    windowLocPort: window.location.origin, incomingPeer: JSON.stringify({})
+                });
+
+woot.ports.sendUpdatesPortPeer.subscribe(sendPeerUpdates);
+woot.ports.docUpdatesPort.subscribe(updateDoc);
+
+$(document).ready(function(e){
+  	setUpPeerServer(doc_name_url);
+});
+
+</script>
+</body>
+</html>
+
+
+
