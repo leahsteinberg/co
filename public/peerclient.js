@@ -17,9 +17,6 @@ function setUpPeerServer(doc_name_url){
 		success: function(result) {
 			var peer_info = JSON.parse(result);
 
-
-
-
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
 			peer_state.doc_id = peer_info.doc_id;
       peer_state.peer_id_int = peer_info.site_id;
@@ -86,7 +83,6 @@ function initializeConnection() {
       					{ peer_id: peer_state.peer_id
         				, members: members
         				, data_type: "member_update"
-
         				};
 
     conn.send(initialData);
@@ -142,11 +138,11 @@ function handleData(data, sending_peer_id)
     if (data.data_type === "woot_wstring_update") {
       if (upToDate) { 
         console.log("already up to date!");
-
-        return; }
+      }
+       // return; }
 
       if (data.woot_data["String"] === undefined 
-        || data.woot_data.WString === undefined ){ return; }
+        || data.woot_data.WString === undefined || data.woot_data.WString.length === 0 ){ return; }
 
       var catchUpStr = data.woot_data["String"];
 

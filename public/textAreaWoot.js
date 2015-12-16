@@ -9,7 +9,7 @@ var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf
 textArea.on("change", function (i, c){
   console.log("omg", c);
 
-  setCursorColor(peer_state.peer_id_int);
+  //setCursorColor(peer_state.peer_id_int);
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
@@ -223,7 +223,7 @@ function setCursorColor(p_id) {
 
 
 document.onkeydown = function(e) {
-  setCursorColor(peer_state.peer_id_int);
+  //setCursorColor(peer_state.peer_id_int);
 
   if (!upToDate) {
     e.preventDefault(); 
@@ -235,7 +235,7 @@ document.onmousedown = function(e) {
 
   if (peer_state.peer_id_int != undefined) {
 
-    setCursorColor(peer_state.peer_id_int);
+    //setCursorColor(peer_state.peer_id_int);
   }
 }
 
