@@ -5,7 +5,6 @@ var textArea = CodeMirror(document.body, {autofocus: true});
 
 var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf", "#ffbf00"];
 
-
 /* handle user typing */
 textArea.on("change", function (i, c){
   console.log("omg", c);
@@ -18,7 +17,7 @@ textArea.on("change", function (i, c){
   var toSend;
   var cursor = textArea.getCursor();
   var cp = textArea.indexFromPos(cursor);
-  var siteIdInt = parseInt(peer_state.peer_id.substr(peer_state.peer_id.lastIndexOf('-') + 1));
+  siteIdInt = parseInt(peer_state.peer_id.substr(peer_state.peer_id.lastIndexOf('-') + 1));
 
   /* pasted text */
   if (c.origin === "paste" && c.removed[0] === "") {
@@ -208,20 +207,37 @@ function clearMark() {
 }
 
 function setCursorColor(p_id) {
-  var markColor = colors[p_id % colors.length];
   var cursor = $(".CodeMirror-cursor");
-  cursor[0].style.borderLeft = "1px solid " + markColor;
-  cursor[0].style.borderRight = "1px solid " + markColor;
+  if (cursor != undefined && cursor[0] != undefined) {
+    var markColor = colors[p_id % colors.length];
+    cursor[0].style.borderLeft = "1px solid " + markColor;
+    cursor[0].style.borderRight = "1px solid " + markColor;
+    // cursor[0].style.setProperty("border-left", "1px solid" + markColor, "important");
+    //cursor[0].style.setProperty("border-right", "1px solid" + markColor, "important");
+    //cursor[0].style.setProperty("color", markColor, "important");
+    //cursor[0].style.color = markColor;
+
+  }
 
 }
 
 
 document.onkeydown = function(e) {
+  setCursorColor(peer_state.peer_id_int);
 
-  if (!upToDate) {e.preventDefault(); e.stopPropagation();}
-
+  if (!upToDate) {
+    e.preventDefault(); 
+    e.stopPropagation();
+  }
 }
 
+document.onmousedown = function(e) {
+
+  if (peer_state.peer_id_int != undefined) {
+
+    setCursorColor(peer_state.peer_id_int);
+  }
+}
 
 
 

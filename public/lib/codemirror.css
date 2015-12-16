@@ -47,11 +47,16 @@ body {
 
 /* CURSOR */
 
+
 .CodeMirror-cursor {
-  border-left: 1px solid black;
-  border-right: 1px solid black;
+  /*
+  border-left: 1px solid;
+  border-right: 1px solid;
+  */
   width: 0;
 }
+
+
 /* Shown when moving in bi-directional text */
 .CodeMirror div.CodeMirror-secondarycursor {
   border-left: 1px solid silver;
