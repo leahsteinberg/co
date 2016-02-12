@@ -92,3 +92,9 @@ networking -> peer.js 'mesh' network with minimal server interaction
 server -> node express server
 
 
+
+To Do:
+- Deal with issue of "late joiners". Ensure we have sent all the updates when someone new joins
+
+
+
