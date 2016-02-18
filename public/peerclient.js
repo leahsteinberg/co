@@ -1,6 +1,6 @@
 
-/* peer_state should contain: 
-  - peer_id 
+/* peer_state should contain:
+  - peer_id
   - peer (peer.js object)
   - connections {peer_id -> peer connection}
  	- doc_id
@@ -13,7 +13,7 @@ var upToDate = false;
 
 function setUpPeerServer(doc_name_url){
 
-	$.ajax({url: "/docs/" + doc_name_url, 
+	$.ajax({url: "/docs/" + doc_name_url,
 		success: function(result) {
 			var peer_info = JSON.parse(result);
 
@@ -24,7 +24,7 @@ function setUpPeerServer(doc_name_url){
 
       var peerhost;
       if (window.location.host != "localhost:4004") {
-        peerhost = "52.70.229.110";
+        peerhost = "52.36.14.89";
       }
       else {
         peerhost = "localhost";
@@ -45,10 +45,10 @@ function setUpPeerServer(doc_name_url){
 
 
       woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
-        
+
       contactPeers(peer_info.members);
       setTimeout(allowTyping, 1000);
-      peer_state.peer.on("connection", handleConnection); 
+      peer_state.peer.on("connection", handleConnection);
 		}
 	});
 
@@ -59,11 +59,11 @@ function handleConnection(conn) {
 
   var conn_id = conn.peer;
   console.log("connected to : ", conn_id);
-  
+
   if (conn_id === peer_state.peer_id) {
     return;
   }
-  
+
   if (peer_state.connections[conn_id] === undefined){
     peer_state.connections[conn_id] = conn;
   }
@@ -73,13 +73,13 @@ function handleConnection(conn) {
 }
 
 
-function initializeConnection() { 
+function initializeConnection() {
 
 	 var conn = this;
-   console.log("initializing connection to: ", conn.peer); 
+   console.log("initializing connection to: ", conn.peer);
     var members = Object.keys(peer_state.connections).concat([peer_state.peer_id])
 
-    var initialData = 
+    var initialData =
       					{ peer_id: peer_state.peer_id
         				, members: members
         				, data_type: "member_update"
@@ -101,10 +101,10 @@ function initializeConnection() {
 function contactPeers(peers_list) {
   if (peers_list.length <= 1 ){
     upToDate = true;
-  } 
+  }
 
 	for (var i = 0; i < peers_list.length; i++) {
-		
+
 		var fellow_id = peers_list[i];
 
 		if (fellow_id.toString().indexOf("-") === -1 ) {
@@ -115,7 +115,7 @@ function contactPeers(peers_list) {
 			return;
 		}
 
-		if (peer_state.connections[fellow_id] === undefined) { 
+		if (peer_state.connections[fellow_id] === undefined) {
 			var conn = peer_state.peer.connect(fellow_id);
 			handleConnection(conn);
 		}
@@ -123,25 +123,25 @@ function contactPeers(peers_list) {
 }
 
 
-function handleData(data, sending_peer_id) 
+function handleData(data, sending_peer_id)
 {
 
   	if (data === undefined) {
     	return;
   	}
 
-  	
+
   	if (data.data_type === "member_update") {
   		contactPeers(data.members);
   	}
 
     if (data.data_type === "woot_wstring_update") {
-      if (upToDate) { 
+      if (upToDate) {
         console.log("already up to date!");
       }
        // return; }
 
-      if (data.woot_data["String"] === undefined 
+      if (data.woot_data["String"] === undefined
         || data.woot_data.WString === undefined || data.woot_data.WString.length === 0 ){ return; }
 
       var catchUpStr = data.woot_data["String"];
@@ -195,6 +195,3 @@ function broadcast(msg){
 function allowTyping() {
   upToDate = true;
 }
-
-
-
