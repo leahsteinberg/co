@@ -19,12 +19,13 @@ function setUpPeerServer(doc_name_url){
 
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
 			peer_state.doc_id = peer_info.doc_id;
+			document.title = "CoType Text Editor -- " + peer_state.doc_id;
       peer_state.peer_id_int = peer_info.site_id;
       setCursorColor(peer_info.site_id);
 
       var peerhost;
       if (window.location.host != "localhost:4004") {
-        peerhost = "52.36.14.89";
+        peerhost = "52.36.231.76";
       }
       else {
         peerhost = "localhost";
@@ -139,7 +140,6 @@ function handleData(data, sending_peer_id)
       if (upToDate) {
         console.log("already up to date!");
       }
-       // return; }
 
       if (data.woot_data["String"] === undefined
         || data.woot_data.WString === undefined || data.woot_data.WString.length === 0 ){ return; }
@@ -151,8 +151,9 @@ function handleData(data, sending_peer_id)
       upToDate = true;
       woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
       textArea.setValue(catchUpStr);
+			textArea.setCursor(0, 0);
       makeMark(textArea.posFromIndex(0), textArea.posFromIndex(catchUpStr.length), other_peer_id);
-
+			// TODO why is this not working?
 
     }
 
@@ -176,7 +177,6 @@ function sendPeerUpdates(msg) {
     toSend = {data_type: "woot_peer_update", woot_data: message};
   }
   broadcast(toSend); /* in peerserver.js */
-
 }
 
 
@@ -184,9 +184,7 @@ function sendPeerUpdates(msg) {
 function broadcast(msg){
 
   	for (key in peer_state.connections) {
-
     	if (peer_state.connections[key] === undefined) { continue; }
-
     	peer_state.connections[key].send(msg);
   	}
 }
