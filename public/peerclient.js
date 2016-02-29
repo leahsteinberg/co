@@ -19,7 +19,7 @@ function setUpPeerServer(doc_name_url){
 
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
 			peer_state.doc_id = peer_info.doc_id;
-			document.title = "CoType Text Editor -- " + peer_state.doc_id;
+			document.title = "CoType Text Editor -- " + doc_name_url;
       peer_state.peer_id_int = peer_info.site_id;
       setCursorColor(peer_info.site_id);
 
