@@ -9,11 +9,15 @@ var colors = [" #ff0000",  "#bfff00", "#00bfff", "#7f00ff", "#ff00ff", " #00ffbf
 textArea.on("change", function (i, c){
   console.log("omg", c);
 
-  //setCursorColor(peer_state.peer_id_int);
+  if (c.origin === "setValue") {
+    setCursorColor(peer_state.peer_id_int);
+
+  }
+
   if (c.origin != "+input" && c.origin != "+delete" && c.origin != "paste"){
     return;
   }
-  
+
   var toSend;
   var cursor = textArea.getCursor();
   var cp = textArea.indexFromPos(cursor);
@@ -31,9 +35,9 @@ textArea.on("change", function (i, c){
   }
 
   /* deleting and inserting at the same time   (highlight replace) */
-  else if (c.removed[0] != "" && c['text'][0] != "") { 
+  else if (c.removed[0] != "" && c['text'][0] != "") {
     toSend = handleTextReplace(c);
-  
+
   }
 
   /* deletion */
@@ -44,7 +48,7 @@ textArea.on("change", function (i, c){
 
   /* insertion */
   else if (c['text'][0] != "" || c['text'].length === 2) {
-    
+
     toSend = handleInsertion(c, cp, siteIdInt);
   }
 
@@ -52,13 +56,14 @@ textArea.on("change", function (i, c){
     toSend = [{"type": ""}];
 
   }
+  console.log("sending: ", toSend);
 
   for (var i = 0; i < toSend.length; i++) {
       woot.ports.tUpdatePort.send(JSON.stringify(toSend[i]));
   }
     setCursorColor(peer_state.peer_id_int);
 
- 
+
 });
 
 
@@ -131,6 +136,7 @@ function handleInsertion(c, cp, siteIdInt) {
 
 /* display changes from remote users  */
 function updateDoc(str){
+  console.log("update doc, ", str);
   setCursorColor(peer_state.peer_id_int);
 
 
@@ -140,13 +146,13 @@ function updateDoc(str){
     return;
   }
   docUpdates = docUpdates.reverse();
-  
+
   for (var i = 0; i< docUpdates.length; i++ ) {
     var docUpdate = docUpdates[i];
 
     var location = docUpdate["index"];
     var from = textArea.posFromIndex(location);
-  
+
     if (docUpdate["type"] === "typingInsert" ){
       if (docUpdate["ch"] === undefined || docUpdate["index"] === undefined){
         return;
@@ -212,10 +218,6 @@ function setCursorColor(p_id) {
     var markColor = colors[p_id % colors.length];
     cursor[0].style.borderLeft = "1px solid " + markColor;
     cursor[0].style.borderRight = "1px solid " + markColor;
-    // cursor[0].style.setProperty("border-left", "1px solid" + markColor, "important");
-    //cursor[0].style.setProperty("border-right", "1px solid" + markColor, "important");
-    //cursor[0].style.setProperty("color", markColor, "important");
-    //cursor[0].style.color = markColor;
 
   }
 
@@ -223,21 +225,9 @@ function setCursorColor(p_id) {
 
 
 document.onkeydown = function(e) {
-  //setCursorColor(peer_state.peer_id_int);
 
   if (!upToDate) {
-    e.preventDefault(); 
+    e.preventDefault();
     e.stopPropagation();
   }
 }
-
-document.onmousedown = function(e) {
-
-  if (peer_state.peer_id_int != undefined) {
-
-    //setCursorColor(peer_state.peer_id_int);
-  }
-}
-
-
-

@@ -15,11 +15,14 @@ function setUpPeerServer(doc_name_url){
 
 	$.ajax({url: "/docs/" + doc_name_url,
 		success: function(result) {
-			var peer_info = JSON.parse(result);
+			document.title = "CoType Text Editor -- " + doc_name_url;
 
+
+			// gather information about this peer and other peers.
+			var peer_info = JSON.parse(result);
 			peer_state.peer_id = peer_info.doc_id.toString() + "-"+ peer_info.site_id.toString();
 			peer_state.doc_id = peer_info.doc_id;
-			document.title = "CoType Text Editor -- " + doc_name_url;
+
       peer_state.peer_id_int = peer_info.site_id;
       setCursorColor(peer_info.site_id);
 
@@ -48,7 +51,6 @@ function setUpPeerServer(doc_name_url){
       woot.ports.incomingPeer.send(JSON.stringify(siteIdUpdate));
 
       contactPeers(peer_info.members);
-      setTimeout(allowTyping, 1000);
       peer_state.peer.on("connection", handleConnection);
 		}
 	});
@@ -95,7 +97,6 @@ function initializeConnection() {
     });
 
     woot.ports.tUpdatePort.send(JSON.stringify({type: "RequestWString"}));
-    // TODO send to the TYping port asking for the curr w string
 
 }
 
@@ -106,6 +107,7 @@ function contactPeers(peers_list) {
 
 	for (var i = 0; i < peers_list.length; i++) {
 
+		// make the fellow ids
 		var fellow_id = peers_list[i];
 
 		if (fellow_id.toString().indexOf("-") === -1 ) {
@@ -116,6 +118,7 @@ function contactPeers(peers_list) {
 			return;
 		}
 
+		// haven't already connected
 		if (peer_state.connections[fellow_id] === undefined) {
 			var conn = peer_state.peer.connect(fellow_id);
 			handleConnection(conn);
@@ -136,6 +139,7 @@ function handleData(data, sending_peer_id)
   		contactPeers(data.members);
   	}
 
+		// this is the case where someone has joined.
     if (data.data_type === "woot_wstring_update") {
       if (upToDate) {
         console.log("already up to date!");
@@ -145,18 +149,23 @@ function handleData(data, sending_peer_id)
         || data.woot_data.WString === undefined || data.woot_data.WString.length === 0 ){ return; }
 
       var catchUpStr = data.woot_data["String"];
+			console.log("Catch Up -> ", data);
 
       var other_peer_id =  parseInt(sending_peer_id.substr(sending_peer_id.lastIndexOf('-') + 1));
 
       upToDate = true;
+			// here is where we update the document on the screen.
       woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
       textArea.setValue(catchUpStr);
-			textArea.setCursor(0, 0);
+			updateCaret("insert");
+						//textArea.setCursor(textArea.posFromIndex(0));
       makeMark(textArea.posFromIndex(0), textArea.posFromIndex(catchUpStr.length), other_peer_id);
 			// TODO why is this not working?
+			console.log(textArea)
 
     }
 
+		// we get a woot update, send to woot Alg in Elm, which will trigger CodeMirror update
   	if (data.data_type === "woot_peer_update"){
     	if (data.woot_data != undefined){
       		woot.ports.incomingPeer.send(JSON.stringify(data.woot_data));
@@ -187,9 +196,4 @@ function broadcast(msg){
     	if (peer_state.connections[key] === undefined) { continue; }
     	peer_state.connections[key].send(msg);
   	}
-}
-
-
-function allowTyping() {
-  upToDate = true;
 }
